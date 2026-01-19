@@ -2,16 +2,17 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autoservicio Villarrica</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Villa Itue - Autoservicio</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
 
-    <nav class="glass sticky top-0 z-50 p-4 flex items-center justify-between">
+    <nav class="glass sticky top-0 z-50 p-4 flex items-center justify-between shadow-xl">
         <div class="flex items-center gap-3">
-            <div id="status-led" class="w-3 h-3 rounded-full bg-green-500 shadow-lg"></div>
+            <div id="status-led" class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]"></div>
             <span class="font-black text-2xl tracking-tighter uppercase italic">Villa <span class="text-blue-500">Itue</span></span>
         </div>
         <button id="btn-micro" class="bg-blue-600 p-5 rounded-full shadow-2xl transition-all active:scale-90">
@@ -29,12 +30,14 @@
     </main>
 
     <script>
+        // CONFIGURACIÓN - Asegúrate que esta URL sea la de Producción si ya terminaste las pruebas
         const WEBHOOK_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio';
+        
         const viewer = document.getElementById('viewer');
         const btn = document.getElementById('btn-micro');
         const led = document.getElementById('status-led');
 
-        // Fondos de pantalla
+        // 1. ROTACIÓN DE FONDOS
         const fondos = [
             'https://vsn47925-tech.github.io/img/servicio/portal-entrada.jpg',
             'https://vsn47925-tech.github.io/img/servicio/portal-recep.jpg',
@@ -45,28 +48,39 @@
             document.body.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('${fondos[currentBg]}')`;
             currentBg = (currentBg + 1) % fondos.length;
         }
-        rotateBg(); setInterval(rotateBg, 12000);
+        rotateBg(); setInterval(rotateBg, 15000);
 
-        // Voz de Don Atilio
+        // 2. SISTEMA DE VOZ (Don Atilio)
         function hablar(texto) {
             if (!texto) return;
             window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(texto);
             msg.lang = 'es-CL';
-            msg.rate = 1.0;
+            msg.rate = 1.0; 
             window.speechSynthesis.speak(msg);
         }
 
-        // Reconocimiento de Voz
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        // 3. RECONOCIMIENTO DE VOZ
+        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Speech) {
+            alert("Este navegador no soporta reconocimiento de voz. Use Chrome o Edge.");
+        }
+        const recognition = new Speech();
         recognition.lang = 'es-CL';
 
-        recognition.onstart = () => { btn.classList.add('mic-active'); led.classList.replace('bg-green-500', 'bg-red-500'); };
-        recognition.onend = () => { btn.classList.remove('mic-active'); led.classList.replace('bg-red-500', 'bg-green-500'); };
+        recognition.onstart = () => { 
+            btn.classList.add('mic-active'); 
+            led.classList.replace('bg-green-500', 'bg-red-500'); 
+        };
+        
+        recognition.onend = () => { 
+            btn.classList.remove('mic-active'); 
+            led.classList.replace('bg-red-500', 'bg-green-500'); 
+        };
 
         recognition.onresult = async (event) => {
             const query = event.results[0][0].transcript;
-            viewer.innerHTML = `<div class="glass p-8 rounded-3xl animate-pulse text-xl">Don Atilio está buscando...</div>`;
+            viewer.innerHTML = `<div class="glass p-8 rounded-3xl animate-pulse text-xl font-bold">Don Atilio está consultando...</div>`;
             
             try {
                 const response = await fetch(WEBHOOK_URL, {
@@ -75,57 +89,39 @@
                     body: JSON.stringify({ query: query })
                 });
 
-                const rawData = await response.json();
-                console.log("Respuesta n8n:", rawData);
+                if (!response.ok) throw new Error("Error en la respuesta del servidor");
 
-                // --- PROCESAMIENTO DEL JSON ---
-                // Si n8n manda un Array [ {...} ], extraemos el primer objeto
+                // Leemos como texto primero para evitar errores de parseo directo
+                const textResponse = await response.text();
+                let rawData = JSON.parse(textResponse);
+
+                // --- DESEMPAQUETADO DEL JSON (CASOS N8N) ---
+                // Caso 1: Viene como Array [ {...} ]
                 let data = Array.isArray(rawData) ? rawData[0] : rawData;
 
-                // Si los datos están dentro de una propiedad .data
+                // Caso 2: Viene envuelto en una propiedad 'body' o 'data'
+                if (data.body) data = data.body;
                 if (data.data && !data.output) data = data.data;
 
-                // Si el agente mandó un JSON de texto dentro de output
-                if (typeof data.output === 'string' && data.output.includes('{')) {
+                // Caso 3: El agente mandó un string JSON dentro de 'output'
+                if (typeof data.output === 'string' && data.output.trim().startsWith('{')) {
                     try { data = JSON.parse(data.output); } catch(e) {}
                 }
 
+                console.log("Datos Finales:", data);
+
+                // ACTIVAR VOZ Y UI
                 hablar(data.output || data.descripcion);
                 viewer.innerHTML = renderUI(data);
 
             } catch (err) {
-                console.error("Error:", err);
-                viewer.innerHTML = `<div class="glass p-8 rounded-3xl text-red-400">No se pudo conectar con el servidor.</div>`;
+                console.error("Error Crítico:", err);
+                viewer.innerHTML = `
+                    <div class="glass p-8 rounded-3xl text-red-400">
+                        <p class="font-black text-xl mb-2">ERROR DE CONEXIÓN</p>
+                        <p class="text-sm opacity-70 italic">No pude conectar con el agente. Revise la consola (F12).</p>
+                    </div>`;
             }
         };
 
-        function renderUI(data) {
-            // Si no hay imágenes, mostrar diseño de texto simple
-            if (!data.imagenes || data.imagenes.length === 0) {
-                return `<div class="glass p-8 rounded-[2.5rem] max-w-md fade-in text-lg leading-relaxed shadow-2xl text-left">${data.output || data.descripcion}</div>`;
-            }
-
-            // Diseño con Carrusel
-            return `
-            <div class="flex flex-col gap-5 max-w-md w-full fade-in text-left">
-                <div class="glass rounded-[2.5rem] overflow-hidden shadow-2xl relative aspect-video border border-white/10">
-                    <div class="carousel-container h-full">
-                        ${data.imagenes.map(img => `<div class="slide h-full"><img src="${img}" class="object-cover w-full h-full"></div>`).join('')}
-                    </div>
-                    <div class="absolute bottom-4 w-full text-center text-[10px] text-white/40 tracking-[0.2em] uppercase font-bold pointer-events-none">Deslice ➜</div>
-                </div>
-                <div class="glass p-8 rounded-[2.5rem] shadow-2xl">
-                    <h3 class="text-2xl font-black text-blue-400 mb-2 uppercase italic">${data.titulo || 'Información'}</h3>
-                    <p class="text-slate-200 text-sm leading-relaxed mb-6">${data.descripcion || ''}</p>
-                    <div class="pt-5 border-t border-white/10 flex justify-between items-center">
-                        <span class="text-[10px] uppercase font-bold text-slate-500">Valor Noche</span>
-                        <span class="text-2xl font-black text-white">${data.precio || 'Consultar'}</span>
-                    </div>
-                </div>
-            </div>`;
-        }
-
-        btn.onclick = () => { try { recognition.start(); } catch(e) {} };
-    </script>
-</body>
-</html>
+        // 4. RENDERIZADO DE LA INTERFAZ
