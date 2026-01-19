@@ -1,4 +1,79 @@
-const N8N_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Villa Itue - Autoservicio</title>
+    
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.json">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root { --glass: rgba(15, 23, 42, 0.9); --border: rgba(255, 255, 255, 0.1); }
+        
+        body {
+            margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+            background-color: #0f172a; color: white;
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+            background-size: cover; background-position: center;
+            background-attachment: fixed; transition: background 2s ease-in-out;
+            overflow-x: hidden;
+        }
+
+        .glass { 
+            background: var(--glass); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid var(--border); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Micrófono Animado */
+        .mic-active { 
+            animation: pulse 1.5s infinite; 
+            background-color: #ef4444 !important; 
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Carrusel Snap */
+        .carousel-container {
+            display: flex; overflow-x: auto;
+            scroll-snap-type: x mandatory; scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .carousel-container::-webkit-scrollbar { display: none; }
+        .slide { flex: 0 0 100%; scroll-snap-align: center; }
+
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <nav class="glass sticky top-0 z-50 p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div id="status-led" class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]"></div>
+            <span class="font-black text-2xl tracking-tighter italic uppercase">Villa <span class="text-blue-500">Itue</span></span>
+        </div>
+        <button id="btn-micro" class="bg-blue-600 p-5 rounded-full shadow-2xl transition-all active:scale-90">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-20a3 3 0 00-3 3v8a3 3 0 006 0V5a3 3 0 00-3-3z"/></svg>
+        </button>
+    </nav>
+
+    <main id="viewer" class="flex-grow flex items-center justify-center p-6">
+        <div id="welcome" class="text-center fade-in">
+            <h1 class="text-5xl font-black italic mb-4">¡HOLA!</h1>
+            <p class="text-slate-400 text-lg">Presione el botón para hablar con Don Atilio.</p>
+        </div>
+    </main>
+
+    <script>
+        const WEBHOOK_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio';
         const viewer = document.getElementById('viewer');
         const btn = document.getElementById('btn-micro');
         const led = document.getElementById('status-led');
@@ -16,17 +91,17 @@ const N8N_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio';
         }
         updateBg(); setInterval(updateBg, 12000);
 
-        // 2. Voz
+        // 2. Sistema de Voz
         function hablar(texto) {
             if (!texto) return;
             window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(texto);
-            utterance.lang = 'es-CL';
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
+            const msg = new SpeechSynthesisUtterance(texto);
+            msg.lang = 'es-CL';
+            msg.rate = 1.0;
+            window.speechSynthesis.speak(msg);
         }
 
-        // 3. Reconocimiento y Fetch
+        // 3. Reconocimiento de Voz
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
         const rec = new Speech();
         rec.lang = 'es-CL';
@@ -36,65 +111,67 @@ const N8N_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio';
 
         rec.onresult = async (e) => {
             const query = e.results[0][0].transcript;
-            viewer.innerHTML = `<div class="glass p-8 rounded-3xl animate-pulse">Don Atilio está buscando...</div>`;
+            viewer.innerHTML = `<div class="glass p-8 rounded-[2rem] animate-pulse italic text-slate-300 text-xl">Don Atilio está buscando información...</div>`;
             
             try {
-                const res = await fetch(N8N_URL, {
+                const res = await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ query })
                 });
 
-                // --- TRATAMIENTO DE RESPUESTA ---
                 const raw = await res.json();
-                console.log("Respuesta de n8n:", raw); // Revisa esto en F12
+                console.log("Respuesta recibida:", raw);
 
-                // Si n8n responde con un array [{}], tomamos el primer elemento. 
-                // Si responde con el objeto directo {}, lo usamos tal cual.
+                // --- DESEMPAQUETADO INTELIGENTE ---
+                // Maneja si n8n envía [{...}] o {...}
                 let data = Array.isArray(raw) ? raw[0] : raw;
 
-                // Si los datos vienen dentro de una propiedad 'data' (común en n8n)
-                if (data.data) data = data.data;
+                // Maneja si los datos vienen dentro de una propiedad 'data'
+                if (data.data && !data.output) data = data.data;
 
-                // Si el agente mandó el JSON como texto dentro de 'output'
+                // Maneja si el JSON viene como texto dentro del campo output
                 if (typeof data.output === 'string' && data.output.trim().startsWith('{')) {
-                    try { data = JSON.parse(data.output); } catch(e) {}
+                    try { data = JSON.parse(data.output); } catch(err) {}
                 }
 
-                // Ejecución
                 hablar(data.output || data.descripcion);
-                viewer.innerHTML = renderResponse(data);
+                viewer.innerHTML = renderUI(data);
 
             } catch (err) {
-                console.error("Error en Fetch:", err);
-                viewer.innerHTML = `<div class="glass p-8 rounded-3xl text-red-400">Error: No se pudo conectar con el agente.</div>`;
+                console.error(err);
+                viewer.innerHTML = `<div class="glass p-8 rounded-[2rem] text-red-400">Error de conexión con el servidor.</div>`;
             }
         };
 
-        function renderResponse(data) {
-            // Caso: No hay imágenes o el agente falló
-            if (!data || (!data.imagenes || data.imagenes.length === 0)) {
-                return `<div class="glass p-8 rounded-3xl max-w-md fade-in text-lg">${data.output || data.descripcion || "Lo siento, no encontré esa información."}</div>`;
+        function renderUI(data) {
+            // Caso sin imágenes
+            if (!data.imagenes || data.imagenes.length === 0) {
+                return `<div class="glass p-8 rounded-[2.5rem] max-w-md fade-in text-lg leading-relaxed shadow-2xl">${data.output || data.descripcion}</div>`;
             }
 
-            // Caso: Respuesta con Carrusel
+            // Caso con Carrusel
             return `
-            <div class="flex flex-col gap-4 max-w-md w-full fade-in">
-                <div class="glass rounded-[2.5rem] overflow-hidden shadow-2xl relative aspect-video border border-white/20">
+            <div class="flex flex-col gap-5 max-w-md w-full fade-in">
+                <div class="glass rounded-[2.5rem] overflow-hidden shadow-2xl relative aspect-video border border-white/10">
                     <div class="carousel-container h-full">
                         ${data.imagenes.map(img => `<div class="slide h-full"><img src="${img}" class="w-full h-full object-cover"></div>`).join('')}
                     </div>
-                    <div class="absolute bottom-3 w-full text-center text-[10px] text-white/50 tracking-widest uppercase font-bold">Deslice ➜</div>
+                    <div class="absolute bottom-4 w-full text-center text-[10px] text-white/40 tracking-[0.2em] uppercase font-black pointer-events-none">Deslice para ver más ➜</div>
                 </div>
-                <div class="glass p-6 rounded-[2.5rem]">
-                    <h3 class="text-2xl font-bold text-blue-400 mb-2">${data.titulo || 'Villa Itue'}</h3>
-                    <p class="text-slate-200 text-sm leading-relaxed mb-4">${data.descripcion || ''}</p>
-                    <div class="pt-4 border-t border-white/10 flex justify-between items-center">
-                        <span class="text-xs uppercase font-bold text-slate-500">Precio</span>
-                        <span class="text-xl font-black text-white">${data.precio || 'Consultar'}</span>
+                <div class="glass p-8 rounded-[2.5rem] shadow-2xl">
+                    <h3 class="text-2xl font-black text-blue-400 mb-2 uppercase italic italic">${data.titulo || 'Información'}</h3>
+                    <p class="text-slate-200 text-sm leading-relaxed mb-6">${data.descripcion || ''}</p>
+                    <div class="pt-5 border-t border-white/10 flex justify-between items-end">
+                        <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Valor por noche</span>
+                        <span class="text-2xl font-black text-white">${data.precio || 'Consultar'}</span>
                     </div>
                 </div>
             </div>`;
         }
 
         btn.onclick = () => { try { rec.start(); } catch(e) {} };
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    </script>
+</body>
+</html>
