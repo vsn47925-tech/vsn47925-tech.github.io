@@ -13,52 +13,37 @@
     ];
 
     let currentPortal = 0;
+
+    // Función para cambiar el fondo con desvanecimiento (Fade)
     const cambiarFondoPortal = () => {
         const url = fotosPortal[currentPortal];
         document.body.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), url('${url}')`;
         document.body.style.backgroundSize = 'cover';
         document.body.style.backgroundPosition = 'center';
-        document.body.style.transition = 'background-image 2s ease-in-out';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        document.body.style.transition = 'background-image 2s ease-in-out'; // Efecto de desvanecimiento
+        
         currentPortal = (currentPortal + 1) % fotosPortal.length;
     };
+
+    // Iniciar fondo inmediatamente al cargar
     cambiarFondoPortal();
+    // Cambiar cada 8 segundos
     setInterval(cambiarFondoPortal, 8000);
 
     // --- 2. MOTOR DE CARRUSEL PARA CABAÑAS Y SERVICIOS ---
-    const renderizarCarrusel = (datosAgente) => {
-        // Extraemos los datos del JSON anidado y del objeto principal
-        const infoInterna = JSON.parse(datosAgente.output);
-        const titulo = infoInterna.descripcion || "Cabañas Villaitue";
-        const precio = datosAgente.precio || "";
-        const listaImagenes = datosAgente.imagenes || [];
 
-        // Generamos los slides recorriendo el array de URLs
-        const slidesHTML = listaImagenes.map((url, index) => `
-            <li>
-                <img src="${url}" alt="Imagen ${index + 1}">
-                <p class="caption">${precio}</p>
-            </li>
-        `).join('');
-
-        return `
-            <h1 class="main-title">${titulo}</h1>
-            <div class="slider">
-                <ul>
-                    ${slidesHTML}
-                </ul>
-            </div>
-        `;
-    };
 
     // --- 3. RECONOCIMIENTO Y VOZ ---
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'es-ES';
 
     const hablarDonAtilio = (texto) => {
-        window.speechSynthesis.cancel();
+        window.speechSynthesis.cancel(); // Detiene cualquier voz previa
         const utterance = new SpeechSynthesisUtterance(texto);
         const voces = window.speechSynthesis.getVoices();
         const voz = voces.find(v => v.lang === 'es-CL' || v.lang === 'es-MX') || voces[0];
+        
         utterance.voice = voz;
         utterance.pitch = 0.8;
         utterance.rate = 0.85;
@@ -76,21 +61,18 @@
                 body: JSON.stringify({ query: query })
             });
 
-            const resultado = await response.json();
-            // n8n suele devolver un array, tomamos el primer elemento
-            const data = Array.isArray(resultado) ? resultado[0] : resultado;
-
-            // 1. Parseamos el JSON interno para obtener el texto de voz
-            const dataInterna = JSON.parse(data.output);
+            let data = await response.json();
             
-            // 2. Don Atilio habla el "output" del JSON interno
-            hablarDonAtilio(dataInterna.output);
+            // Si n8n manda el string JSON, lo parseamos (Modo Seguro)
+            if (typeof data.output === 'string' && data.output.startsWith('{')) {
+                data = JSON.parse(data.output);
+            }
 
-            // 3. Renderizamos el carrusel con las imágenes y el precio
+            hablarDonAtilio(data.output);
             viewer.innerHTML = renderizarCarrusel(data);
 
         } catch (error) {
-            console.error("Error procesando respuesta:", error);
+            console.error("Error en comunicación:", error);
         }
     };
 
