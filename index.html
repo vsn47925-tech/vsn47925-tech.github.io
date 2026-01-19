@@ -3,74 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proyecto Autoservicio - AI Dashboard</title>
+    <title>Proyecto | AI Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .pulse { animation: pulse 2s infinite; }
+        .mic-active { animation: pulse 1.5s infinite; background-color: #ef4444 !important; }
         @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
     </style>
 </head>
-<body class="bg-slate-900 text-white font-sans overflow-hidden h-screen flex flex-col">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
-    <header class="h-24 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-8 shadow-2xl z-50">
-        <div class="flex items-center gap-4">
-            <div id="status-blob" class="w-4 h-4 rounded-full bg-green-500"></div>
-            <div>
-                <h1 class="text-xl font-bold">Proyecto Autoservicio</h1>
-                <p id="feedback" class="text-sm text-slate-400">Listo para escuchar...</p>
-            </div>
+    <nav class="bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-3">
+            <div id="status-led" class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+            <span class="font-bold tracking-tight text-xl">PROYECTO <span class="text-blue-500">AUTOSERVICIO</span></span>
         </div>
         
-        <button id="btn-micro" class="bg-blue-600 hover:bg-blue-500 p-4 rounded-full transition-all group">
-            <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-20a3 3 0 00-3 3v8a3 3 0 006 0V5a3 3 0 00-3-3z" />
-            </svg>
-        </button>
-    </header>
+        <div class="flex items-center gap-6">
+            <span id="transcription" class="text-slate-400 italic text-sm max-w-md truncate text-right">Esperando instrucción...</span>
+            <button id="btn-micro" class="bg-blue-600 p-4 rounded-full hover:bg-blue-500 transition-all shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-20a3 3 0 00-3 3v8a3 3 0 006 0V5a3 3 0 00-3-3z" />
+                </svg>
+            </button>
+        </div>
+    </nav>
 
-    <main id="content-viewer" class="flex-grow p-6 overflow-y-auto flex items-center justify-center transition-all duration-500">
-        <div id="initial-message" class="text-center max-w-lg">
-            <h2 class="text-3xl font-light mb-4">Bienvenido al Autoservicio</h2>
-            <p class="text-slate-400">Presiona el micrófono y solicita información. El contenido se cargará aquí mientras conversamos.</p>
+    <main id="viewer" class="flex-grow flex items-center justify-center p-6 text-center">
+        <div id="placeholder">
+            <h2 class="text-4xl font-light text-slate-500">Bienvenido</h2>
+            <p class="text-slate-600 mt-2">Haz clic en el micrófono para comenzar</p>
         </div>
     </main>
 
     <script>
-        // CONFIGURACIÓN
-        const N8N_WEBHOOK_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio'; 
+        // CONFIGURACIÓN DE CONEXIÓN
+        const N8N_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio';
         
         const btn = document.getElementById('btn-micro');
-        const feedback = document.getElementById('feedback');
-        const blob = document.getElementById('status-blob');
-        const viewer = document.getElementById('content-viewer');
+        const led = document.getElementById('status-led');
+        const textDisplay = document.getElementById('transcription');
+        const viewer = document.getElementById('viewer');
 
-        // RECONOCIMIENTO DE VOZ
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        // MOTOR DE VOZ
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
         recognition.lang = 'es-ES';
-        recognition.interimResults = false;
 
-        btn.onclick = () => {
-            try {
-                recognition.start();
-            } catch(e) { console.log("Ya está escuchando"); }
+        // FUNCIÓN GLOBAL HABLAR() PARA LA CONSOLA
+        window.hablar = () => {
+            try { recognition.start(); } catch(e) {}
         };
 
+        btn.onclick = window.hablar;
+
         recognition.onstart = () => {
-            btn.classList.add('pulse', 'bg-red-600');
-            feedback.innerText = "Escuchando...";
-            blob.classList.replace('bg-green-500', 'bg-red-500');
+            btn.classList.add('mic-active');
+            led.classList.replace('bg-green-500', 'bg-red-500');
+            textDisplay.innerText = "Escuchando...";
         };
 
         recognition.onresult = async (event) => {
             const query = event.results[0][0].transcript;
-            feedback.innerText = `Procesando: "${query}"...`;
+            textDisplay.innerText = `Enviando: "${query}"`;
             
             try {
-                const response = await fetch(N8N_WEBHOOK_URL, {
+                const response = await fetch(N8N_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query: query })
@@ -78,26 +79,30 @@
 
                 const data = await response.json();
 
-                // 1. VOZ (Background)
-                const utterance = new SpeechSynthesisUtterance(data.output || data.speech);
-                utterance.lang = 'es-ES';
-                window.speechSynthesis.speak(utterance);
+                // 1. RESPUESTA DE VOZ (Sintetizador)
+                const msg = data.output || data.speech || "No he recibido respuesta del servidor";
+                const speech = new SpeechSynthesisUtterance(msg);
+                speech.lang = 'es-ES';
+                window.speechSynthesis.speak(speech);
 
-                // 2. VISTA (Actualizar pantalla si n8n manda HTML)
+                // 2. ACTUALIZACIÓN VISUAL (Inyección HTML)
                 if (data.html) {
-                    viewer.innerHTML = `<div class="w-full h-full animate-in fade-in duration-700">${data.html}</div>`;
+                    viewer.innerHTML = `<div class="w-full h-full animate-in zoom-in duration-500">${data.html}</div>`;
+                } else {
+                    viewer.innerHTML = `<div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl max-w-2xl">
+                                            <p class="text-2xl text-blue-400 font-medium">${msg}</p>
+                                        </div>`;
                 }
 
             } catch (error) {
-                feedback.innerText = "Error de conexión con el cerebro n8n.";
+                textDisplay.innerText = "Error de conexión.";
                 console.error(error);
             }
         };
 
         recognition.onend = () => {
-            btn.classList.remove('pulse', 'bg-red-600');
-            blob.classList.replace('bg-red-500', 'bg-green-500');
-            if(feedback.innerText === "Escuchando...") feedback.innerText = "Listo para escuchar...";
+            btn.classList.remove('mic-active');
+            led.classList.replace('bg-red-500', 'bg-green-500');
         };
     </script>
 </body>
