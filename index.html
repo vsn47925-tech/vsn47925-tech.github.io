@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Villa Itue - Autoservicio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.15); }
+        
+        body {
+            margin: 0; min-height: 100vh;
+            display: flex; flex-direction: column;
+            background-color: #0f172a;
+            background-size: cover; background-position: center;
+            background-attachment: fixed;
+            transition: background-image 2s ease-in-out;
+            color: white; font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .glass { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--border); }
+
+        /* Animación Micrófono */
+        .mic-active { 
+            animation: pulse 1.5s infinite; 
+            background-color: #ef4444 !important; 
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Carrusel Optimizado */
+        .carousel-container {
+            display: flex; overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .carousel-container::-webkit-scrollbar { display: none; }
+        .slide { flex: 0 0 100%; scroll-snap-align: center; }
+        
+        .fade-in { animation: fadeIn 0.5s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <nav class="glass sticky top-0 z-50 p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div id="status-led" class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+            <span class="font-bold text-2xl tracking-tighter">VILLA <span class="text-blue-500">ITUE</span></span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span id="transcription" class="hidden md:block text-slate-400 italic text-sm italic">Listo para escuchar...</span>
+            <button id="btn-micro" class="bg-blue-600 p-4 rounded-full shadow-lg transition-all active:scale-90">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-20a3 3 0 00-3 3v8a3 3 0 006 0V5a3 3 0 00-3-3z"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <main id="viewer" class="flex-grow flex items-center justify-center p-6">
+        <div id="welcome" class="text-center space-y-4">
+            <h2 class="text-4xl font-black italic">Bienvenido</h2>
+            <p class="text-slate-300">Presione el micrófono para hablar con Don Atilio</p>
+        </div>
+    </main>
+
+    <script>
+        const N8N_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio';
+        const viewer = document.getElementById('viewer');
+        const textDisplay = document.getElementById('transcription');
+        const btn = document.getElementById('btn-micro');
+        const led = document.getElementById('status-led');
+
+        // 1. FONDOS DINÁMICOS
+        const fotosPortal = [
+            'https://vsn47925-tech.github.io/img/servicio/portal-entrada.jpg',
+            'https://vsn47925-tech.github.io/img/servicio/portal-recep.jpg',
+            'https://vsn47925-tech.github.io/img/servicio/portal-villa.jpg'
+        ];
+        let currentIdx = 0;
+        function changeBg() {
+            document.body.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url('${fotosPortal[currentIdx]}')`;
+            currentIdx = (currentIdx + 1) % fotosPortal.length;
+        }
+        changeBg(); setInterval(changeBg, 10000);
+
+        // 2. VOZ (Velocidad Original)
+        function hablar(texto) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(texto);
+            const voices = window.speechSynthesis.getVoices();
+            msg.voice = voices.find(v => v.lang === 'es-CL') || voices.find(v => v.lang.includes('es'));
+            msg.rate = 1.0; 
+            msg.pitch = 1.0;
+            window.speechSynthesis.speak(msg);
+        }
+
+        // 3. LÓGICA DE RECONOCIMIENTO
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'es-CL';
+
+        recognition.onstart = () => { btn.classList.add('mic-active'); led.classList.replace('bg-green-500', 'bg-red-500'); };
+        recognition.onend = () => { btn.classList.remove('mic-active'); led.classList.replace('bg-red-500', 'bg-green-500'); };
+
+        recognition.onresult = async (event) => {
+            const query = event.results[0][0].transcript;
+            textDisplay.innerText = `Usted: "${query}"`;
+            
+            try {
+                const response = await fetch(N8N_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const rawData = await response.json();
+                // Extraer el primer elemento si viene como array
+                let data = Array.isArray(rawData) ? rawData[0] : rawData;
+
+                // Si n8n envía el JSON como string dentro de un campo 'output'
+                if (typeof data.output === 'string' && data.output.includes('{')) {
+                    try { data = JSON.parse(data.output); } catch(e) {}
+                }
+
+                hablar(data.output);
+                viewer.innerHTML = renderUI(data);
+
+            } catch (err) { console.error("Error:", err); }
+        };
+
+        function renderUI(data) {
+            // Si no hay imágenes, mostrar solo el texto
+            if (!data.imagenes || data.imagenes.length === 0) {
+                return `<div class="glass p-8 rounded-3xl max-w-md fade-in text-lg leading-relaxed">${data.output}</div>`;
+            }
+
+            return `
+            <div class="flex flex-col gap-5 max-w-md w-full fade-in">
+                <div class="glass rounded-[2.5rem] overflow-hidden shadow-2xl relative aspect-video border-2 border-white/10">
+                    <div class="carousel-container h-full">
+                        ${data.imagenes.map(img => `
+                            <div class="slide h-full">
+                                <img src="${img}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x400?text=Villa+Itue'">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="absolute bottom-3 w-full text-center text-[10px] text-white/60 tracking-widest uppercase font-bold pointer-events-none">
+                        Deslice para ver fotos ➜
+                    </div>
+                </div>
+
+                <div class="glass p-6 rounded-[2.5rem] shadow-xl">
+                    <h3 class="text-2xl font-bold text-blue-400 mb-2">${data.titulo || 'Cabaña Seleccionada'}</h3>
+                    <p class="text-slate-200 text-sm leading-relaxed mb-4">${data.descripcion}</p>
+                    <div class="pt-4 border-t border-white/10 flex justify-between items-center">
+                        <span class="text-xs uppercase tracking-wider text-slate-400 font-bold">Precio por noche</span>
+                        <span class="text-xl font-black text-white">${data.precio}</span>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        btn.onclick = () => { try { recognition.start(); } catch(e) {} };
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    </script>
+</body>
+</html>
