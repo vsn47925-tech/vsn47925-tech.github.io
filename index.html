@@ -48,7 +48,7 @@
 
         // RECONOCIMIENTO
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'es-ES';
+        recognition.lang = 'es-CL';
 
         window.hablar = () => { try { recognition.start(); } catch(e) {} };
         btn.onclick = window.hablar;
