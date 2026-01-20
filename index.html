@@ -3,426 +3,1245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Villaitue</title>
+    <title>Villarrica</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .mic-active { animation: pulse 1.5s infinite; background-color: #ef4444 !important; }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        /* Estilos para el carrusel */
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .slide-in { animation: slideIn 0.5s ease-out forwards; }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
+        
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .carousel-slide.active {
+            opacity: 1;
+        }
+        
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .carousel-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .carousel-dot.active {
+            background-color: #3b82f6;
+        }
+        
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        
+        .carousel-btn:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .carousel-prev {
+            left: 15px;
+        }
+        
+        .carousel-next {
+            right: 15px;
+        }
+        
+        /* Animación para mostrar/ocultar respuesta */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Estilos para el historial de chat */
+        .user-message {
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+            max-width: 80%;
+            align-self: flex-end;
+        }
+        
+        .bot-message {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            border-radius: 18px 18px 18px 4px;
+            max-width: 80%;
+            align-self: flex-start;
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Encabezado -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-microphone text-blue-600 mr-3"></i>
+                Villa Itue - Sistema de Voz
+            </h1>
+            <p class="text-gray-600">Sistema de reservas por voz interactivo</p>
+        </header>
 
-    <nav class="bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between shadow-2xl sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <div id="status-led" class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-            <span class="font-bold tracking-tight text-xl text-white">VILLA <span class="text-blue-500">ITUE</span></span>
-        </div>
-        <div class="flex items-center gap-4">
-            <span id="transcription" class="hidden md:block text-slate-400 italic text-sm max-w-xs truncate">Listo para escuchar...</span>
-            <button id="btn-micro" class="bg-blue-600 p-4 rounded-full hover:bg-blue-500 transition-all shadow-lg text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-20a3 3 0 00-3 3v8a3 3 0 006 0V5a3 3 0 00-3-3z" />
-                </svg>
-            </button>
-        </div>
-    </nav>
-
-    <main id="viewer" class="flex-grow flex items-center justify-center p-6 text-center">
-        <div id="placeholder">
-            <h2 class="text-4xl font-light text-white mb-4">Cabañas Villaitue</h2>
-            <p class="text-slate-300 mb-8">Asistente de voz inteligente</p>
-            <div class="bg-slate-900/50 p-6 rounded-2xl inline-block border border-slate-700">
-                <p class="text-blue-400 font-bold mb-4">Pregunta por ejemplo:</p>
-                <p class="text-slate-400">"¿Tienen cabañas para dos personas?"</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Panel de control izquierdo -->
+            <div class="lg:col-span-1 bg-white rounded-2xl shadow-xl p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-sliders-h text-blue-600 mr-2"></i>
+                    Control del Sistema
+                </h2>
+                
+                <!-- Estado del sistema -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Estado del Sistema</h3>
+                    <div class="flex items-center mb-2">
+                        <div id="statusIndicator" class="w-3 h-3 rounded-full bg-green-500 mr-3 animate-pulse"></div>
+                        <span id="statusText" class="text-gray-700 font-medium">Sistema de voz iniciado</span>
+                    </div>
+                    <p id="endpointInfo" class="text-sm text-gray-500 mt-1">
+                        Endpoint: <span class="font-mono text-blue-600">https://apps.villaitue.cl/webhook-test/autoservicio</span>
+                    </p>
+                    <p id="voicesInfo" class="text-sm text-gray-500">Voces cargadas: <span id="voicesCount" class="font-semibold">19</span></p>
+                </div>
+                
+                <!-- Controles de voz -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Control de Voz</h3>
+                    <div class="flex justify-center space-x-4">
+                        <button id="startBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-medium flex items-center transition duration-300">
+                            <i class="fas fa-microphone mr-2"></i> Iniciar Voz
+                        </button>
+                        <button id="stopBtn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-medium flex items-center transition duration-300">
+                            <i class="fas fa-stop mr-2"></i> Detener
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-3 text-center">Haz clic en "Iniciar Voz" y habla tu consulta</p>
+                </div>
+                
+                <!-- Historial de chat -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Historial de Conversación</h3>
+                    <div id="chatHistory" class="h-64 overflow-y-auto p-3 bg-gray-50 rounded-lg space-y-3">
+                        <!-- Los mensajes se agregarán aquí dinámicamente -->
+                        <div class="user-message p-3">
+                            <p class="font-medium">Hola tienes cabañas para dos personas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel principal central -->
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="fas fa-home text-blue-600 mr-2"></i>
+                    <span id="responseTitle">Resultado de la Consulta</span>
+                </h2>
+                
+                <!-- Contenedor de respuesta -->
+                <div id="responseContainer" class="min-h-[500px] flex flex-col justify-center items-center">
+                    <!-- Estado inicial o cuando no hay respuesta -->
+                    <div id="initialState" class="text-center">
+                        <div class="text-gray-400 mb-6">
+                            <i class="fas fa-comment-alt text-6xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">Esperando tu consulta</h3>
+                        <p class="text-gray-500">Haz clic en "Iniciar Voz" y pregunta por nuestras cabañas disponibles</p>
+                    </div>
+                    
+                    <!-- Respuesta del agente (se mostrará dinámicamente) -->
+                    <div id="agentResponse" class="hidden w-full">
+                        <!-- Título de la respuesta -->
+                        <h3 id="descripcionTitle" class="text-2xl font-bold text-center text-gray-800 mb-6"></h3>
+                        
+                        <!-- Carrusel de imágenes -->
+                        <div id="carouselContainer" class="hidden">
+                            <div class="carousel-container mb-4">
+                                <!-- Las imágenes del carrusel se insertarán aquí -->
+                            </div>
+                            <div class="carousel-dots">
+                                <!-- Los puntos de navegación se insertarán aquí -->
+                            </div>
+                        </div>
+                        
+                        <!-- Texto de salida (para speech) -->
+                        <div id="outputText" class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 class="font-semibold text-blue-800 mb-2">
+                                <i class="fas fa-volume-up mr-2"></i>Respuesta del sistema:
+                            </h4>
+                            <p id="outputContent" class="text-gray-700"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Información de depuración (solo para desarrollo) -->
+                <div class="mt-8 border-t pt-6">
+                    <details class="bg-gray-50 rounded-lg p-4">
+                        <summary class="font-medium text-gray-700 cursor-pointer">
+                            <i class="fas fa-bug mr-2"></i>Información de depuración
+                        </summary>
+                        <div class="mt-3 space-y-2">
+                            <div>
+                                <span class="font-medium text-gray-600">Última pregunta:</span>
+                                <span id="lastQuestion" class="ml-2 text-gray-800">Hola tienes cabañas para dos personas</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Respuesta HTTP:</span>
+                                <span id="httpResponse" class="ml-2 text-green-600 font-semibold">200</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Datos procesados:</span>
+                                <pre id="processedData" class="mt-2 p-3 bg-gray-800 text-green-400 rounded text-sm overflow-x-auto"></pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
             </div>
         </div>
-    </main>
+        
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>Villa Itue - Sistema de reservas por voz © 2026</p>
+            <p class="mt-1">
+                <i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>
+                tailwindcss.com no debe usarse en producción. Para usar Tailwind CSS en producción, instálalo como plugin de PostCSS o usa la CLI de Tailwind.
+            </p>
+        </footer>
+    </div>
 
     <script>
-        // ================= CONFIGURACIÓN =================
-        const N8N_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio';
+        // Variables globales
+        let recognition = null;
+        let currentCarouselIndex = 0;
+        let carouselInterval = null;
         
-        // Referencias
-        const btn = document.getElementById('btn-micro');
-        const led = document.getElementById('status-led');
-        const textDisplay = document.getElementById('transcription');
-        const viewer = document.getElementById('viewer');
-        const placeholder = document.getElementById('placeholder');
-        
-        // ================= PROCESADOR UNIVERSAL DE RESPUESTAS N8N =================
-        function procesarRespuestaN8N(respuestaCruda) {
-            console.log("🔄 Procesando respuesta n8n:", respuestaCruda);
+        // Función para inicializar el reconocimiento de voz
+        function initVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             
-            // PASO 1: Parsear respuesta inicial
-            let datos;
-            try {
-                datos = JSON.parse(respuestaCruda);
-            } catch (e) {
-                console.error("❌ Error parseando respuesta inicial:", e);
-                return { output: respuestaCruda };
+            if (!SpeechRecognition) {
+                alert("Tu navegador no soporta reconocimiento de voz. Por favor usa Chrome o Edge.");
+                return null;
             }
             
-            // PASO 2: Si es array, tomar primer elemento
-            if (Array.isArray(datos)) {
-                datos = datos[0];
-                console.log("📦 Tomando primer elemento del array");
-            }
-            
-            // PASO 3: DETECTAR Y CORREGIR EL PROBLEMA PRINCIPAL
-            // n8n a veces envía JSON como string dentro de "output"
-            if (datos && typeof datos.output === 'string') {
-                const outputString = datos.output.trim();
-                
-                // CASO A: output contiene JSON completo como string
-                if (outputString.startsWith('{') && outputString.endsWith('}')) {
-                    console.log("🔍 Output es JSON string, parseando...");
-                    try {
-                        const jsonDentroDeOutput = JSON.parse(outputString);
-                        console.log("✅ JSON extraído de output:", jsonDentroDeOutput);
-                        
-                        // Combinar los datos: mantener todo de datos, pero reemplazar con el JSON parseado
-                        return {
-                            ...datos,           // Mantener cualquier otra propiedad
-                            ...jsonDentroDeOutput, // Sobrescribir con JSON interno
-                            output: jsonDentroDeOutput.output || datos.output // Mantener output
-                        };
-                    } catch (parseError) {
-                        console.error("❌ Error parseando JSON dentro de output:", parseError);
-                        // Si falla, mantener los datos originales
-                    }
-                }
-                
-                // CASO B: output es texto normal con JSON incrustado
-                const jsonMatch = outputString.match(/\{.*\}/s);
-                if (jsonMatch) {
-                    console.log("🔍 Encontré JSON incrustado en output");
-                    try {
-                        const jsonExtraido = JSON.parse(jsonMatch[0]);
-                        console.log("✅ JSON incrustado extraído:", jsonExtraido);
-                        
-                        return {
-                            ...datos,
-                            ...jsonExtraido,
-                            output: jsonExtraido.output || datos.output
-                        };
-                    } catch (e) {
-                        console.error("❌ Error extrayendo JSON incrustado:", e);
-                    }
-                }
-            }
-            
-            // PASO 4: Si llegamos aquí, los datos ya están bien formados
-            console.log("✅ Datos ya bien formados:", datos);
-            return datos;
-        }
-        
-        // ================= SÍNTESIS DE VOZ =================
-        function hablarLento(texto) {
-            if (!texto) return;
-            
-            window.speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance(texto);
-            const voces = window.speechSynthesis.getVoices();
-            
-            const voz = voces.find(v => v.lang === 'es-CL') || 
-                       voces.find(v => v.lang.includes('es-')) || 
-                       voces[0];
-            
-            if (voz) utterance.voice = voz;
-            utterance.pitch = 0.8;
-            utterance.rate = 0.85;
-            
-            window.speechSynthesis.speak(utterance);
-        }
-        
-        // ================= RECONOCIMIENTO DE VOZ =================
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-CL';
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
             recognition.continuous = false;
             recognition.interimResults = false;
             
-            recognition.onstart = () => {
-                btn.classList.add('mic-active');
-                led.classList.replace('bg-green-500', 'bg-yellow-500');
-                textDisplay.innerText = "Escuchando...";
+            recognition.onstart = function() {
+                console.log("Reconocimiento de voz iniciado");
+                updateStatus("Escuchando...", "bg-yellow-500");
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
             };
             
-            recognition.onresult = async (event) => {
-                const query = event.results[0][0].transcript;
-                textDisplay.innerText = `Usted: "${query}"`;
-                console.log("🗣️ Pregunta:", query);
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                console.log("Pregunta detectada:", transcript);
                 
-                // Mostrar carga
-                viewer.innerHTML = `
-                    <div class="flex flex-col items-center gap-4 slide-in">
-                        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                        <p class="text-slate-400">Consultando información...</p>
+                // Mostrar en el historial de chat
+                addChatMessage(transcript, 'user');
+                
+                // Actualizar información de depuración
+                document.getElementById('lastQuestion').textContent = transcript;
+                
+                // Enviar a n8n
+                sendToN8N(transcript);
+            };
+            
+            recognition.onerror = function(event) {
+                console.error("Error en reconocimiento de voz:", event.error);
+                updateStatus("Error en voz", "bg-red-500");
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+            };
+            
+            recognition.onend = function() {
+                console.log("Reconocimiento de voz finalizado");
+                updateStatus("Listo para escuchar", "bg-green-500");
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+            };
+            
+            return recognition;
+        }
+        
+        // Función para enviar la consulta a n8n
+        async function sendToN8N(pregunta) {
+            console.log("Enviando a n8n...");
+            updateStatus("Procesando...", "bg-blue-500");
+            
+            const endpoint = "https://apps.villaitue.cl/webhook-test/autoservicio";
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ pregunta: pregunta })
+                });
+                
+                console.log("Respuesta HTTP:", response.status);
+                document.getElementById('httpResponse').textContent = response.status;
+                document.getElementById('httpResponse').className = response.status === 200 ? 
+                    "ml-2 text-green-600 font-semibold" : "ml-2 text-red-600 font-semibold";
+                
+                const responseText = await response.text();
+                console.log("Respuesta texto:", responseText);
+                
+                // Procesar la respuesta
+                const processedData = processRespuetaN8N(responseText);
+                console.log("Datos procesados finales:", processedData);
+                
+                // Mostrar en información de depuración
+                document.getElementById('processedData').textContent = JSON.stringify(processedData, null, 2);
+                
+                // Mostrar la respuesta en la interfaz
+                mostrarRespuestaAgente(processedData);
+                
+                // Actualizar estado
+                updateStatus("Respuesta recibida", "bg-green-500");
+                
+                // Leer la respuesta en voz alta
+                if (processedData[0] && processedData[0].output) {
+                    leerTexto(processedData[0].output);
+                }
+                
+            } catch (error) {
+                console.error("Error al enviar a n8n:", error);
+                updateStatus("Error en conexión", "bg-red-500");
+                
+                // Mostrar mensaje de error al usuario
+                addChatMessage("Lo siento, hubo un error al procesar tu consulta. Por favor intenta nuevamente.", 'bot');
+            }
+        }
+        
+        // Función para procesar la respuesta de n8n
+        function processRespuetaN8N(responseText) {
+            try {
+                // Verificar que la respuesta no esté vacía
+                if (!responseText || responseText.trim() === '') {
+                    throw new Error('Respuesta vacía del servidor');
+                }
+                
+                // Parsear la respuesta JSON
+                const data = JSON.parse(responseText);
+                
+                // Verificar que sea un array y tenga al menos un elemento
+                if (!Array.isArray(data) || data.length === 0) {
+                    throw new Error('Estructura de datos inesperada');
+                }
+                
+                // Verificar estructura mínima esperada
+                const firstItem = data[0];
+                if (!firstItem.output || !firstItem.tipo_plantilla) {
+                    throw new Error('Faltan campos obligatorios en la respuesta');
+                }
+                
+                return data;
+                
+            } catch (error) {
+                console.error('Error parseando respuesta n8n:', error);
+                
+                // Devolver una respuesta de error estructurada
+                return [{
+                    output: "Lo siento, hubo un error al procesar la información. Por favor intenta nuevamente.",
+                    tipo_plantilla: "texto",
+                    descripcion: "Error en el sistema",
+                    imagenes: []
+                }];
+            }
+        }
+        
+        // Función para mostrar la respuesta del agente en la interfaz
+        function mostrarRespuestaAgente(datos) {
+            // Ocultar estado inicial
+            document.getElementById('initialState').classList.add('hidden');
+            
+            // Mostrar contenedor de respuesta
+            const agentResponse = document.getElementById('agentResponse');
+            agentResponse.classList.remove('hidden');
+            agentResponse.classList.add('fade-in');
+            
+            // Obtener el primer elemento (asumimos que solo hay uno por ahora)
+            const respuesta = datos[0];
+            
+            // Actualizar título de la página
+            document.getElementById('responseTitle').textContent = respuesta.descripcion || "Resultado de la Consulta";
+            
+            // Mostrar descripción como título
+            document.getElementById('descripcionTitle').textContent = respuesta.descripcion || "Disponibilidad";
+            
+            // Mostrar texto de salida
+            document.getElementById('outputContent').textContent = respuesta.output;
+            
+            // Añadir mensaje al historial de chat
+            addChatMessage(respuesta.output, 'bot');
+            
+            // Mostrar el tipo de plantilla correspondiente
+            if (respuesta.tipo_plantilla === 'carrusel' && respuesta.imagenes && respuesta.imagenes.length > 0) {
+                mostrarCarrusel(respuesta.imagenes);<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Villa Itue - Sistema de Voz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos para el carrusel */
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .carousel-slide.active {
+            opacity: 1;
+        }
+        
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .carousel-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .carousel-dot.active {
+            background-color: #3b82f6;
+        }
+        
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        
+        .carousel-btn:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .carousel-prev {
+            left: 15px;
+        }
+        
+        .carousel-next {
+            right: 15px;
+        }
+        
+        /* Animación para mostrar/ocultar respuesta */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Estilos para el historial de chat */
+        .user-message {
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+            max-width: 80%;
+            align-self: flex-end;
+        }
+        
+        .bot-message {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            border-radius: 18px 18px 18px 4px;
+            max-width: 80%;
+            align-self: flex-start;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Encabezado -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-microphone text-blue-600 mr-3"></i>
+                Villa Itue - Sistema de Voz
+            </h1>
+            <p class="text-gray-600">Sistema de reservas por voz interactivo</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Panel de control izquierdo -->
+            <div class="lg:col-span-1 bg-white rounded-2xl shadow-xl p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-sliders-h text-blue-600 mr-2"></i>
+                    Control del Sistema
+                </h2>
+                
+                <!-- Estado del sistema -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Estado del Sistema</h3>
+                    <div class="flex items-center mb-2">
+                        <div id="statusIndicator" class="w-3 h-3 rounded-full bg-green-500 mr-3 animate-pulse"></div>
+                        <span id="statusText" class="text-gray-700 font-medium">Sistema de voz iniciado</span>
                     </div>
-                `;
-                
-                try {
-                    console.log("📤 Enviando a n8n...");
-                    
-                    const response = await fetch(N8N_URL, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ query: query })
-                    });
-                    
-                    console.log("📥 Respuesta HTTP:", response.status);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    
-                    const responseText = await response.text();
-                    console.log("📝 Respuesta texto:", responseText.substring(0, 200), "...");
-                    
-                    // USAR EL PROCESADOR UNIVERSAL
-                    const datosProcesados = procesarRespuestaN8N(responseText);
-                    console.log("🎯 Datos procesados finales:", datosProcesados);
-                    
-                    // Mostrar respuesta
-                    mostrarRespuesta(datosProcesados);
-                    
-                } catch (error) {
-                    console.error("❌ Error:", error);
-                    mostrarError(error.message);
-                }
-            };
-            
-            recognition.onerror = (event) => {
-                console.error("Error voz:", event.error);
-                textDisplay.innerText = `Error: ${event.error}`;
-                resetMicrophone();
-            };
-            
-            recognition.onend = () => {
-                resetMicrophone();
-            };
-            
-            function resetMicrophone() {
-                btn.classList.remove('mic-active');
-                led.classList.replace('bg-yellow-500', 'bg-green-500');
-            }
-            
-            btn.onclick = () => {
-                try {
-                    recognition.start();
-                } catch(err) {
-                    console.error("Error iniciando:", err);
-                }
-            };
-            
-        } else {
-            textDisplay.innerText = "Navegador no compatible";
-            btn.disabled = true;
-        }
-        
-        // ================= MOSTRAR RESPUESTA =================
-        function mostrarRespuesta(data) {
-            console.log("🎨 Mostrando respuesta:", data);
-            
-            // Ocultar placeholder
-            placeholder.style.display = 'none';
-            
-            // Leer el texto si existe
-            if (data.output && typeof data.output === 'string') {
-                hablarLento(data.output);
-            }
-            
-            // Determinar qué mostrar
-            let htmlContent = '';
-            
-            if (data.tipo_plantilla === 'carrusel') {
-                htmlContent = renderCarrusel(data);
-            } else if (data.tipo_plantilla === 'lista') {
-                htmlContent = renderLista(data);
-            } else if (data.tipo_plantilla === 'reserva') {
-                htmlContent = renderReserva(data);
-            } else {
-                htmlContent = renderDefault(data);
-            }
-            
-            // Actualizar
-            viewer.innerHTML = `
-                <div class="slide-in w-full max-w-4xl">
-                    ${htmlContent}
-                </div>
-            `;
-            
-            // Inicializar carrusel si es necesario
-            if (data.tipo_plantilla === 'carrusel') {
-                setTimeout(initCarrusel, 100);
-            }
-        }
-        
-        // ================= RENDERIZADORES =================
-        function renderCarrusel(data) {
-            const titulo = data.titulo || data.descripcion || "Cabañas Villaitue";
-            const descripcion = data.descripcion || "";
-            const precio = data.precio || "";
-            const imagenes = Array.isArray(data.imagenes) ? data.imagenes : [];
-            
-            return `
-            <div class="flex flex-col gap-6">
-                <!-- TÍTULO CENTRADO SOBRE EL MARCO -->
-                <div class="text-center mb-4">
-                    <h2 class="text-2xl font-bold text-white">${titulo}</h2>
-                    ${descripcion ? `<p class="text-slate-300 mt-2">${descripcion}</p>` : ''}
+                    <p id="endpointInfo" class="text-sm text-gray-500 mt-1">
+                        Endpoint: <span class="font-mono text-blue-600">https://apps.villaitue.cl/webhook-test/autoservicio</span>
+                    </p>
+                    <p id="voicesInfo" class="text-sm text-gray-500">Voces cargadas: <span id="voicesCount" class="font-semibold">19</span></p>
                 </div>
                 
-                <!-- MARCO DEL CARRUSEL -->
-                <div class="bg-slate-900 border-2 border-slate-700 rounded-3xl overflow-hidden shadow-2xl">
-                    <!-- CARRUSEL -->
-                    <div class="relative">
-                        <div id="carousel-container" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-64">
-                            ${imagenes.length > 0 ? 
-                                imagenes.map((img, index) => `
-                                <div class="snap-center shrink-0 w-full h-full">
-                                    <img src="${img}" 
-                                         class="w-full h-full object-cover"
-                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/800x450/1e293b/94a3b8?text=Cabaña+${index+1}'"
-                                         alt="Cabaña Villaitue">
-                                </div>
-                                `).join('')
-                                :
-                                `<div class="snap-center shrink-0 w-full h-full flex items-center justify-center bg-slate-800">
-                                    <p class="text-slate-500">No hay imágenes</p>
-                                </div>`
-                            }
+                <!-- Controles de voz -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Control de Voz</h3>
+                    <div class="flex justify-center space-x-4">
+                        <button id="startBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-medium flex items-center transition duration-300">
+                            <i class="fas fa-microphone mr-2"></i> Iniciar Voz
+                        </button>
+                        <button id="stopBtn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-medium flex items-center transition duration-300">
+                            <i class="fas fa-stop mr-2"></i> Detener
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-3 text-center">Haz clic en "Iniciar Voz" y habla tu consulta</p>
+                </div>
+                
+                <!-- Historial de chat -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Historial de Conversación</h3>
+                    <div id="chatHistory" class="h-64 overflow-y-auto p-3 bg-gray-50 rounded-lg space-y-3">
+                        <!-- Los mensajes se agregarán aquí dinámicamente -->
+                        <div class="user-message p-3">
+                            <p class="font-medium">Hola tienes cabañas para dos personas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel principal central -->
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="fas fa-home text-blue-600 mr-2"></i>
+                    <span id="responseTitle">Resultado de la Consulta</span>
+                </h2>
+                
+                <!-- Contenedor de respuesta -->
+                <div id="responseContainer" class="min-h-[500px] flex flex-col justify-center items-center">
+                    <!-- Estado inicial o cuando no hay respuesta -->
+                    <div id="initialState" class="text-center">
+                        <div class="text-gray-400 mb-6">
+                            <i class="fas fa-comment-alt text-6xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">Esperando tu consulta</h3>
+                        <p class="text-gray-500">Haz clic en "Iniciar Voz" y pregunta por nuestras cabañas disponibles</p>
+                    </div>
+                    
+                    <!-- Respuesta del agente (se mostrará dinámicamente) -->
+                    <div id="agentResponse" class="hidden w-full">
+                        <!-- Título de la respuesta -->
+                        <h3 id="descripcionTitle" class="text-2xl font-bold text-center text-gray-800 mb-6"></h3>
+                        
+                        <!-- Carrusel de imágenes -->
+                        <div id="carouselContainer" class="hidden">
+                            <div class="carousel-container mb-4">
+                                <!-- Las imágenes del carrusel se insertarán aquí -->
+                            </div>
+                            <div class="carousel-dots">
+                                <!-- Los puntos de navegación se insertarán aquí -->
+                            </div>
                         </div>
                         
-                        ${imagenes.length > 1 ? `
-                        <button id="carousel-prev" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/70 text-white w-8 h-8 rounded-full">
-                            ←
-                        </button>
-                        <button id="carousel-next" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/70 text-white w-8 h-8 rounded-full">
-                            →
-                        </button>
-                        ` : ''}
+                        <!-- Texto de salida (para speech) -->
+                        <div id="outputText" class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 class="font-semibold text-blue-800 mb-2">
+                                <i class="fas fa-volume-up mr-2"></i>Respuesta del sistema:
+                            </h4>
+                            <p id="outputContent" class="text-gray-700"></p>
+                        </div>
                     </div>
-                    
-                    <!-- PRECIO -->
-                    ${precio ? `
-                    <div class="p-4 border-t border-slate-700">
-                        <p class="text-slate-400 text-sm">Precio por noche</p>
-                        <p class="text-xl font-bold text-white">${precio}</p>
-                    </div>
-                    ` : ''}
                 </div>
                 
-                <!-- TEXTO ADICIONAL -->
-                ${data.output ? `
-                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700">
-                    <p class="text-slate-200">${data.output}</p>
+                <!-- Información de depuración (solo para desarrollo) -->
+                <div class="mt-8 border-t pt-6">
+                    <details class="bg-gray-50 rounded-lg p-4">
+                        <summary class="font-medium text-gray-700 cursor-pointer">
+                            <i class="fas fa-bug mr-2"></i>Información de depuración
+                        </summary>
+                        <div class="mt-3 space-y-2">
+                            <div>
+                                <span class="font-medium text-gray-600">Última pregunta:</span>
+                                <span id="lastQuestion" class="ml-2 text-gray-800">Hola tienes cabañas para dos personas</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Respuesta HTTP:</span>
+                                <span id="httpResponse" class="ml-2 text-green-600 font-semibold">200</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Datos procesados:</span>
+                                <pre id="processedData" class="mt-2 p-3 bg-gray-800 text-green-400 rounded text-sm overflow-x-auto"></pre>
+                            </div>
+                        </div>
+                    </details>
                 </div>
-                ` : ''}
-            </div>`;
-        }
+            </div>
+        </div>
         
-        function renderLista(data) {
-            const titulo = data.titulo || "Servicios";
-            const items = data.items || [];
-            
-            return `
-            <div class="bg-slate-900/90 p-6 rounded-3xl border border-slate-700 max-w-md w-full">
-                <h3 class="text-xl font-bold text-green-400 mb-4">${titulo}</h3>
-                <ul class="space-y-2">
-                    ${items.map(item => `
-                    <li class="flex items-center gap-2 text-slate-200">
-                        <span class="text-green-500">✓</span> ${item}
-                    </li>
-                    `).join('')}
-                </ul>
-            </div>`;
-        }
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>Villa Itue - Sistema de reservas por voz © 2026</p>
+            <p class="mt-1">
+                <i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>
+                tailwindcss.com no debe usarse en producción. Para usar Tailwind CSS en producción, instálalo como plugin de PostCSS o usa la CLI de Tailwind.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Variables globales
+        let recognition = null;
+        let currentCarouselIndex = 0;
+        let carouselInterval = null;
         
-        function renderReserva(data) {
-            const itemInteres = data.item_interes || "cabaña seleccionada";
+        // Función para inicializar el reconocimiento de voz
+        function initVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             
-            return `
-            <div class="bg-white text-slate-900 p-6 rounded-3xl max-w-sm w-full">
-                <div class="text-center mb-4">
-                    <h3 class="text-xl font-black">¿Reservar?</h3>
-                    <p class="text-slate-600 text-sm mt-1">${itemInteres}</p>
-                </div>
-                <a href="https://wa.me/569XXXXXXXX?text=Reservar ${encodeURIComponent(itemInteres)}" 
-                   class="block w-full bg-green-500 text-white font-bold py-3 rounded-xl text-center">
-                   WhatsApp
-                </a>
-            </div>`;
-        }
-        
-        function renderDefault(data) {
-            let outputTexto = data.output || "Recibí tu mensaje.";
+            if (!SpeechRecognition) {
+                alert("Tu navegador no soporta reconocimiento de voz. Por favor usa Chrome o Edge.");
+                return null;
+            }
             
-            return `
-            <div class="bg-slate-900/80 p-6 rounded-3xl border border-slate-700 max-w-lg">
-                <p class="text-slate-200">${outputTexto}</p>
-            </div>`;
-        }
-        
-        // ================= MOSTRAR ERROR =================
-        function mostrarError(message) {
-            viewer.innerHTML = `
-                <div class="bg-red-900/20 border border-red-700 p-6 rounded-3xl max-w-md">
-                    <div class="text-center">
-                        <div class="text-red-400 text-3xl mb-3">⚠️</div>
-                        <h3 class="text-lg font-bold text-white mb-2">Error</h3>
-                        <p class="text-slate-300">${message}</p>
-                        <p class="text-sm text-slate-400 mt-4">Revisa la consola (F12) para detalles</p>
-                    </div>
-                </div>
-            `;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = false;
+            recognition.interimResults = false;
             
-            hablarLento(`Error: ${message}`);
-        }
-        
-        // ================= INICIALIZAR CARRUSEL =================
-        function initCarrusel() {
-            const container = document.getElementById('carousel-container');
-            if (!container) return;
-            
-            const prevBtn = document.getElementById('carousel-prev');
-            const nextBtn = document.getElementById('carousel-next');
-            
-            if (prevBtn) prevBtn.addEventListener('click', () => {
-                container.scrollBy({ left: -container.offsetWidth, behavior: 'smooth' });
-            });
-            
-            if (nextBtn) nextBtn.addEventListener('click', () => {
-                container.scrollBy({ left: container.offsetWidth, behavior: 'smooth' });
-            });
-        }
-        
-        // ================= INICIALIZACIÓN =================
-        console.log("🚀 Sistema de voz Villaitue iniciado");
-        console.log(`🌐 Endpoint: ${N8N_URL}`);
-        
-        // Cargar voces
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                console.log("🗣️ Voces cargadas:", window.speechSynthesis.getVoices().length);
+            recognition.onstart = function() {
+                console.log("Reconocimiento de voz iniciado");
+                updateStatus("Escuchando...", "bg-yellow-500");
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
             };
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                console.log("Pregunta detectada:", transcript);
+                
+                // Mostrar en el historial de chat
+                addChatMessage(transcript, 'user');
+                
+                // Actualizar información de depuración
+                document.getElementById('lastQuestion').textContent = transcript;
+                
+                // Enviar a n8n
+                sendToN8N(transcript);
+            };
+            
+            recognition.onerror = function(event) {
+                console.error("Error en reconocimiento de voz:", event.error);
+                updateStatus("Error en voz", "bg-red-500");
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+            };
+            
+            recognition.onend = function() {
+                console.log("Reconocimiento de voz finalizado");
+                updateStatus("Listo para escuchar", "bg-green-500");
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+            };
+            
+            return recognition;
         }
+        
+        // Función para enviar la consulta a n8n
+        async function sendToN8N(pregunta) {
+            console.log("Enviando a n8n...");
+            updateStatus("Procesando...", "bg-blue-500");
+            
+            const endpoint = "https://apps.villaitue.cl/webhook-test/autoservicio";
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ pregunta: pregunta })
+                });
+                
+                console.log("Respuesta HTTP:", response.status);
+                document.getElementById('httpResponse').textContent = response.status;
+                document.getElementById('httpResponse').className = response.status === 200 ? 
+                    "ml-2 text-green-600 font-semibold" : "ml-2 text-red-600 font-semibold";
+                
+                const responseText = await response.text();
+                console.log("Respuesta texto:", responseText);
+                
+                // Procesar la respuesta
+                const processedData = processRespuetaN8N(responseText);
+                console.log("Datos procesados finales:", processedData);
+                
+                // Mostrar en información de depuración
+                document.getElementById('processedData').textContent = JSON.stringify(processedData, null, 2);
+                
+                // Mostrar la respuesta en la interfaz
+                mostrarRespuestaAgente(processedData);
+                
+                // Actualizar estado
+                updateStatus("Respuesta recibida", "bg-green-500");
+                
+                // Leer la respuesta en voz alta
+                if (processedData[0] && processedData[0].output) {
+                    leerTexto(processedData[0].output);
+                }
+                
+            } catch (error) {
+                console.error("Error al enviar a n8n:", error);
+                updateStatus("Error en conexión", "bg-red-500");
+                
+                // Mostrar mensaje de error al usuario
+                addChatMessage("Lo siento, hubo un error al procesar tu consulta. Por favor intenta nuevamente.", 'bot');
+            }
+        }
+        
+        // Función para procesar la respuesta de n8n
+        function processRespuetaN8N(responseText) {
+            try {
+                // Verificar que la respuesta no esté vacía
+                if (!responseText || responseText.trim() === '') {
+                    throw new Error('Respuesta vacía del servidor');
+                }
+                
+                // Parsear la respuesta JSON
+                const data = JSON.parse(responseText);
+                
+                // Verificar que sea un array y tenga al menos un elemento
+                if (!Array.isArray(data) || data.length === 0) {
+                    throw new Error('Estructura de datos inesperada');
+                }
+                
+                // Verificar estructura mínima esperada
+                const firstItem = data[0];
+                if (!firstItem.output || !firstItem.tipo_plantilla) {
+                    throw new Error('Faltan campos obligatorios en la respuesta');
+                }
+                
+                return data;
+                
+            } catch (error) {
+                console.error('Error parseando respuesta n8n:', error);
+                
+                // Devolver una respuesta de error estructurada
+                return [{
+                    output: "Lo siento, hubo un error al procesar la información. Por favor intenta nuevamente.",
+                    tipo_plantilla: "texto",
+                    descripcion: "Error en el sistema",
+                    imagenes: []
+                }];
+            }
+        }
+        
+        // Función para mostrar la respuesta del agente en la interfaz
+        function mostrarRespuestaAgente(datos) {
+            // Ocultar estado inicial
+            document.getElementById('initialState').classList.add('hidden');
+            
+            // Mostrar contenedor de respuesta
+            const agentResponse = document.getElementById('agentResponse');
+            agentResponse.classList.remove('hidden');
+            agentResponse.classList.add('fade-in');
+            
+            // Obtener el primer elemento (asumimos que solo hay uno por ahora)
+            const respuesta = datos[0];
+            
+            // Actualizar título de la página
+            document.getElementById('responseTitle').textContent = respuesta.descripcion || "Resultado de la Consulta";
+            
+            // Mostrar descripción como título
+            document.getElementById('descripcionTitle').textContent = respuesta.descripcion || "Disponibilidad";
+            
+            // Mostrar texto de salida
+            document.getElementById('outputContent').textContent = respuesta.output;
+            
+            // Añadir mensaje al historial de chat
+            addChatMessage(respuesta.output, 'bot');
+            
+            // Mostrar el tipo de plantilla correspondiente
+            if (respuesta.tipo_plantilla === 'carrusel' && respuesta.imagenes && respuesta.imagenes.length > 0) {
+                mostrarCarrusel(respuesta.imagenes);
+            } else {
+                // Si no es carrusel o no hay imágenes, ocultar el carrusel
+                document.getElementById('carouselContainer').classList.add('hidden');
+            }
+        }
+        
+        // Función para mostrar el carrusel de imágenes
+        function mostrarCarrusel(imagenes) {
+            const carouselContainer = document.getElementById('carouselContainer');
+            const carouselInner = carouselContainer.querySelector('.carousel-container');
+            const dotsContainer = carouselContainer.querySelector('.carousel-dots');
+            
+            // Limpiar carrusel anterior
+            carouselInner.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            
+            // Crear slides para cada imagen
+            imagenes.forEach((imagen, index) => {
+                // Crear slide
+                const slide = document.createElement('div');
+                slide.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
+                
+                const img = document.createElement('img');
+                img.src = imagen;
+                img.alt = `Imagen ${index + 1} de la cabaña`;
+                img.onerror = function() {
+                    // Si falla la carga de la imagen, mostrar un placeholder
+                    this.src = "https://via.placeholder.com/800x400/3b82f6/ffffff?text=Imagen+no+disponible";
+                };
+                
+                slide.appendChild(img);
+                carouselInner.appendChild(slide);
+                
+                // Crear punto de navegación
+                const dot = document.createElement('div');
+                dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
+                dot.dataset.index = index;
+                dot.onclick = () => goToSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+            
+            // Agregar botones de navegación si hay más de una imagen
+            if (imagenes.length > 1) {
+                // Botón anterior
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'carousel-btn carousel-prev';
+                prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                prevBtn.onclick = () => prevSlide();
+                carouselInner.appendChild(prevBtn);
+                
+                // Botón siguiente
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'carousel-btn carousel-next';
+                nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                nextBtn.onclick = () => nextSlide();
+                carouselInner.appendChild(nextBtn);
+                
+                // Iniciar autoplay
+                startCarouselAutoPlay();
+            }
+            
+            // Mostrar el carrusel
+            carouselContainer.classList.remove('hidden');
+        }
+        
+        // Funciones para controlar el carrusel
+        function goToSlide(index) {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const dots = document.querySelectorAll('.carousel-dot');
+            
+            // Remover clase active de todos
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            // Agregar clase active al slide y dot seleccionado
+            slides[index].classList.add('active');
+            dots[index].classList.add('active');
+            
+            currentCarouselIndex = index;
+            
+            // Reiniciar autoplay
+            restartCarouselAutoPlay();
+        }
+        
+        function nextSlide() {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const nextIndex = (currentCarouselIndex + 1) % slides.length;
+            goToSlide(nextIndex);
+        }
+        
+        function prevSlide() {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const prevIndex = (currentCarouselIndex - 1 + slides.length) % slides.length;
+            goToSlide(prevIndex);
+        }
+        
+        function startCarouselAutoPlay() {
+            // Cambiar slide cada 5 segundos
+            carouselInterval = setInterval(nextSlide, 5000);
+        }
+        
+        function restartCarouselAutoPlay() {
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+            }
+            startCarouselAutoPlay();
+        }
+        
+        // Función para leer texto en voz alta
+        function leerTexto(texto) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(texto);
+                utterance.lang = 'es-ES';
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                
+                // Buscar una voz en español
+                const voices = speechSynthesis.getVoices();
+                const spanishVoice = voices.find(voice => voice.lang.startsWith('es'));
+                
+                if (spanishVoice) {
+                    utterance.voice = spanishVoice;
+                }
+                
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // Función para añadir mensajes al historial de chat
+        function addChatMessage(mensaje, tipo) {
+            const chatHistory = document.getElementById('chatHistory');
+            const messageDiv = document.createElement('div');
+            
+            messageDiv.className = tipo === 'user' ? 'user-message p-3' : 'bot-message p-3';
+            messageDiv.innerHTML = `<p>${mensaje}</p>`;
+            
+            chatHistory.appendChild(messageDiv);
+            
+            // Hacer scroll al final del historial
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        
+        // Función para actualizar el estado del sistema
+        function updateStatus(texto, colorClase) {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            // Remover todas las clases de color
+            indicator.classList.remove('bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-blue-500');
+            
+            // Agregar la nueva clase de color
+            indicator.classList.add(colorClase);
+            
+            // Actualizar texto
+            statusText.textContent = texto;
+        }
+        
+        // Inicialización cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Sistema de voz Villaitue iniciado");
+            
+            // Obtener y mostrar el número de voces disponibles
+            if ('speechSynthesis' in window) {
+                // Esperar a que las voces se carguen
+                setTimeout(() => {
+                    const voices = speechSynthesis.getVoices();
+                    document.getElementById('voicesCount').textContent = voices.filter(v => v.lang.startsWith('es')).length || voices.length;
+                }, 500);
+            }
+            
+            // Inicializar reconocimiento de voz
+            recognition = initVoiceRecognition();
+            
+            // Configurar botones
+            document.getElementById('startBtn').addEventListener('click', function() {
+                if (recognition) {
+                    recognition.start();
+                }
+            });
+            
+            document.getElementById('stopBtn').addEventListener('click', function() {
+                if (recognition) {
+                    recognition.stop();
+                }
+            });
+            
+            // Inicializar con el botón de detener deshabilitado
+            document.getElementById('stopBtn').disabled = true;
+            
+            // Mostrar información inicial en el panel de depuración
+            document.getElementById('processedData').textContent = 'Esperando consulta...';
+        });
+    </script>
+</body>
+</html>
+            } else {
+                // Si no es carrusel o no hay imágenes, ocultar el carrusel
+                document.getElementById('carouselContainer').classList.add('hidden');
+            }
+        }
+        
+        // Función para mostrar el carrusel de imágenes
+        function mostrarCarrusel(imagenes) {
+            const carouselContainer = document.getElementById('carouselContainer');
+            const carouselInner = carouselContainer.querySelector('.carousel-container');
+            const dotsContainer = carouselContainer.querySelector('.carousel-dots');
+            
+            // Limpiar carrusel anterior
+            carouselInner.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            
+            // Crear slides para cada imagen
+            imagenes.forEach((imagen, index) => {
+                // Crear slide
+                const slide = document.createElement('div');
+                slide.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
+                
+                const img = document.createElement('img');
+                img.src = imagen;
+                img.alt = `Imagen ${index + 1} de la cabaña`;
+                img.onerror = function() {
+                    // Si falla la carga de la imagen, mostrar un placeholder
+                    this.src = "https://via.placeholder.com/800x400/3b82f6/ffffff?text=Imagen+no+disponible";
+                };
+                
+                slide.appendChild(img);
+                carouselInner.appendChild(slide);
+                
+                // Crear punto de navegación
+                const dot = document.createElement('div');
+                dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
+                dot.dataset.index = index;
+                dot.onclick = () => goToSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+            
+            // Agregar botones de navegación si hay más de una imagen
+            if (imagenes.length > 1) {
+                // Botón anterior
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'carousel-btn carousel-prev';
+                prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                prevBtn.onclick = () => prevSlide();
+                carouselInner.appendChild(prevBtn);
+                
+                // Botón siguiente
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'carousel-btn carousel-next';
+                nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                nextBtn.onclick = () => nextSlide();
+                carouselInner.appendChild(nextBtn);
+                
+                // Iniciar autoplay
+                startCarouselAutoPlay();
+            }
+            
+            // Mostrar el carrusel
+            carouselContainer.classList.remove('hidden');
+        }
+        
+        // Funciones para controlar el carrusel
+        function goToSlide(index) {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const dots = document.querySelectorAll('.carousel-dot');
+            
+            // Remover clase active de todos
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            // Agregar clase active al slide y dot seleccionado
+            slides[index].classList.add('active');
+            dots[index].classList.add('active');
+            
+            currentCarouselIndex = index;
+            
+            // Reiniciar autoplay
+            restartCarouselAutoPlay();
+        }
+        
+        function nextSlide() {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const nextIndex = (currentCarouselIndex + 1) % slides.length;
+            goToSlide(nextIndex);
+        }
+        
+        function prevSlide() {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const prevIndex = (currentCarouselIndex - 1 + slides.length) % slides.length;
+            goToSlide(prevIndex);
+        }
+        
+        function startCarouselAutoPlay() {
+            // Cambiar slide cada 5 segundos
+            carouselInterval = setInterval(nextSlide, 5000);
+        }
+        
+        function restartCarouselAutoPlay() {
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+            }
+            startCarouselAutoPlay();
+        }
+        
+        // Función para leer texto en voz alta
+        function leerTexto(texto) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(texto);
+                utterance.lang = 'es-CL';
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                
+                // Buscar una voz en español
+                const voices = speechSynthesis.getVoices();
+                const spanishVoice = voices.find(voice => voice.lang.startsWith('es'));
+                
+                if (spanishVoice) {
+                    utterance.voice = spanishVoice;
+                }
+                
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // Función para añadir mensajes al historial de chat
+        function addChatMessage(mensaje, tipo) {
+            const chatHistory = document.getElementById('chatHistory');
+            const messageDiv = document.createElement('div');
+            
+            messageDiv.className = tipo === 'user' ? 'user-message p-3' : 'bot-message p-3';
+            messageDiv.innerHTML = `<p>${mensaje}</p>`;
+            
+            chatHistory.appendChild(messageDiv);
+            
+            // Hacer scroll al final del historial
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        
+        // Función para actualizar el estado del sistema
+        function updateStatus(texto, colorClase) {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            // Remover todas las clases de color
+            indicator.classList.remove('bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-blue-500');
+            
+            // Agregar la nueva clase de color
+            indicator.classList.add(colorClase);
+            
+            // Actualizar texto
+            statusText.textContent = texto;
+        }
+        
+        // Inicialización cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Sistema de voz Villaitue iniciado");
+            
+            // Obtener y mostrar el número de voces disponibles
+            if ('speechSynthesis' in window) {
+                // Esperar a que las voces se carguen
+                setTimeout(() => {
+                    const voices = speechSynthesis.getVoices();
+                    document.getElementById('voicesCount').textContent = voices.filter(v => v.lang.startsWith('es')).length || voices.length;
+                }, 500);
+            }
+            
+            // Inicializar reconocimiento de voz
+            recognition = initVoiceRecognition();
+            
+            // Configurar botones
+            document.getElementById('startBtn').addEventListener('click', function() {
+                if (recognition) {
+                    recognition.start();
+                }
+            });
+            
+            document.getElementById('stopBtn').addEventListener('click', function() {
+                if (recognition) {
+                    recognition.stop();
+                }
+            });
+            
+            // Inicializar con el botón de detener deshabilitado
+            document.getElementById('stopBtn').disabled = true;
+            
+            // Mostrar información inicial en el panel de depuración
+            document.getElementById('processedData').textContent = 'Esperando consulta...';
+        });
     </script>
 </body>
 </html>
