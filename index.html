@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Villaitue - Sistema de Voz</title>
+    <title>Villaitue</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -317,7 +317,7 @@
             }
             
             recognition = new SpeechRecognition();
-            recognition.lang = 'es-ES';
+            recognition.lang = 'es-CL';
             recognition.continuous = false;
             recognition.interimResults = false;
             
@@ -397,7 +397,7 @@
             console.log("Enviando a n8n... Pregunta:", pregunta);
             updateStatus("Procesando...", "bg-blue-500");
             
-            const endpoint = "https://apps.villaitue.cl/webhook/autoservicio";
+            const endpoint = "https://apps.villaitue.cl/webhook-test/autoservicio";
             
             try {
                 const response = await fetch(endpoint, {
@@ -748,14 +748,14 @@
                 speechSynthesis.cancel();
                 
                 const utterance = new SpeechSynthesisUtterance(texto);
-                utterance.lang = 'es-ES';
+                utterance.lang = 'es-CL';
                 utterance.rate = 1.0;
                 utterance.pitch = 1.0;
                 utterance.volume = 1.0;
                 
                 // Buscar una voz en español
                 const voices = speechSynthesis.getVoices();
-                const spanishVoice = voices.find(voice => voice.lang.startsWith('es-ES') || voice.lang.startsWith('es'));
+                const spanishVoice = voices.find(voice => voice.lang.startsWith('es-CL') || voice.lang.startsWith('es'));
                 
                 if (spanishVoice) {
                     utterance.voice = spanishVoice;
