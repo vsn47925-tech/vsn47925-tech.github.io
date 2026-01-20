@@ -6,52 +6,18 @@
     <title>Villa Itue - Asistente por Voz</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .mic-active { 
-            animation: pulse 1.5s infinite; 
-            background-color: #ef4444 !important; 
-        }
-        
+        .mic-active { animation: pulse 1.5s infinite; background-color: #ef4444 !important; }
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        
-        .slide-in {
-            animation: slideIn 0.5s ease-out forwards;
-        }
-        
+        .slide-in { animation: slideIn 0.5s ease-out forwards; }
         @keyframes slideIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(20px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0); 
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
-        .scrollbar-hide::-webkit-scrollbar { 
-            display: none; 
-        }
-        
-        .debug-panel {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.9);
-            color: #0f0;
-            font-family: monospace;
-            font-size: 12px;
-            padding: 10px;
-            border-radius: 5px;
-            max-width: 500px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1000;
-            border: 1px solid #0f0;
-        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
@@ -73,105 +39,91 @@
 
     <main id="viewer" class="flex-grow flex items-center justify-center p-6 text-center">
         <div id="placeholder">
-            <h2 class="text-4xl font-light text-white mb-4">Bienvenido a Cabañas Villaitue</h2>
-            <p class="text-slate-300 text-lg mb-8">Tu hogar en el corazón del sur de Chile</p>
+            <h2 class="text-4xl font-light text-white mb-4">Cabañas Villaitue</h2>
+            <p class="text-slate-300 mb-8">Asistente de voz inteligente</p>
             <div class="bg-slate-900/50 p-6 rounded-2xl inline-block border border-slate-700">
-                <p class="text-slate-400 mb-4">
-                    <span class="text-blue-400 font-bold">Presiona el micrófono</span> y pregunta:
-                </p>
-                <div class="flex flex-wrap justify-center gap-2 text-sm">
-                    <span class="bg-slate-800 px-3 py-1 rounded-full">"Cabañas para dos personas"</span>
-                    <span class="bg-slate-800 px-3 py-1 rounded-full">"Precios y servicios"</span>
-                    <span class="bg-slate-800 px-3 py-1 rounded-full">"Información de contacto"</span>
-                </div>
+                <p class="text-blue-400 font-bold mb-4">Pregunta por ejemplo:</p>
+                <p class="text-slate-400">"¿Tienen cabañas para dos personas?"</p>
             </div>
         </div>
     </main>
-
-    <!-- Panel de depuración MEJORADO -->
-    <div id="debug-panel" class="debug-panel">
-        <div class="flex justify-between items-center mb-2">
-            <strong>🔍 DEPURACIÓN EN VIVO</strong>
-            <button onclick="document.getElementById('debug-panel').classList.toggle('hidden')" class="text-xs bg-blue-500 px-2 py-1 rounded">Ocultar</button>
-        </div>
-        <div id="debug-log"></div>
-    </div>
 
     <script>
         // ================= CONFIGURACIÓN =================
         const N8N_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio';
         
-        // Referencias a elementos DOM
+        // Referencias
         const btn = document.getElementById('btn-micro');
         const led = document.getElementById('status-led');
         const textDisplay = document.getElementById('transcription');
         const viewer = document.getElementById('viewer');
         const placeholder = document.getElementById('placeholder');
-        const debugLog = document.getElementById('debug-log');
         
-        // ================= FUNCIONES DE LOG MEJORADAS =================
-        function logDebug(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
+        // ================= PROCESADOR UNIVERSAL DE RESPUESTAS N8N =================
+        function procesarRespuestaN8N(respuestaCruda) {
+            console.log("🔄 Procesando respuesta n8n:", respuestaCruda);
             
-            // Colores según tipo
-            let prefix = '';
-            if (type === 'error') prefix = '❌ ';
-            else if (type === 'success') prefix = '✅ ';
-            else if (type === 'warning') prefix = '⚠️ ';
-            else if (type === 'send') prefix = '📤 ';
-            else if (type === 'receive') prefix = '📥 ';
+            // PASO 1: Parsear respuesta inicial
+            let datos;
+            try {
+                datos = JSON.parse(respuestaCruda);
+            } catch (e) {
+                console.error("❌ Error parseando respuesta inicial:", e);
+                return { output: respuestaCruda };
+            }
             
-            logEntry.textContent = `[${timestamp}] ${prefix}${message}`;
+            // PASO 2: Si es array, tomar primer elemento
+            if (Array.isArray(datos)) {
+                datos = datos[0];
+                console.log("📦 Tomando primer elemento del array");
+            }
             
-            // Colores en el log
-            if (type === 'error') logEntry.style.color = '#ff6b6b';
-            else if (type === 'success') logEntry.style.color = '#51cf66';
-            else if (type === 'warning') logEntry.style.color = '#ffd43b';
-            
-            debugLog.appendChild(logEntry);
-            debugLog.scrollTop = debugLog.scrollHeight;
-            console.log(`[${type.toUpperCase()}]`, message);
-        }
-        
-        // ================= FUNCIÓN PARA PROCESAR RESPUESTA DE N8N =================
-        function procesarRespuestaN8N(responseText) {
-            logDebug(`Procesando respuesta de n8n (${responseText.length} chars)`, 'info');
-            logDebug(`Contenido crudo: ${responseText.substring(0, 200)}...`, 'info');
-            
-            // CASO 1: Ya es un string JSON válido
-            if (responseText.trim().startsWith('[') || responseText.trim().startsWith('{')) {
-                try {
-                    const parsed = JSON.parse(responseText);
-                    logDebug(`✅ JSON parseado directamente`, 'success');
-                    return parsed;
-                } catch (e) {
-                    logDebug(`❌ Error parseando JSON directo: ${e.message}`, 'error');
+            // PASO 3: DETECTAR Y CORREGIR EL PROBLEMA PRINCIPAL
+            // n8n a veces envía JSON como string dentro de "output"
+            if (datos && typeof datos.output === 'string') {
+                const outputString = datos.output.trim();
+                
+                // CASO A: output contiene JSON completo como string
+                if (outputString.startsWith('{') && outputString.endsWith('}')) {
+                    console.log("🔍 Output es JSON string, parseando...");
+                    try {
+                        const jsonDentroDeOutput = JSON.parse(outputString);
+                        console.log("✅ JSON extraído de output:", jsonDentroDeOutput);
+                        
+                        // Combinar los datos: mantener todo de datos, pero reemplazar con el JSON parseado
+                        return {
+                            ...datos,           // Mantener cualquier otra propiedad
+                            ...jsonDentroDeOutput, // Sobrescribir con JSON interno
+                            output: jsonDentroDeOutput.output || datos.output // Mantener output
+                        };
+                    } catch (parseError) {
+                        console.error("❌ Error parseando JSON dentro de output:", parseError);
+                        // Si falla, mantener los datos originales
+                    }
+                }
+                
+                // CASO B: output es texto normal con JSON incrustado
+                const jsonMatch = outputString.match(/\{.*\}/s);
+                if (jsonMatch) {
+                    console.log("🔍 Encontré JSON incrustado en output");
+                    try {
+                        const jsonExtraido = JSON.parse(jsonMatch[0]);
+                        console.log("✅ JSON incrustado extraído:", jsonExtraido);
+                        
+                        return {
+                            ...datos,
+                            ...jsonExtraido,
+                            output: jsonExtraido.output || datos.output
+                        };
+                    } catch (e) {
+                        console.error("❌ Error extrayendo JSON incrustado:", e);
+                    }
                 }
             }
             
-            // CASO 2: Buscar JSON dentro del texto
-            const jsonMatch = responseText.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
-            if (jsonMatch) {
-                try {
-                    const parsed = JSON.parse(jsonMatch[0]);
-                    logDebug(`✅ JSON extraído del texto`, 'success');
-                    return parsed;
-                } catch (e) {
-                    logDebug(`❌ Error parseando JSON extraído: ${e.message}`, 'error');
-                }
-            }
-            
-            // CASO 3: Es solo texto
-            logDebug(`⚠️ No se encontró JSON, tratando como texto plano`, 'warning');
-            return { output: responseText };
-        }
-        
-        // ================= FUNCIÓN PARA OCULTAR PLACEHOLDER =================
-        function hidePlaceholder() {
-            if (placeholder) {
-                placeholder.style.display = 'none';
-            }
+            // PASO 4: Si llegamos aquí, los datos ya están bien formados
+            console.log("✅ Datos ya bien formados:", datos);
+            return datos;
         }
         
         // ================= SÍNTESIS DE VOZ =================
@@ -190,7 +142,6 @@
             if (voz) utterance.voice = voz;
             utterance.pitch = 0.8;
             utterance.rate = 0.85;
-            utterance.volume = 1;
             
             window.speechSynthesis.speak(utterance);
         }
@@ -208,13 +159,12 @@
                 btn.classList.add('mic-active');
                 led.classList.replace('bg-green-500', 'bg-yellow-500');
                 textDisplay.innerText = "Escuchando...";
-                logDebug("Micrófono activado - Escuchando", 'info');
             };
             
             recognition.onresult = async (event) => {
                 const query = event.results[0][0].transcript;
                 textDisplay.innerText = `Usted: "${query}"`;
-                logDebug(`Pregunta detectada: "${query}"`, 'info');
+                console.log("🗣️ Pregunta:", query);
                 
                 // Mostrar carga
                 viewer.innerHTML = `
@@ -225,11 +175,7 @@
                 `;
                 
                 try {
-                    logDebug(`Enviando a n8n: ${N8N_URL}`, 'send');
-                    logDebug(`Query: ${query}`, 'send');
-                    
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 15000);
+                    console.log("📤 Enviando a n8n...");
                     
                     const response = await fetch(N8N_URL, {
                         method: 'POST',
@@ -237,58 +183,39 @@
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ query: query }),
-                        signal: controller.signal
+                        body: JSON.stringify({ query: query })
                     });
                     
-                    clearTimeout(timeoutId);
-                    
-                    logDebug(`Respuesta HTTP recibida: ${response.status} ${response.statusText}`, 'receive');
+                    console.log("📥 Respuesta HTTP:", response.status);
                     
                     if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        throw new Error(`HTTP ${response.status}`);
                     }
                     
-                    // LEER LA RESPUESTA - CORRECCIÓN PRINCIPAL
                     const responseText = await response.text();
-                    logDebug(`Respuesta texto (${responseText.length} caracteres)`, 'receive');
+                    console.log("📝 Respuesta texto:", responseText.substring(0, 200), "...");
                     
-                    // Mostrar primeros 500 caracteres para debug
-                    if (responseText.length > 0) {
-                        logDebug(`Primeros 500 chars: ${responseText.substring(0, 500)}`, 'info');
-                    } else {
-                        logDebug(`⚠️ ADVERTENCIA: Respuesta tiene 0 caracteres`, 'warning');
-                    }
+                    // USAR EL PROCESADOR UNIVERSAL
+                    const datosProcesados = procesarRespuestaN8N(responseText);
+                    console.log("🎯 Datos procesados finales:", datosProcesados);
                     
-                    // Procesar la respuesta usando la nueva función
-                    const data = procesarRespuestaN8N(responseText);
-                    
-                    if (!data) {
-                        throw new Error("No se pudo procesar la respuesta de n8n");
-                    }
-                    
-                    logDebug(`Datos procesados: ${JSON.stringify(data).substring(0, 200)}...`, 'success');
-                    
-                    // Mostrar la respuesta
-                    mostrarRespuesta(data);
+                    // Mostrar respuesta
+                    mostrarRespuesta(datosProcesados);
                     
                 } catch (error) {
-                    logDebug(`ERROR en la solicitud: ${error.message}`, 'error');
-                    console.error("Error completo:", error);
-                    
-                    mostrarError(`Error al procesar la respuesta: ${error.message}`);
+                    console.error("❌ Error:", error);
+                    mostrarError(error.message);
                 }
             };
             
             recognition.onerror = (event) => {
-                logDebug(`Error de reconocimiento de voz: ${event.error}`, 'error');
+                console.error("Error voz:", event.error);
                 textDisplay.innerText = `Error: ${event.error}`;
                 resetMicrophone();
             };
             
             recognition.onend = () => {
                 resetMicrophone();
-                logDebug("Reconocimiento de voz finalizado", 'info');
             };
             
             function resetMicrophone() {
@@ -299,48 +226,42 @@
             btn.onclick = () => {
                 try {
                     recognition.start();
-                    logDebug("Iniciando reconocimiento de voz", 'info');
                 } catch(err) {
-                    logDebug(`Error al iniciar micrófono: ${err.message}`, 'error');
+                    console.error("Error iniciando:", err);
                 }
             };
             
         } else {
-            textDisplay.innerText = "Navegador no compatible con voz";
+            textDisplay.innerText = "Navegador no compatible";
             btn.disabled = true;
-            logDebug("Navegador no soporta reconocimiento de voz", 'error');
         }
         
         // ================= MOSTRAR RESPUESTA =================
         function mostrarRespuesta(data) {
-            logDebug("Renderizando respuesta en pantalla", 'info');
+            console.log("🎨 Mostrando respuesta:", data);
             
             // Ocultar placeholder
-            hidePlaceholder();
+            placeholder.style.display = 'none';
             
             // Leer el texto si existe
             if (data.output && typeof data.output === 'string') {
                 hablarLento(data.output);
             }
             
-            // Determinar plantilla a usar
+            // Determinar qué mostrar
             let htmlContent = '';
             
             if (data.tipo_plantilla === 'carrusel') {
                 htmlContent = renderCarrusel(data);
-                logDebug("Usando plantilla carrusel", 'info');
             } else if (data.tipo_plantilla === 'lista') {
                 htmlContent = renderLista(data);
-                logDebug("Usando plantilla lista", 'info');
             } else if (data.tipo_plantilla === 'reserva') {
                 htmlContent = renderReserva(data);
-                logDebug("Usando plantilla reserva", 'info');
             } else {
                 htmlContent = renderDefault(data);
-                logDebug("Usando plantilla por defecto", 'info');
             }
             
-            // Actualizar pantalla
+            // Actualizar
             viewer.innerHTML = `
                 <div class="slide-in w-full max-w-4xl">
                     ${htmlContent}
@@ -349,95 +270,71 @@
             
             // Inicializar carrusel si es necesario
             if (data.tipo_plantilla === 'carrusel') {
-                setTimeout(() => {
-                    try {
-                        initCarrusel();
-                        logDebug("Carrusel inicializado", 'success');
-                    } catch (e) {
-                        logDebug(`Error inicializando carrusel: ${e.message}`, 'error');
-                    }
-                }, 100);
+                setTimeout(initCarrusel, 100);
             }
-            
-            logDebug("Interfaz actualizada correctamente", 'success');
         }
         
-        // ================= RENDERIZADOR CARRUSEL =================
+        // ================= RENDERIZADORES =================
         function renderCarrusel(data) {
-            const titulo = data.titulo || "Cabañas Villaitue";
+            const titulo = data.titulo || data.descripcion || "Cabañas Villaitue";
             const descripcion = data.descripcion || "";
             const precio = data.precio || "";
             const imagenes = Array.isArray(data.imagenes) ? data.imagenes : [];
             
-            logDebug(`Carrusel con ${imagenes.length} imágenes`, 'info');
-            
             return `
-            <div class="flex flex-col gap-8">
-                <!-- TÍTULO CENTRADO -->
-                <div class="text-center">
-                    <h2 class="text-3xl font-bold text-white mb-2">${titulo}</h2>
-                    ${descripcion ? `<p class="text-slate-300 text-lg">${descripcion}</p>` : ''}
+            <div class="flex flex-col gap-6">
+                <!-- TÍTULO CENTRADO SOBRE EL MARCO -->
+                <div class="text-center mb-4">
+                    <h2 class="text-2xl font-bold text-white">${titulo}</h2>
+                    ${descripcion ? `<p class="text-slate-300 mt-2">${descripcion}</p>` : ''}
                 </div>
                 
-                <!-- CARRUSEL PRINCIPAL -->
+                <!-- MARCO DEL CARRUSEL -->
                 <div class="bg-slate-900 border-2 border-slate-700 rounded-3xl overflow-hidden shadow-2xl">
-                    <div class="relative p-1">
-                        <div id="carousel-container" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-64 md:h-80">
+                    <!-- CARRUSEL -->
+                    <div class="relative">
+                        <div id="carousel-container" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-64">
                             ${imagenes.length > 0 ? 
                                 imagenes.map((img, index) => `
                                 <div class="snap-center shrink-0 w-full h-full">
                                     <img src="${img}" 
-                                         class="w-full h-full object-cover rounded-2xl"
+                                         class="w-full h-full object-cover"
                                          onerror="this.onerror=null; this.src='https://via.placeholder.com/800x450/1e293b/94a3b8?text=Cabaña+${index+1}'"
-                                         alt="Cabaña Villaitue"
-                                         loading="lazy">
+                                         alt="Cabaña Villaitue">
                                 </div>
                                 `).join('')
                                 :
-                                `<div class="snap-center shrink-0 w-full h-full flex items-center justify-center bg-slate-800 rounded-2xl">
-                                    <p class="text-slate-500">Imágenes no disponibles</p>
+                                `<div class="snap-center shrink-0 w-full h-full flex items-center justify-center bg-slate-800">
+                                    <p class="text-slate-500">No hay imágenes</p>
                                 </div>`
                             }
                         </div>
                         
                         ${imagenes.length > 1 ? `
-                        <button id="carousel-prev" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/70 text-white w-10 h-10 rounded-full">
+                        <button id="carousel-prev" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/70 text-white w-8 h-8 rounded-full">
                             ←
                         </button>
-                        <button id="carousel-next" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/70 text-white w-10 h-10 rounded-full">
+                        <button id="carousel-next" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/70 text-white w-8 h-8 rounded-full">
                             →
                         </button>
-                        
-                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                            ${imagenes.map((_, i) => `
-                                <button class="carousel-indicator w-3 h-3 rounded-full ${i === 0 ? 'bg-blue-500' : 'bg-white/50'}" data-index="${i}"></button>
-                            `).join('')}
-                        </div>
                         ` : ''}
                     </div>
+                    
+                    <!-- PRECIO -->
+                    ${precio ? `
+                    <div class="p-4 border-t border-slate-700">
+                        <p class="text-slate-400 text-sm">Precio por noche</p>
+                        <p class="text-xl font-bold text-white">${precio}</p>
+                    </div>
+                    ` : ''}
                 </div>
                 
-                <!-- INFORMACIÓN ADICIONAL -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    ${data.output ? `
-                    <div class="bg-slate-900/90 border border-slate-700 rounded-3xl p-6">
-                        <h3 class="text-xl font-bold text-white mb-4">Información</h3>
-                        <p class="text-slate-200 leading-relaxed">${data.output}</p>
-                    </div>
-                    ` : ''}
-                    
-                    ${precio ? `
-                    <div class="bg-gradient-to-br from-blue-900/20 to-slate-900/20 border border-slate-700 rounded-3xl p-6">
-                        <div class="mb-6">
-                            <p class="text-slate-400 text-sm mb-2">Precio por noche</p>
-                            <p class="text-3xl font-bold text-white">${precio}</p>
-                        </div>
-                        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors">
-                            Consultar Disponibilidad
-                        </button>
-                    </div>
-                    ` : ''}
+                <!-- TEXTO ADICIONAL -->
+                ${data.output ? `
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700">
+                    <p class="text-slate-200">${data.output}</p>
                 </div>
+                ` : ''}
             </div>`;
         }
         
@@ -446,13 +343,12 @@
             const items = data.items || [];
             
             return `
-            <div class="bg-slate-900/90 p-8 rounded-3xl border border-slate-700 max-w-md w-full">
-                <h3 class="text-2xl font-bold text-green-400 mb-6">${titulo}</h3>
-                <ul class="space-y-3">
+            <div class="bg-slate-900/90 p-6 rounded-3xl border border-slate-700 max-w-md w-full">
+                <h3 class="text-xl font-bold text-green-400 mb-4">${titulo}</h3>
+                <ul class="space-y-2">
                     ${items.map(item => `
-                    <li class="flex items-center gap-3 p-3 bg-slate-800/50 rounded-xl">
-                        <span class="text-green-500 font-bold">✓</span>
-                        <span class="text-slate-200">${item}</span>
+                    <li class="flex items-center gap-2 text-slate-200">
+                        <span class="text-green-500">✓</span> ${item}
                     </li>
                     `).join('')}
                 </ul>
@@ -463,16 +359,14 @@
             const itemInteres = data.item_interes || "cabaña seleccionada";
             
             return `
-            <div class="bg-gradient-to-br from-blue-900/20 to-slate-900/20 border border-slate-700 p-8 rounded-3xl max-w-sm w-full">
-                <div class="text-center mb-6">
-                    <h3 class="text-2xl font-black text-white mb-2">¿Reservar?</h3>
-                    <p class="text-slate-300">Interesado en:</p>
-                    <p class="text-xl font-semibold text-blue-400 mt-2">${itemInteres}</p>
+            <div class="bg-white text-slate-900 p-6 rounded-3xl max-w-sm w-full">
+                <div class="text-center mb-4">
+                    <h3 class="text-xl font-black">¿Reservar?</h3>
+                    <p class="text-slate-600 text-sm mt-1">${itemInteres}</p>
                 </div>
                 <a href="https://wa.me/569XXXXXXXX?text=Reservar ${encodeURIComponent(itemInteres)}" 
-                   target="_blank"
-                   class="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-2xl text-center transition-colors">
-                   WhatsApp de Reservas
+                   class="block w-full bg-green-500 text-white font-bold py-3 rounded-xl text-center">
+                   WhatsApp
                 </a>
             </div>`;
         }
@@ -481,28 +375,20 @@
             let outputTexto = data.output || "Recibí tu mensaje.";
             
             return `
-            <div class="bg-slate-900/90 p-8 rounded-3xl border border-slate-700 max-w-lg">
-                <p class="text-slate-200 text-xl">${outputTexto}</p>
+            <div class="bg-slate-900/80 p-6 rounded-3xl border border-slate-700 max-w-lg">
+                <p class="text-slate-200">${outputTexto}</p>
             </div>`;
         }
         
         // ================= MOSTRAR ERROR =================
         function mostrarError(message) {
             viewer.innerHTML = `
-                <div class="bg-red-900/20 border border-red-700 p-8 rounded-3xl max-w-md slide-in">
+                <div class="bg-red-900/20 border border-red-700 p-6 rounded-3xl max-w-md">
                     <div class="text-center">
-                        <div class="text-red-400 text-4xl mb-4">⚠️</div>
-                        <h3 class="text-xl font-bold text-white mb-2">Error</h3>
-                        <p class="text-slate-300 mb-4">${message}</p>
-                        <div class="text-left text-sm text-slate-400 bg-black/30 p-4 rounded-lg">
-                            <p class="font-bold mb-2">Solución:</p>
-                            <ol class="list-decimal pl-4 space-y-1">
-                                <li>Abre la consola (F12)</li>
-                                <li>Ve a la pestaña "Red" (Network)</li>
-                                <li>Busca la petición a villaitue.cl</li>
-                                <li>Revisa la respuesta en "Response"</li>
-                            </ol>
-                        </div>
+                        <div class="text-red-400 text-3xl mb-3">⚠️</div>
+                        <h3 class="text-lg font-bold text-white mb-2">Error</h3>
+                        <p class="text-slate-300">${message}</p>
+                        <p class="text-sm text-slate-400 mt-4">Revisa la consola (F12) para detalles</p>
                     </div>
                 </div>
             `;
@@ -517,41 +403,26 @@
             
             const prevBtn = document.getElementById('carousel-prev');
             const nextBtn = document.getElementById('carousel-next');
-            const indicators = document.querySelectorAll('.carousel-indicator');
             
-            let currentIndex = 0;
-            const totalSlides = container.children.length;
+            if (prevBtn) prevBtn.addEventListener('click', () => {
+                container.scrollBy({ left: -container.offsetWidth, behavior: 'smooth' });
+            });
             
-            function goToSlide(index) {
-                currentIndex = index;
-                container.scrollTo({
-                    left: container.offsetWidth * index,
-                    behavior: 'smooth'
-                });
-                
-                indicators.forEach((ind, i) => {
-                    ind.classList.toggle('bg-blue-500', i === index);
-                    ind.classList.toggle('bg-white/50', i !== index);
-                });
-            }
-            
-            if (prevBtn) prevBtn.addEventListener('click', () => goToSlide((currentIndex - 1 + totalSlides) % totalSlides));
-            if (nextBtn) nextBtn.addEventListener('click', () => goToSlide((currentIndex + 1) % totalSlides));
-            
-            indicators.forEach(ind => {
-                ind.addEventListener('click', (e) => goToSlide(parseInt(e.target.dataset.index)));
+            if (nextBtn) nextBtn.addEventListener('click', () => {
+                container.scrollBy({ left: container.offsetWidth, behavior: 'smooth' });
             });
         }
         
         // ================= INICIALIZACIÓN =================
-        logDebug("=== SISTEMA DE ASISTENTE VILLA ITUE ===", 'info');
-        logDebug(`URL n8n: ${N8N_URL}`, 'info');
-        logDebug("Esperando comandos de voz...", 'info');
+        console.log("🚀 Sistema de voz Villaitue iniciado");
+        console.log(`🌐 Endpoint: ${N8N_URL}`);
         
-        // Test de conexión inicial
-        fetch(N8N_URL, { method: 'OPTIONS' })
-            .then(res => logDebug(`Test conexión: ${res.ok ? '✅ OK' : '❌ Error'}`, res.ok ? 'success' : 'error'))
-            .catch(err => logDebug(`Test conexión: ❌ ${err.message}`, 'error'));
+        // Cargar voces
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                console.log("🗣️ Voces cargadas:", window.speechSynthesis.getVoices().length);
+            };
+        }
     </script>
 </body>
 </html>
