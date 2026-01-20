@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Villaitue</title>
+    <title>Villa Itue - Test de Imágenes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .mic-active { animation: pulse 1.5s infinite; background-color: #ef4444 !important; }
@@ -12,417 +12,139 @@
             70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        .slide-in { animation: slideIn 0.5s ease-out forwards; }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .image-error { border: 2px solid #ef4444; }
+        .image-success { border: 2px solid #10b981; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4">
 
-    <nav class="bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between shadow-2xl sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <div id="status-led" class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-            <span class="font-bold tracking-tight text-xl text-white">VILLA <span class="text-blue-500">ITUE</span></span>
+    <h1 class="text-2xl font-bold text-center mb-6">🔍 Test de URLs de Imágenes</h1>
+    
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- TEST 1: Tus URLs actuales -->
+        <div class="bg-slate-900 p-4 rounded-lg">
+            <h2 class="text-lg font-bold text-red-400 mb-2">Tus URLs actuales (con problemas):</h2>
+            <div id="test-1" class="space-y-2"></div>
         </div>
-        <div class="flex items-center gap-4">
-            <span id="transcription" class="hidden md:block text-slate-400 italic text-sm max-w-xs truncate">Listo para escuchar...</span>
-            <button id="btn-micro" class="bg-blue-600 p-4 rounded-full hover:bg-blue-500 transition-all shadow-lg text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-20a3 3 0 00-3 3v8a3 3 0 006 0V5a3 3 0 00-3-3z" />
-                </svg>
-            </button>
+        
+        <!-- TEST 2: URLs corregidas -->
+        <div class="bg-slate-900 p-4 rounded-lg">
+            <h2 class="text-lg font-bold text-yellow-400 mb-2">URLs corregidas (sin ñ):</h2>
+            <div id="test-2" class="space-y-2"></div>
         </div>
-    </nav>
-
-    <main id="viewer" class="flex-grow flex items-center justify-center p-6 text-center">
-        <div id="placeholder">
-            <h2 class="text-4xl font-light text-white mb-4">Cabañas Villaitue</h2>
-            <p class="text-slate-300 mb-8">Asistente de voz inteligente</p>
-            <div class="bg-slate-900/50 p-6 rounded-2xl inline-block border border-slate-700">
-                <p class="text-blue-400 font-bold mb-4">Pregunta por ejemplo:</p>
-                <p class="text-slate-400">"¿Tienen cabañas para dos personas?"</p>
-            </div>
+        
+        <!-- TEST 3: Imágenes de prueba -->
+        <div class="bg-slate-900 p-4 rounded-lg">
+            <h2 class="text-lg font-bold text-green-400 mb-2">Imágenes de prueba (funcionan):</h2>
+            <div id="test-3" class="space-y-2"></div>
         </div>
-    </main>
+        
+        <!-- FORMATEO CORRECTO -->
+        <div class="bg-blue-900/20 p-4 rounded-lg border border-blue-700">
+            <h2 class="text-lg font-bold text-blue-400 mb-2">📋 Formato JSON correcto:</h2>
+            <pre class="bg-black/50 p-3 rounded text-sm overflow-x-auto">
+[
+  {
+    "output": "Texto para voz",
+    "tipo_plantilla": "carrusel",
+    "descripcion": "Título sobre el carrusel",
+    "precio": "55.000 pesos",
+    "imagenes": [
+      "https://ejemplo.com/imagen1.jpg",
+      "https://ejemplo.com/imagen2.jpg",
+      "https://ejemplo.com/imagen3.jpg"
+    ]
+  }
+]</pre>
+        </div>
+        
+        <!-- INSTRUCCIONES -->
+        <div class="bg-slate-800 p-4 rounded-lg">
+            <h3 class="font-bold mb-2">🛠️ Cómo solucionar:</h3>
+            <ol class="list-decimal pl-5 space-y-1 text-sm">
+                <li>Renombra los archivos: <code>2p-baño.jpg</code> → <code>2p-bano.jpg</code></li>
+                <li>Sube las imágenes a GitHub Pages en la carpeta correcta</li>
+                <li>Usa URLs absolutas: <code>https://usuario.github.io/repo/img/...</code></li>
+                <li>Verifica que los archivos existan visitando la URL directamente</li>
+            </ol>
+        </div>
+    </div>
 
     <script>
-        // ================= CONFIGURACIÓN =================
-        const N8N_URL = 'https://apps.villaitue.cl/webhook-test/autoservicio';
+        // URLs para testear
+        const tests = {
+            "test-1": [
+                "https://vsn47925-tech.github.io/img/cabanas/2p-baño.jpg",
+                "https://vsn47925-tech.github.io/img/cabanas/2p-cama.jpg",
+                "https://vsn47925-tech.github.io/img/cabanas/2p-entrada4.jpg"
+            ],
+            "test-2": [
+                "https://vsn47925-tech.github.io/img/cabanas/2p-bano.jpg",
+                "https://vsn47925-tech.github.io/img/cabanas/2p-cama.jpg",
+                "https://vsn47925-tech.github.io/img/cabanas/2p-entrada.jpg"
+            ],
+            "test-3": [
+                "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400&h=225&fit=crop",
+                "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=225&fit=crop",
+                "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=225&fit=crop"
+            ]
+        };
         
-        // Referencias
-        const btn = document.getElementById('btn-micro');
-        const led = document.getElementById('status-led');
-        const textDisplay = document.getElementById('transcription');
-        const viewer = document.getElementById('viewer');
-        const placeholder = document.getElementById('placeholder');
-        
-        // ================= PROCESADOR UNIVERSAL DE RESPUESTAS N8N =================
-        function procesarRespuestaN8N(respuestaCruda) {
-            console.log("🔄 Procesando respuesta n8n:", respuestaCruda);
-            
-            // PASO 1: Parsear respuesta inicial
-            let datos;
-            try {
-                datos = JSON.parse(respuestaCruda);
-            } catch (e) {
-                console.error("❌ Error parseando respuesta inicial:", e);
-                return { output: respuestaCruda };
-            }
-            
-            // PASO 2: Si es array, tomar primer elemento
-            if (Array.isArray(datos)) {
-                datos = datos[0];
-                console.log("📦 Tomando primer elemento del array");
-            }
-            
-            // PASO 3: DETECTAR Y CORREGIR EL PROBLEMA PRINCIPAL
-            // n8n a veces envía JSON como string dentro de "output"
-            if (datos && typeof datos.output === 'string') {
-                const outputString = datos.output.trim();
-                
-                // CASO A: output contiene JSON completo como string
-                if (outputString.startsWith('{') && outputString.endsWith('}')) {
-                    console.log("🔍 Output es JSON string, parseando...");
-                    try {
-                        const jsonDentroDeOutput = JSON.parse(outputString);
-                        console.log("✅ JSON extraído de output:", jsonDentroDeOutput);
-                        
-                        // Combinar los datos: mantener todo de datos, pero reemplazar con el JSON parseado
-                        return {
-                            ...datos,           // Mantener cualquier otra propiedad
-                            ...jsonDentroDeOutput, // Sobrescribir con JSON interno
-                            output: jsonDentroDeOutput.output || datos.output // Mantener output
-                        };
-                    } catch (parseError) {
-                        console.error("❌ Error parseando JSON dentro de output:", parseError);
-                        // Si falla, mantener los datos originales
-                    }
-                }
-                
-                // CASO B: output es texto normal con JSON incrustado
-                const jsonMatch = outputString.match(/\{.*\}/s);
-                if (jsonMatch) {
-                    console.log("🔍 Encontré JSON incrustado en output");
-                    try {
-                        const jsonExtraido = JSON.parse(jsonMatch[0]);
-                        console.log("✅ JSON incrustado extraído:", jsonExtraido);
-                        
-                        return {
-                            ...datos,
-                            ...jsonExtraido,
-                            output: jsonExtraido.output || datos.output
-                        };
-                    } catch (e) {
-                        console.error("❌ Error extrayendo JSON incrustado:", e);
-                    }
-                }
-            }
-            
-            // PASO 4: Si llegamos aquí, los datos ya están bien formados
-            console.log("✅ Datos ya bien formados:", datos);
-            return datos;
+        // Función para testear una imagen
+        async function testImage(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve({ success: true, url });
+                img.onerror = () => resolve({ success: false, url });
+                img.src = url;
+            });
         }
         
-        // ================= SÍNTESIS DE VOZ =================
-        function hablarLento(texto) {
-            if (!texto) return;
-            
-            window.speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance(texto);
-            const voces = window.speechSynthesis.getVoices();
-            
-            const voz = voces.find(v => v.lang === 'es-CL') || 
-                       voces.find(v => v.lang.includes('es-')) || 
-                       voces[0];
-            
-            if (voz) utterance.voice = voz;
-            utterance.pitch = 0.8;
-            utterance.rate = 0.85;
-            
-            window.speechSynthesis.speak(utterance);
-        }
-        
-        // ================= RECONOCIMIENTO DE VOZ =================
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-CL';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            
-            recognition.onstart = () => {
-                btn.classList.add('mic-active');
-                led.classList.replace('bg-green-500', 'bg-yellow-500');
-                textDisplay.innerText = "Escuchando...";
-            };
-            
-            recognition.onresult = async (event) => {
-                const query = event.results[0][0].transcript;
-                textDisplay.innerText = `Usted: "${query}"`;
-                console.log("🗣️ Pregunta:", query);
+        // Mostrar resultados
+        async function runTests() {
+            for (const [testId, urls] of Object.entries(tests)) {
+                const container = document.getElementById(testId);
                 
-                // Mostrar carga
-                viewer.innerHTML = `
-                    <div class="flex flex-col items-center gap-4 slide-in">
-                        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                        <p class="text-slate-400">Consultando información...</p>
-                    </div>
-                `;
-                
-                try {
-                    console.log("📤 Enviando a n8n...");
+                for (const url of urls) {
+                    const result = await testImage(url);
+                    const div = document.createElement('div');
+                    div.className = `flex items-center gap-3 p-2 rounded ${result.success ? 'bg-green-900/30 image-success' : 'bg-red-900/30 image-error'}`;
                     
-                    const response = await fetch(N8N_URL, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ query: query })
-                    });
-                    
-                    console.log("📥 Respuesta HTTP:", response.status);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    
-                    const responseText = await response.text();
-                    console.log("📝 Respuesta texto:", responseText.substring(0, 200), "...");
-                    
-                    // USAR EL PROCESADOR UNIVERSAL
-                    const datosProcesados = procesarRespuestaN8N(responseText);
-                    console.log("🎯 Datos procesados finales:", datosProcesados);
-                    
-                    // Mostrar respuesta
-                    mostrarRespuesta(datosProcesados);
-                    
-                } catch (error) {
-                    console.error("❌ Error:", error);
-                    mostrarError(error.message);
-                }
-            };
-            
-            recognition.onerror = (event) => {
-                console.error("Error voz:", event.error);
-                textDisplay.innerText = `Error: ${event.error}`;
-                resetMicrophone();
-            };
-            
-            recognition.onend = () => {
-                resetMicrophone();
-            };
-            
-            function resetMicrophone() {
-                btn.classList.remove('mic-active');
-                led.classList.replace('bg-yellow-500', 'bg-green-500');
-            }
-            
-            btn.onclick = () => {
-                try {
-                    recognition.start();
-                } catch(err) {
-                    console.error("Error iniciando:", err);
-                }
-            };
-            
-        } else {
-            textDisplay.innerText = "Navegador no compatible";
-            btn.disabled = true;
-        }
-        
-        // ================= MOSTRAR RESPUESTA =================
-        function mostrarRespuesta(data) {
-            console.log("🎨 Mostrando respuesta:", data);
-            
-            // Ocultar placeholder
-            placeholder.style.display = 'none';
-            
-            // Leer el texto si existe
-            if (data.output && typeof data.output === 'string') {
-                hablarLento(data.output);
-            }
-            
-            // Determinar qué mostrar
-            let htmlContent = '';
-            
-            if (data.tipo_plantilla === 'carrusel') {
-                htmlContent = renderCarrusel(data);
-            } else if (data.tipo_plantilla === 'lista') {
-                htmlContent = renderLista(data);
-            } else if (data.tipo_plantilla === 'reserva') {
-                htmlContent = renderReserva(data);
-            } else {
-                htmlContent = renderDefault(data);
-            }
-            
-            // Actualizar
-            viewer.innerHTML = `
-                <div class="slide-in w-full max-w-4xl">
-                    ${htmlContent}
-                </div>
-            `;
-            
-            // Inicializar carrusel si es necesario
-            if (data.tipo_plantilla === 'carrusel') {
-                setTimeout(initCarrusel, 100);
-            }
-        }
-        
-        // ================= RENDERIZADORES =================
-        function renderCarrusel(data) {
-            const titulo = data.titulo || data.descripcion || "Cabañas Villaitue";
-            const descripcion = data.descripcion || "";
-            const precio = data.precio || "";
-            const imagenes = Array.isArray(data.imagenes) ? data.imagenes : [];
-            
-            return `
-            <div class="flex flex-col gap-6">
-                <!-- TÍTULO CENTRADO SOBRE EL MARCO -->
-                <div class="text-center mb-4">
-                    <h2 class="text-2xl font-bold text-white">${titulo}</h2>
-                    ${descripcion ? `<p class="text-slate-300 mt-2">${descripcion}</p>` : ''}
-                </div>
-                
-                <!-- MARCO DEL CARRUSEL -->
-                <div class="bg-slate-900 border-2 border-slate-700 rounded-3xl overflow-hidden shadow-2xl">
-                    <!-- CARRUSEL -->
-                    <div class="relative">
-                        <div id="carousel-container" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-64">
-                            ${imagenes.length > 0 ? 
-                                imagenes.map((img, index) => `
-                                <div class="snap-center shrink-0 w-full h-full">
-                                    <img src="${img}" 
-                                         class="w-full h-full object-cover"
-                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/800x450/1e293b/94a3b8?text=Cabaña+${index+1}'"
-                                         alt="Cabaña Villaitue">
-                                </div>
-                                `).join('')
-                                :
-                                `<div class="snap-center shrink-0 w-full h-full flex items-center justify-center bg-slate-800">
-                                    <p class="text-slate-500">No hay imágenes</p>
-                                </div>`
-                            }
+                    div.innerHTML = `
+                        <div class="w-6 h-6 rounded-full flex items-center justify-center ${result.success ? 'bg-green-500' : 'bg-red-500'}">
+                            ${result.success ? '✓' : '✗'}
                         </div>
-                        
-                        ${imagenes.length > 1 ? `
-                        <button id="carousel-prev" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/70 text-white w-8 h-8 rounded-full">
-                            ←
-                        </button>
-                        <button id="carousel-next" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/70 text-white w-8 h-8 rounded-full">
-                            →
-                        </button>
-                        ` : ''}
-                    </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-mono break-all">${url}</div>
+                            <div class="text-xs ${result.success ? 'text-green-400' : 'text-red-400'}">
+                                ${result.success ? '✅ Carga correcta' : '❌ Error 404 - No encontrada'}
+                            </div>
+                        </div>
+                    `;
                     
-                    <!-- PRECIO -->
-                    ${precio ? `
-                    <div class="p-4 border-t border-slate-700">
-                        <p class="text-slate-400 text-sm">Precio por noche</p>
-                        <p class="text-xl font-bold text-white">${precio}</p>
-                    </div>
-                    ` : ''}
-                </div>
-                
-                <!-- TEXTO ADICIONAL -->
-                ${data.output ? `
-                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700">
-                    <p class="text-slate-200">${data.output}</p>
-                </div>
-                ` : ''}
-            </div>`;
+                    container.appendChild(div);
+                }
+            }
         }
         
-        function renderLista(data) {
-            const titulo = data.titulo || "Servicios";
-            const items = data.items || [];
-            
-            return `
-            <div class="bg-slate-900/90 p-6 rounded-3xl border border-slate-700 max-w-md w-full">
-                <h3 class="text-xl font-bold text-green-400 mb-4">${titulo}</h3>
-                <ul class="space-y-2">
-                    ${items.map(item => `
-                    <li class="flex items-center gap-2 text-slate-200">
-                        <span class="text-green-500">✓</span> ${item}
-                    </li>
-                    `).join('')}
-                </ul>
-            </div>`;
-        }
+        // Ejecutar tests al cargar
+        runTests();
         
-        function renderReserva(data) {
-            const itemInteres = data.item_interes || "cabaña seleccionada";
-            
-            return `
-            <div class="bg-white text-slate-900 p-6 rounded-3xl max-w-sm w-full">
-                <div class="text-center mb-4">
-                    <h3 class="text-xl font-black">¿Reservar?</h3>
-                    <p class="text-slate-600 text-sm mt-1">${itemInteres}</p>
-                </div>
-                <a href="https://wa.me/569XXXXXXXX?text=Reservar ${encodeURIComponent(itemInteres)}" 
-                   class="block w-full bg-green-500 text-white font-bold py-3 rounded-xl text-center">
-                   WhatsApp
-                </a>
-            </div>`;
-        }
-        
-        function renderDefault(data) {
-            let outputTexto = data.output || "Recibí tu mensaje.";
-            
-            return `
-            <div class="bg-slate-900/80 p-6 rounded-3xl border border-slate-700 max-w-lg">
-                <p class="text-slate-200">${outputTexto}</p>
-            </div>`;
-        }
-        
-        // ================= MOSTRAR ERROR =================
-        function mostrarError(message) {
-            viewer.innerHTML = `
-                <div class="bg-red-900/20 border border-red-700 p-6 rounded-3xl max-w-md">
-                    <div class="text-center">
-                        <div class="text-red-400 text-3xl mb-3">⚠️</div>
-                        <h3 class="text-lg font-bold text-white mb-2">Error</h3>
-                        <p class="text-slate-300">${message}</p>
-                        <p class="text-sm text-slate-400 mt-4">Revisa la consola (F12) para detalles</p>
-                    </div>
-                </div>
-            `;
-            
-            hablarLento(`Error: ${message}`);
-        }
-        
-        // ================= INICIALIZAR CARRUSEL =================
-        function initCarrusel() {
-            const container = document.getElementById('carousel-container');
-            if (!container) return;
-            
-            const prevBtn = document.getElementById('carousel-prev');
-            const nextBtn = document.getElementById('carousel-next');
-            
-            if (prevBtn) prevBtn.addEventListener('click', () => {
-                container.scrollBy({ left: -container.offsetWidth, behavior: 'smooth' });
-            });
-            
-            if (nextBtn) nextBtn.addEventListener('click', () => {
-                container.scrollBy({ left: container.offsetWidth, behavior: 'smooth' });
-            });
-        }
-        
-        // ================= INICIALIZACIÓN =================
-        console.log("🚀 Sistema de voz Villaitue iniciado");
-        console.log(`🌐 Endpoint: ${N8N_URL}`);
-        
-        // Cargar voces
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                console.log("🗣️ Voces cargadas:", window.speechSynthesis.getVoices().length);
-            };
-        }
+        // Mostrar ejemplo de JSON completo
+        console.log("📋 EJEMPLO DE JSON COMPLETO Y CORRECTO:");
+        console.log(JSON.stringify([
+            {
+                "output": "Claro, en Cabañas Villaitue tenemos cabañas para dos personas...",
+                "tipo_plantilla": "carrusel",
+                "descripcion": "Cabañas para dos personas disponibles",
+                "precio": "55.000 pesos chilenos por noche",
+                "imagenes": [
+                    "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&h=450&fit=crop",
+                    "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=450&fit=crop"
+                ]
+            }
+        ], null, 2));
     </script>
 </body>
 </html>
