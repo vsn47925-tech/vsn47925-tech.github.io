@@ -1,878 +1,803 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Villaitue</title>
+    <title>Villaitue - Galería Moderna</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* Estilos para el carrusel */
-        .carousel-container {
-            position: relative;
-            width: 100%;
-            height: 400px;
-            overflow: hidden;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        :root {
+            --primary: #2c5282;
+            --primary-light: #4299e1;
+            --secondary: #805ad5;
+            --accent: #ed8936;
+            --dark: #2d3748;
+            --light: #f7fafc;
+            --gray: #718096;
         }
         
-        .carousel-slide {
-            position: absolute;
-            top: 0;
-            left: 0;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--dark);
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .gallery-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .gallery-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .card-header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+        
+        .card-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .image-display-area {
+            position: relative;
+            padding: 40px;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom, #f8fafc, #edf2f7);
+        }
+        
+        .main-image-container {
+            width: 100%;
+            max-width: 900px;
+            height: 450px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            margin-bottom: 40px;
+        }
+        
+        .main-image {
             width: 100%;
             height: 100%;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            object-fit: cover;
+            transition: transform 0.5s ease;
         }
         
-        .carousel-slide.active {
+        .main-image:hover {
+            transform: scale(1.03);
+        }
+        
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 30px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .main-image-container:hover .image-overlay {
             opacity: 1;
         }
         
-        .carousel-slide img {
+        .image-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .thumbnails-container {
+            display: flex;
+            gap: 15px;
+            padding: 0 20px;
+            width: 100%;
+            max-width: 900px;
+            overflow-x: auto;
+            padding-bottom: 15px;
+        }
+        
+        .thumbnail {
+            width: 120px;
+            height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            border: 3px solid transparent;
+        }
+        
+        .thumbnail:hover {
+            opacity: 0.9;
+            transform: translateY(-3px);
+        }
+        
+        .thumbnail.active {
+            opacity: 1;
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(44, 82, 130, 0.3);
+        }
+        
+        .thumbnail img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
         
-        .carousel-dots {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
+        .text-box {
+            background: white;
+            padding: 30px 40px;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 20px;
+        }
+        
+        .text-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .text-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 15px;
             display: flex;
-            justify-content: center;
+            align-items: center;
             gap: 10px;
         }
         
-        .carousel-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.5);
-            cursor: pointer;
-            transition: background-color 0.3s;
+        .text-title i {
+            color: var(--accent);
         }
         
-        .carousel-dot.active {
-            background-color: #3b82f6;
+        .text-body {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: var(--gray);
+            margin-bottom: 20px;
         }
         
-        .carousel-btn {
+        .text-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .price-tag {
+            background: linear-gradient(to right, var(--primary-light), var(--secondary));
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3);
+        }
+        
+        .features {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .feature i {
+            color: var(--primary-light);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
             position: absolute;
             top: 50%;
+            left: 40px;
+            right: 40px;
             transform: translateY(-50%);
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+        
+        .nav-btn {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            color: var(--primary);
+            font-size: 1.2rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            pointer-events: all;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
         }
         
-        .carousel-btn:hover {
-            background-color: rgba(0, 0, 0, 0.7);
+        .nav-btn:hover {
+            background: white;
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
         
-        .carousel-prev {
-            left: 15px;
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
         }
         
-        .carousel-next {
-            right: 15px;
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
         
-        /* Animación para mostrar/ocultar respuesta */
+        .zoom-btn:hover {
+            background: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card-header {
+                padding: 25px 20px;
+            }
+            
+            .card-header h1 {
+                font-size: 2rem;
+            }
+            
+            .image-display-area {
+                padding: 20px;
+            }
+            
+            .main-image-container {
+                height: 350px;
+            }
+            
+            .thumbnail {
+                width: 100px;
+                height: 70px;
+            }
+            
+            .text-box {
+                padding: 25px 20px;
+            }
+            
+            .text-footer {
+                flex-direction: column;
+                gap: 20px;
+                align-items: flex-start;
+            }
+            
+            .nav-buttons {
+                left: 20px;
+                right: 20px;
+            }
+            
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-image-container {
+                height: 250px;
+            }
+            
+            .thumbnail {
+                width: 80px;
+                height: 60px;
+            }
+            
+            .features {
+                flex-wrap: wrap;
+            }
+        }
+        
+        /* Scrollbar personalizada */
+        .thumbnails-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .thumbnails-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .thumbnails-container::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 4px;
+        }
+        
+        .thumbnails-container::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+        
+        /* Animaciones */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .fade-in {
             animation: fadeIn 0.5s ease-out;
         }
         
-        /* Estilos para el historial de chat */
-        .user-message {
-            background-color: #3b82f6;
-            color: white;
-            border-radius: 18px 18px 4px 18px;
-            max-width: 80%;
-            align-self: flex-end;
+        .floating {
+            animation: floating 3s ease-in-out infinite;
         }
         
-        .bot-message {
-            background-color: #f3f4f6;
-            color: #1f2937;
-            border-radius: 18px 18px 18px 4px;
-            max-width: 80%;
-            align-self: flex-start;
-        }
-        
-        /* Estilos para mensajes de error */
-        .error-message {
-            background-color: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-        
-        /* Scrollbar personalizado */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Encabezado -->
-        <header class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">
-                <i class="fas fa-microphone text-blue-600 mr-3"></i>
-                Sistema autoservicio de Cabañas Villaitue
-            </h1>
-            <p class="text-gray-600">Sistema de reservas por voz interactivo</p>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Panel de control izquierdo -->
-            <div class="lg:col-span-1 bg-white rounded-2xl shadow-xl p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">
-                    <i class="fas fa-sliders-h text-blue-600 mr-2"></i>
-                    Control del Sistema
-                </h2>
-                
-                <!-- Estado del sistema -->
-                <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Estado del Sistema</h3>
-                    <div class="flex items-center mb-2">
-                        <div id="statusIndicator" class="w-3 h-3 rounded-full bg-green-500 mr-3 animate-pulse"></div>
-                        <span id="statusText" class="text-gray-700 font-medium">Sistema de voz iniciado</span>
+<body>
+    <div class="container">
+        <div class="gallery-card fade-in">
+            <!-- Cabecera -->
+            <div class="card-header">
+                <h1>🏡 Cabaña Vista al Lago</h1>
+                <p>Disfruta de una experiencia única en nuestras cabañas premium</p>
+            </div>
+            
+            <!-- Área de visualización de imágenes -->
+            <div class="image-display-area">
+                <!-- Contenedor de imagen principal -->
+                <div class="main-image-container">
+                    <div class="image-counter">Imagen 1 de 8</div>
+                    <img id="mainImage" src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=900&q=80" 
+                         alt="Cabaña Villaitue" class="main-image">
+                    
+                    <div class="image-overlay">
+                        <h3 class="text-lg font-semibold">Vista desde el balcón principal</h3>
+                        <p class="text-sm opacity-90">Atardecer sobre el lago Llanquihue</p>
                     </div>
-                    <p id="endpointInfo" class="text-sm text-gray-500 mt-1">
-                        Endpoint: <span class="font-mono text-blue-600">https://apps.villaitue.cl/webhook/autoservicio</span>
-                    </p>
-                    <p id="voicesInfo" class="text-sm text-gray-500">Voces cargadas: <span id="voicesCount" class="font-semibold">19</span></p>
-                </div>
-                
-                <!-- Controles de voz -->
-                <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Control de Voz</h3>
-                    <div class="flex justify-center space-x-4">
-                        <button id="startBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-medium flex items-center transition duration-300 shadow-md">
-                            <i class="fas fa-microphone mr-2"></i> Iniciar Voz
+                    
+                    <!-- Botones de navegación -->
+                    <div class="nav-buttons">
+                        <button class="nav-btn" id="prevBtn">
+                            <i class="fas fa-chevron-left"></i>
                         </button>
-                        <button id="stopBtn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-medium flex items-center transition duration-300 shadow-md">
-                            <i class="fas fa-stop mr-2"></i> Detener
+                        <button class="nav-btn" id="nextBtn">
+                            <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
-                    <p class="text-sm text-gray-500 mt-3 text-center">Haz clic en "Iniciar Voz" y habla tu consulta</p>
+                    
+                    <!-- Controles de zoom -->
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" id="zoomIn">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="zoom-btn" id="zoomOut">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button class="zoom-btn" id="resetZoom">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                    </div>
                 </div>
                 
-                <!-- Historial de chat -->
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Historial de Conversación</h3>
-                    <div id="chatHistory" class="h-64 overflow-y-auto p-3 bg-gray-50 rounded-lg space-y-3">
-                        <!-- Los mensajes se agregarán aquí dinámicamente -->
-                        <div class="user-message p-3">
-                            <p class="font-medium">Hola tienes cabañas para dos personas</p>
-                        </div>
-                    </div>
+                <!-- Miniaturas -->
+                <div class="thumbnails-container" id="thumbnailsContainer">
+                    <!-- Las miniaturas se generarán dinámicamente con JavaScript -->
                 </div>
             </div>
             
-            <!-- Panel principal central -->
-            <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
-                    <i class="fas fa-home text-blue-600 mr-2"></i>
-                    <span id="responseTitle">Resultado de la Consulta</span>
-                </h2>
-                
-                <!-- Contenedor de respuesta -->
-                <div id="responseContainer" class="min-h-[500px] flex flex-col justify-center items-center">
-                    <!-- Estado inicial o cuando no hay respuesta -->
-                    <div id="initialState" class="text-center p-8">
-                        <div class="text-gray-400 mb-6">
-                            <i class="fas fa-comment-alt text-6xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-600 mb-2">Esperando tu consulta</h3>
-                        <p class="text-gray-500">Haz clic en "Iniciar Voz" y pregunta por nuestras cabañas disponibles</p>
+            <!-- Recuadro de texto inferior -->
+            <div class="text-box">
+                <div class="text-content">
+                    <div class="text-title">
+                        <i class="fas fa-home"></i>
+                        Cabaña Premium para 4 Personas
                     </div>
                     
-                    <!-- Respuesta del agente (se mostrará dinámicamente) -->
-                    <div id="agentResponse" class="hidden w-full">
-                        <!-- Título de la respuesta -->
-                        <h3 id="descripcionTitle" class="text-2xl font-bold text-center text-gray-800 mb-6"></h3>
+                    <div class="text-body">
+                        Esta encantadora cabaña combina la calidez de la madera con comodidades modernas. 
+                        Situada a orillas del lago, ofrece vistas panorámicas desde cada ventana. 
+                        Perfecta para familias o grupos pequeños que buscan tranquilidad y conexión con la naturaleza.
                         
-                        <!-- Carrusel de imágenes -->
-                        <div id="carouselContainer" class="hidden">
-                            <div class="carousel-container mb-4">
-                                <!-- Las imágenes del carrusel se insertarán aquí -->
-                            </div>
-                            <div class="carousel-dots">
-                                <!-- Los puntos de navegación se insertarán aquí -->
-                            </div>
-                        </div>
-                        
-                        <!-- Texto de salida (para speech) -->
-                        <div id="outputText" class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <h4 class="font-semibold text-blue-800 mb-2">
-                                <i class="fas fa-volume-up mr-2"></i>Respuesta del sistema:
-                            </h4>
-                            <p id="outputContent" class="text-gray-700"></p>
-                        </div>
-                        
-                        <!-- Información adicional (precio, etc.) -->
-                        <div id="additionalInfo" class="mt-4 hidden">
-                            <!-- Información adicional se insertará aquí -->
-                        </div>
+                        <br><br>
+                        La cabaña incluye dos dormitorios con camas king-size, baño completo con hidromasaje, 
+                        cocina totalmente equipada, sala de estar con chimenea y balcón privado con hamacas.
+                        El acceso a Wi-Fi de alta velocidad es gratuito, ideal para quienes necesitan trabajar remotamente.
                     </div>
                     
-                    <!-- Estado de error -->
-                    <div id="errorState" class="hidden text-center p-8">
-                        <div class="text-red-400 mb-6">
-                            <i class="fas fa-exclamation-triangle text-6xl"></i>
+                    <div class="text-footer">
+                        <div class="price-tag">
+                            <i class="fas fa-tag"></i>
+                            $120.000 / noche
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-600 mb-2">Error en el sistema</h3>
-                        <p id="errorMessage" class="text-gray-500">Ha ocurrido un error al procesar tu solicitud</p>
-                        <button id="retryBtn" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-300">
-                            <i class="fas fa-redo mr-2"></i>Intentar nuevamente
-                        </button>
+                        
+                        <div class="features">
+                            <div class="feature">
+                                <i class="fas fa-user-friends"></i>
+                                4 personas
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-bed"></i>
+                                2 dormitorios
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-wifi"></i>
+                                Wi-Fi gratis
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-car"></i>
+                                Estacionamiento
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Información de depuración (solo para desarrollo) -->
-                <div class="mt-8 border-t pt-6">
-                    <details class="bg-gray-50 rounded-lg p-4">
-                        <summary class="font-medium text-gray-700 cursor-pointer">
-                            <i class="fas fa-bug mr-2"></i>Información de depuración
-                        </summary>
-                        <div class="mt-3 space-y-2">
-                            <div>
-                                <span class="font-medium text-gray-600">Última pregunta:</span>
-                                <span id="lastQuestion" class="ml-2 text-gray-800">Hola tienes cabañas para dos personas</span>
-                            </div>
-                            <div>
-                                <span class="font-medium text-gray-600">Respuesta HTTP:</span>
-                                <span id="httpResponse" class="ml-2 text-green-600 font-semibold">200</span>
-                            </div>
-                            <div>
-                                <span class="font-medium text-gray-600">Respuesta cruda del servidor:</span>
-                                <pre id="rawResponse" class="mt-2 p-3 bg-gray-800 text-green-400 rounded text-sm overflow-x-auto max-h-60 overflow-y-auto"></pre>
-                            </div>
-                            <div>
-                                <span class="font-medium text-gray-600">Datos procesados:</span>
-                                <pre id="processedData" class="mt-2 p-3 bg-blue-900 text-blue-100 rounded text-sm overflow-x-auto max-h-60 overflow-y-auto"></pre>
-                            </div>
-                        </div>
-                    </details>
                 </div>
             </div>
         </div>
         
-        <!-- Footer -->
-        <footer class="mt-12 text-center text-gray-500 text-sm">
-            <p>Villa Itue - Sistema de reservas por voz © 2026</p>
-            <p class="mt-1">
-                <i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>
-                tailwindcss.com no debe usarse en producción. Para usar Tailwind CSS en producción, instálalo como plugin de PostCSS o usa la CLI de Tailwind.
-            </p>
-        </footer>
+        <!-- Indicador de carga -->
+        <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-8 rounded-2xl flex flex-col items-center">
+                <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-lg font-semibold">Cargando imágenes...</p>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Variables globales
-        let recognition = null;
-        let currentCarouselIndex = 0;
-        let carouselInterval = null;
-        let currentResponseData = null;
-        
-        // Función para inicializar el reconocimiento de voz
-        function initVoiceRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            
-            if (!SpeechRecognition) {
-                alert("Tu navegador no soporta reconocimiento de voz. Por favor usa Chrome o Edge.");
-                return null;
-            }
-            
-            recognition = new SpeechRecognition();
-            recognition.lang = 'es-CL';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            
-            recognition.onstart = function() {
-                console.log("Reconocimiento de voz iniciado");
-                updateStatus("Escuchando...", "bg-yellow-500");
-                document.getElementById('startBtn').disabled = true;
-                document.getElementById('stopBtn').disabled = false;
-                document.getElementById('startBtn').classList.add('opacity-50');
-                document.getElementById('stopBtn').classList.remove('opacity-50');
-            };
-            
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                console.log("Pregunta detectada:", transcript);
-                
-                // Mostrar en el historial de chat
-                addChatMessage(transcript, 'user');
-                
-                // Actualizar información de depuración
-                document.getElementById('lastQuestion').textContent = transcript;
-                
-                // Limpiar respuesta anterior
-                clearPreviousResponse();
-                
-                // Enviar a n8n
-                sendToN8N(transcript);
-            };
-            
-            recognition.onerror = function(event) {
-                console.error("Error en reconocimiento de voz:", event.error);
-                updateStatus("Error en voz", "bg-red-500");
-                resetVoiceButtons();
-                
-                // Mostrar error específico
-                if (event.error === 'no-speech') {
-                    addChatMessage("No se detectó voz. Por favor habla más claro.", 'bot');
-                } else if (event.error === 'audio-capture') {
-                    addChatMessage("No se pudo acceder al micrófono. Verifica los permisos.", 'bot');
-                } else {
-                    addChatMessage("Error en el reconocimiento de voz. Intenta nuevamente.", 'bot');
+        // Datos de ejemplo para las imágenes
+        const imageData = {
+            title: "Cabañas Villaitue Premium",
+            description: "Cabañas de lujo con vista al lago y todas las comodidades",
+            images: [
+                {
+                    id: 1,
+                    url: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=900&q=80",
+                    title: "Fachada principal",
+                    description: "Entrada principal con jardín nativo"
+                },
+                {
+                    id: 2,
+                    url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80",
+                    title: "Sala de estar",
+                    description: "Amplia sala con chimenea y vista al lago"
+                },
+                {
+                    id: 3,
+                    url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80",
+                    title: "Dormitorio principal",
+                    description: "Cama king-size con ropa de cama premium"
+                },
+                {
+                    id: 4,
+                    url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80",
+                    title: "Cocina equipada",
+                    description: "Cocina moderna con electrodomésticos de alta gama"
+                },
+                {
+                    id: 5,
+                    url: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80",
+                    title: "Baño con hidromasaje",
+                    description: "Baño completo con tina de hidromasaje"
+                },
+                {
+                    id: 6,
+                    url: "https://images.unsplash.com/photo-1531971589569-0d9370cbe1e5?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80",
+                    title: "Balcón privado",
+                    description: "Terraza con hamacas y vista panorámica"
+                },
+                {
+                    id: 7,
+                    url: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80",
+                    title: "Vista al amanecer",
+                    description: "Amanecer sobre el lago Llanquihue"
+                },
+                {
+                    id: 8,
+                    url: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80",
+                    title: "Área exterior",
+                    description: "Jardín y zona de asados privada"
                 }
-            };
-            
-            recognition.onend = function() {
-                console.log("Reconocimiento de voz finalizado");
-                updateStatus("Listo para escuchar", "bg-green-500");
-                resetVoiceButtons();
-            };
-            
-            return recognition;
-        }
+            ],
+            price: "$120.000 / noche",
+            features: [
+                "4 personas",
+                "2 dormitorios",
+                "Wi-Fi gratis",
+                "Estacionamiento",
+                "Chimenea",
+                "Hidromasaje"
+            ],
+            details: "Esta encantadora cabaña combina la calidez de la madera con comodidades modernas. Situada a orillas del lago, ofrece vistas panorámicas desde cada ventana. Perfecta para familias o grupos pequeños que buscan tranquilidad y conexión con la naturaleza.\n\nLa cabaña incluye dos dormitorios con camas king-size, baño completo con hidromasaje, cocina totalmente equipada, sala de estar con chimenea y balcón privado con hamacas. El acceso a Wi-Fi de alta velocidad es gratuito, ideal para quienes necesitan trabajar remotamente."
+        };
         
-        // Función para limpiar respuesta anterior
-        function clearPreviousResponse() {
-            document.getElementById('initialState').classList.add('hidden');
-            document.getElementById('agentResponse').classList.add('hidden');
-            document.getElementById('errorState').classList.add('hidden');
-            
-            // Detener carrusel si está activo
-            if (carouselInterval) {
-                clearInterval(carouselInterval);
-                carouselInterval = null;
-            }
-        }
+        let currentImageIndex = 0;
+        let zoomLevel = 1;
+        const maxZoom = 3;
+        const minZoom = 0.5;
         
-        // Función para resetear botones de voz
-        function resetVoiceButtons() {
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('stopBtn').disabled = true;
-            document.getElementById('startBtn').classList.remove('opacity-50');
-            document.getElementById('stopBtn').classList.add('opacity-50');
-        }
+        // Elementos del DOM
+        const mainImage = document.getElementById('mainImage');
+        const thumbnailsContainer = document.getElementById('thumbnailsContainer');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const zoomInBtn = document.getElementById('zoomIn');
+        const zoomOutBtn = document.getElementById('zoomOut');
+        const resetZoomBtn = document.getElementById('resetZoom');
+        const imageCounter = document.querySelector('.image-counter');
+        const loadingIndicator = document.getElementById('loading');
         
-        // Función para enviar la consulta a n8n
-        async function sendToN8N(pregunta) {
-            console.log("Enviando a n8n... Pregunta:", pregunta);
-            updateStatus("Procesando...", "bg-blue-500");
+        // Inicializar la galería
+        function initGallery() {
+            showLoading();
             
-            const endpoint = "https://apps.villaitue.cl/webhook/autoservicio";
-            
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ pregunta: pregunta })
-                });
-                
-                console.log("Respuesta HTTP:", response.status);
-                document.getElementById('httpResponse').textContent = response.status;
-                document.getElementById('httpResponse').className = response.status === 200 ? 
-                    "ml-2 text-green-600 font-semibold" : "ml-2 text-red-600 font-semibold";
-                
-                const responseText = await response.text();
-                console.log("Respuesta texto COMPLETA:", responseText);
-                
-                // Mostrar la respuesta cruda en la depuración
-                document.getElementById('rawResponse').textContent = responseText;
-                
-                // Procesar la respuesta
-                const processedData = processRespuetaN8N(responseText);
-                console.log("Datos procesados finales:", processedData);
-                
-                // Guardar datos actuales
-                currentResponseData = processedData;
-                
-                // Mostrar en información de depuración
-                document.getElementById('processedData').textContent = JSON.stringify(processedData, null, 2);
-                
-                // Mostrar la respuesta en la interfaz
-                mostrarRespuestaAgente(processedData);
-                
-                // Actualizar estado
-                updateStatus("Respuesta recibida", "bg-green-500");
-                
-                // Leer la respuesta en voz alta
-                if (processedData[0] && processedData[0].output) {
-                    leerTexto(processedData[0].output);
-                }
-                
-            } catch (error) {
-                console.error("Error al enviar a n8n:", error);
-                updateStatus("Error en conexión", "bg-red-500");
-                
-                // Mostrar estado de error
-                showErrorState("Error de conexión con el servidor. Por favor verifica tu internet e intenta nuevamente.");
-                
-                // Mostrar mensaje de error al usuario
-                addChatMessage("Lo siento, hubo un error al procesar tu consulta. Por favor intenta nuevamente.", 'bot');
-            }
-        }
-        
-        // Función para procesar la respuesta de n8n (MEJORADA)
-        function processRespuetaN8N(responseText) {
-            try {
-                // Verificar que la respuesta no esté vacía
-                if (!responseText || responseText.trim() === '') {
-                    throw new Error('Respuesta vacía del servidor');
-                }
-                
-                console.log("Procesando respuesta n8n:", responseText);
-                
-                // Limpiar posibles problemas de formato
-                let cleanedText = responseText.trim();
-                
-                // Intentar parsear como JSON
-                let data;
-                try {
-                    data = JSON.parse(cleanedText);
-                } catch (parseError) {
-                    console.error("Error parseando JSON:", parseError);
-                    
-                    // Intentar limpiar el JSON (quitar comillas extras, etc.)
-                    cleanedText = cleanedText.replace(/\\\"/g, '"');
-                    cleanedText = cleanedText.replace(/\"{/g, '{');
-                    cleanedText = cleanedText.replace(/}\"/g, '}');
-                    
-                    // Intentar nuevamente
-                    data = JSON.parse(cleanedText);
-                }
-                
-                // CASO 1: Si es un array (formato correcto)
-                if (Array.isArray(data)) {
-                    console.log("Respuesta recibida como array:", data);
-                    
-                    if (data.length === 0) {
-                        return [{
-                            output: "No se encontraron resultados para tu consulta.",
-                            tipo_plantilla: "texto",
-                            descripcion: "Sin resultados",
-                            imagenes: []
-                        }];
-                    }
-                    
-                    // Normalizar el primer elemento
-                    const item = data[0];
-                    const normalizedItem = {
-                        output: item.output || item.msg || "Respuesta recibida",
-                        tipo_plantilla: item.tipo_plantilla || "texto",
-                        descripcion: item.descripcion || item.description || "Resultado",
-                        imagenes: Array.isArray(item.imagenes) ? item.imagenes : 
-                                 (Array.isArray(item.images) ? item.images : [])
-                    };
-                    
-                    // Si hay precio, agregarlo
-                    if (item.precio) {
-                        normalizedItem.precio = item.precio;
-                    }
-                    
-                    return [normalizedItem];
-                }
-                
-                // CASO 2: Si es un objeto con status: "error"
-                if (data && data.status === "error") {
-                    console.warn("Formato de error recibido:", data);
-                    return [{
-                        output: data.msg || "Lo siento, hubo un error al procesar la información.",
-                        tipo_plantilla: "texto",
-                        descripcion: "Error en el sistema",
-                        imagenes: []
-                    }];
-                }
-                
-                // CASO 3: Si es un objeto directo con los campos esperados
-                if (data && (data.output || data.tipo_plantilla)) {
-                    console.log("Respuesta recibida como objeto:", data);
-                    return [{
-                        output: data.output || data.msg || "Respuesta recibida",
-                        tipo_plantilla: data.tipo_plantilla || "texto",
-                        descripcion: data.descripcion || data.description || "Resultado",
-                        imagenes: Array.isArray(data.imagenes) ? data.imagenes : 
-                                (Array.isArray(data.images) ? data.images : [])
-                    }];
-                }
-                
-                // CASO 4: Formato no reconocido
-                console.error("Formato no reconocido:", data);
-                throw new Error('Formato de respuesta no reconocido');
-                
-            } catch (error) {
-                console.error('Error parseando respuesta n8n:', error.message, 'Response:', responseText);
-                
-                // Devolver una respuesta de error estructurada
-                return [{
-                    output: "Lo siento, hubo un error al procesar la información. Por favor intenta nuevamente.",
-                    tipo_plantilla: "texto",
-                    descripcion: "Error en el sistema",
-                    imagenes: []
-                }];
-            }
-        }
-        
-        // Función para mostrar estado de error
-        function showErrorState(message) {
-            document.getElementById('initialState').classList.add('hidden');
-            document.getElementById('agentResponse').classList.add('hidden');
-            document.getElementById('errorState').classList.remove('hidden');
-            document.getElementById('errorMessage').textContent = message;
-        }
-        
-        // Función para mostrar la respuesta del agente en la interfaz
-        function mostrarRespuestaAgente(datos) {
-            console.log("Mostrando respuesta:", datos);
-            
-            // Obtener el primer elemento
-            const respuesta = datos[0];
-            
-            if (!respuesta) {
-                showErrorState("No se recibió una respuesta válida del servidor.");
-                return;
-            }
-            
-            // Mostrar contenedor de respuesta
-            const agentResponse = document.getElementById('agentResponse');
-            agentResponse.classList.remove('hidden');
-            agentResponse.classList.add('fade-in');
-            
-            // Actualizar título de la página
-            document.getElementById('responseTitle').textContent = respuesta.descripcion || "Resultado de la Consulta";
-            
-            // Mostrar descripción como título
-            document.getElementById('descripcionTitle').textContent = respuesta.descripcion || "Disponibilidad";
-            
-            // Mostrar texto de salida
-            document.getElementById('outputContent').textContent = respuesta.output;
-            
-            // Añadir mensaje al historial de chat
-            addChatMessage(respuesta.output, 'bot');
-            
-            // Mostrar información adicional (precio)
-            const additionalInfo = document.getElementById('additionalInfo');
-            if (respuesta.precio) {
-                additionalInfo.classList.remove('hidden');
-                additionalInfo.innerHTML = `
-                    <div class="p-4 bg-green-50 rounded-lg border border-green-200">
-                        <h4 class="font-semibold text-green-800 mb-2">
-                            <i class="fas fa-tag mr-2"></i>Información de precio:
-                        </h4>
-                        <p class="text-gray-700 font-medium">${respuesta.precio}</p>
-                    </div>
-                `;
-            } else {
-                additionalInfo.classList.add('hidden');
-            }
-            
-            // Mostrar el tipo de plantilla correspondiente
-            if (respuesta.tipo_plantilla === 'carrusel' && respuesta.imagenes && respuesta.imagenes.length > 0) {
-                mostrarCarrusel(respuesta.imagenes);
-            } else {
-                // Si no es carrusel o no hay imágenes, ocultar el carrusel
-                document.getElementById('carouselContainer').classList.add('hidden');
-            }
-            
-            // Ocultar estado inicial
-            document.getElementById('initialState').classList.add('hidden');
-            document.getElementById('errorState').classList.add('hidden');
-        }
-        
-        // Función para mostrar el carrusel de imágenes
-        function mostrarCarrusel(imagenes) {
-            const carouselContainer = document.getElementById('carouselContainer');
-            const carouselInner = carouselContainer.querySelector('.carousel-container');
-            const dotsContainer = carouselContainer.querySelector('.carousel-dots');
-            
-            // Limpiar carrusel anterior
-            carouselInner.innerHTML = '';
-            dotsContainer.innerHTML = '';
-            
-            // Si no hay imágenes, ocultar el carrusel
-            if (!imagenes || imagenes.length === 0) {
-                carouselContainer.classList.add('hidden');
-                return;
-            }
-            
-            // Crear slides para cada imagen
-            imagenes.forEach((imagen, index) => {
-                // Crear slide
-                const slide = document.createElement('div');
-                slide.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
-                slide.dataset.index = index;
+            // Crear miniaturas
+            imageData.images.forEach((image, index) => {
+                const thumbnail = document.createElement('div');
+                thumbnail.className = `thumbnail ${index === 0 ? 'active' : ''}`;
+                thumbnail.dataset.index = index;
                 
                 const img = document.createElement('img');
-                img.src = imagen;
-                img.alt = `Imagen ${index + 1} de la cabaña`;
-                img.loading = "lazy";
-                img.onerror = function() {
-                    // Si falla la carga de la imagen, mostrar un placeholder
-                    this.src = "https://via.placeholder.com/800x400/3b82f6/ffffff?text=Imagen+no+disponible";
-                    this.onerror = null; // Prevenir bucles infinitos
-                };
+                img.src = image.url;
+                img.alt = image.title;
+                img.loading = 'lazy';
                 
-                slide.appendChild(img);
-                carouselInner.appendChild(slide);
+                thumbnail.appendChild(img);
+                thumbnailsContainer.appendChild(thumbnail);
                 
-                // Crear punto de navegación
-                const dot = document.createElement('div');
-                dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
-                dot.dataset.index = index;
-                dot.onclick = () => goToSlide(index);
-                dotsContainer.appendChild(dot);
+                // Evento click en miniatura
+                thumbnail.addEventListener('click', () => {
+                    changeImage(index);
+                });
             });
             
-            // Agregar botones de navegación si hay más de una imagen
-            if (imagenes.length > 1) {
-                // Botón anterior
-                const prevBtn = document.createElement('button');
-                prevBtn.className = 'carousel-btn carousel-prev';
-                prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-                prevBtn.onclick = () => prevSlide();
-                prevBtn.title = "Imagen anterior";
-                carouselInner.appendChild(prevBtn);
-                
-                // Botón siguiente
-                const nextBtn = document.createElement('button');
-                nextBtn.className = 'carousel-btn carousel-next';
-                nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-                nextBtn.onclick = () => nextSlide();
-                nextBtn.title = "Siguiente imagen";
-                carouselInner.appendChild(nextBtn);
-                
-                // Iniciar autoplay
-                startCarouselAutoPlay();
-            }
+            // Actualizar imagen principal
+            updateMainImage();
             
-            // Mostrar el carrusel
-            carouselContainer.classList.remove('hidden');
-            currentCarouselIndex = 0;
+            // Configurar eventos de navegación
+            prevBtn.addEventListener('click', () => {
+                changeImage(currentImageIndex - 1);
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                changeImage(currentImageIndex + 1);
+            });
+            
+            // Configurar controles de zoom
+            zoomInBtn.addEventListener('click', zoomIn);
+            zoomOutBtn.addEventListener('click', zoomOut);
+            resetZoomBtn.addEventListener('click', resetZoom);
+            
+            // Navegación con teclado
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') changeImage(currentImageIndex - 1);
+                if (e.key === 'ArrowRight') changeImage(currentImageIndex + 1);
+                if (e.key === '+') zoomIn();
+                if (e.key === '-') zoomOut();
+                if (e.key === '0') resetZoom();
+            });
+            
+            // Auto-avance cada 10 segundos
+            setInterval(() => {
+                changeImage(currentImageIndex + 1);
+            }, 10000);
+            
+            hideLoading();
         }
         
-        // Funciones para controlar el carrusel
-        function goToSlide(index) {
-            const slides = document.querySelectorAll('.carousel-slide');
-            const dots = document.querySelectorAll('.carousel-dot');
-            
-            if (slides.length === 0) return;
-            
+        // Cambiar imagen actual
+        function changeImage(index) {
             // Validar índice
-            if (index < 0) index = slides.length - 1;
-            if (index >= slides.length) index = 0;
+            if (index < 0) index = imageData.images.length - 1;
+            if (index >= imageData.images.length) index = 0;
             
-            // Remover clase active de todos
-            slides.forEach(slide => slide.classList.remove('active'));
-            dots.forEach(dot => dot.classList.remove('active'));
+            currentImageIndex = index;
             
-            // Agregar clase active al slide y dot seleccionado
-            slides[index].classList.add('active');
-            if (dots[index]) dots[index].classList.add('active');
+            // Actualizar imagen principal
+            updateMainImage();
             
-            currentCarouselIndex = index;
-            
-            // Reiniciar autoplay
-            restartCarouselAutoPlay();
-        }
-        
-        function nextSlide() {
-            const slides = document.querySelectorAll('.carousel-slide');
-            const nextIndex = (currentCarouselIndex + 1) % slides.length;
-            goToSlide(nextIndex);
-        }
-        
-        function prevSlide() {
-            const slides = document.querySelectorAll('.carousel-slide');
-            const prevIndex = (currentCarouselIndex - 1 + slides.length) % slides.length;
-            goToSlide(prevIndex);
-        }
-        
-        function startCarouselAutoPlay() {
-            // Cambiar slide cada 5 segundos solo si hay más de una imagen
-            const slides = document.querySelectorAll('.carousel-slide');
-            if (slides.length > 1) {
-                carouselInterval = setInterval(nextSlide, 5000);
-            }
-        }
-        
-        function restartCarouselAutoPlay() {
-            if (carouselInterval) {
-                clearInterval(carouselInterval);
-            }
-            startCarouselAutoPlay();
-        }
-        
-        // Función para leer texto en voz alta
-        function leerTexto(texto) {
-            if ('speechSynthesis' in window) {
-                // Cancelar cualquier speech en curso
-                speechSynthesis.cancel();
-                
-                const utterance = new SpeechSynthesisUtterance(texto);
-                utterance.lang = 'es-CL';
-                utterance.rate = 1.0;
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-                
-                // Buscar una voz en español
-                const voices = speechSynthesis.getVoices();
-                const spanishVoice = voices.find(voice => voice.lang.startsWith('es-CL') || voice.lang.startsWith('es'));
-                
-                if (spanishVoice) {
-                    utterance.voice = spanishVoice;
-                }
-                
-                // Configurar eventos
-                utterance.onstart = function() {
-                    console.log("Comenzando a leer texto...");
-                };
-                
-                utterance.onend = function() {
-                    console.log("Lectura finalizada");
-                };
-                
-                utterance.onerror = function(event) {
-                    console.error("Error en síntesis de voz:", event);
-                };
-                
-                speechSynthesis.speak(utterance);
-            } else {
-                console.warn("Síntesis de voz no soportada en este navegador");
-            }
-        }
-        
-        // Función para añadir mensajes al historial de chat
-        function addChatMessage(mensaje, tipo) {
-            const chatHistory = document.getElementById('chatHistory');
-            const messageDiv = document.createElement('div');
-            
-            if (tipo === 'user') {
-                messageDiv.className = 'user-message p-3';
-            } else if (tipo === 'bot') {
-                messageDiv.className = 'bot-message p-3';
-            } else {
-                messageDiv.className = 'error-message p-3 rounded-lg';
-            }
-            
-            messageDiv.innerHTML = `<p>${mensaje}</p>`;
-            
-            chatHistory.appendChild(messageDiv);
-            
-            // Hacer scroll al final del historial
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        }
-        
-        // Función para actualizar el estado del sistema
-        function updateStatus(texto, colorClase) {
-            const indicator = document.getElementById('statusIndicator');
-            const statusText = document.getElementById('statusText');
-            
-            // Remover todas las clases de color y animación
-            indicator.classList.remove('bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-blue-500', 'animate-pulse');
-            
-            // Agregar la nueva clase de color
-            indicator.classList.add(colorClase);
-            
-            // Agregar animación para estados activos
-            if (colorClase !== 'bg-green-500') {
-                indicator.classList.add('animate-pulse');
-            }
-            
-            // Actualizar texto
-            statusText.textContent = texto;
-        }
-        
-        // Inicialización cuando se carga la página
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("Sistema de voz Villaitue iniciado");
-            
-            // Obtener y mostrar el número de voces disponibles
-            if ('speechSynthesis' in window) {
-                // Esperar a que las voces se carguen
-                const loadVoices = () => {
-                    const voices = speechSynthesis.getVoices();
-                    const spanishVoices = voices.filter(v => v.lang.startsWith('es'));
-                    document.getElementById('voicesCount').textContent = spanishVoices.length > 0 ? spanishVoices.length : voices.length;
-                };
-                
-                speechSynthesis.onvoiceschanged = loadVoices;
-                loadVoices(); // Llamar inmediatamente por si ya están cargadas
-            }
-            
-            // Inicializar reconocimiento de voz
-            recognition = initVoiceRecognition();
-            
-            // Configurar botones
-            document.getElementById('startBtn').addEventListener('click', function() {
-                if (recognition) {
-                    recognition.start();
-                }
+            // Actualizar miniaturas activas
+            document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
+                thumb.classList.toggle('active', i === index);
             });
             
-            document.getElementById('stopBtn').addEventListener('click', function() {
-                if (recognition) {
-                    recognition.stop();
-                }
+            // Resetear zoom
+            resetZoom();
+        }
+        
+        // Actualizar imagen principal
+        function updateMainImage() {
+            const image = imageData.images[currentImageIndex];
+            
+            // Efecto de transición
+            mainImage.style.opacity = '0';
+            
+            setTimeout(() => {
+                mainImage.src = image.url;
+                mainImage.alt = image.title;
+                
+                // Actualizar contador
+                imageCounter.textContent = `Imagen ${currentImageIndex + 1} de ${imageData.images.length}`;
+                
+                // Actualizar overlay
+                const overlay = document.querySelector('.image-overlay');
+                overlay.innerHTML = `
+                    <h3 class="text-lg font-semibold">${image.title}</h3>
+                    <p class="text-sm opacity-90">${image.description}</p>
+                `;
+                
+                mainImage.style.opacity = '1';
+            }, 300);
+        }
+        
+        // Funciones de zoom
+        function zoomIn() {
+            if (zoomLevel < maxZoom) {
+                zoomLevel += 0.25;
+                applyZoom();
+            }
+        }
+        
+        function zoomOut() {
+            if (zoomLevel > minZoom) {
+                zoomLevel -= 0.25;
+                applyZoom();
+            }
+        }
+        
+        function resetZoom() {
+            zoomLevel = 1;
+            applyZoom();
+        }
+        
+        function applyZoom() {
+            mainImage.style.transform = `scale(${zoomLevel})`;
+            
+            // Efecto visual en botones de zoom
+            zoomInBtn.disabled = zoomLevel >= maxZoom;
+            zoomOutBtn.disabled = zoomLevel <= minZoom;
+            
+            zoomInBtn.style.opacity = zoomInBtn.disabled ? '0.5' : '1';
+            zoomOutBtn.style.opacity = zoomOutBtn.disabled ? '0.5' : '1';
+        }
+        
+        // Manejo de carga
+        function showLoading() {
+            loadingIndicator.classList.remove('hidden');
+        }
+        
+        function hideLoading() {
+            loadingIndicator.classList.add('hidden');
+        }
+        
+        // Precargar imágenes
+        function preloadImages() {
+            showLoading();
+            
+            const promises = imageData.images.map(image => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = image.url;
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
             });
             
-            // Configurar botón de reintento
-            document.getElementById('retryBtn').addEventListener('click', function() {
-                if (currentResponseData) {
-                    mostrarRespuestaAgente(currentResponseData);
-                } else {
-                    // Si no hay datos, volver al estado inicial
-                    document.getElementById('initialState').classList.remove('hidden');
-                    document.getElementById('errorState').classList.add('hidden');
-                    document.getElementById('agentResponse').classList.add('hidden');
-                }
+            Promise.all(promises)
+                .then(() => {
+                    console.log('Todas las imágenes cargadas');
+                })
+                .catch(error => {
+                    console.error('Error cargando imágenes:', error);
+                })
+                .finally(() => {
+                    hideLoading();
+                });
+        }
+        
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            preloadImages();
+            setTimeout(initGallery, 500); // Pequeño delay para mejor UX
+        });
+        
+        // Efectos visuales adicionales
+        document.querySelectorAll('.nav-btn, .zoom-btn').forEach(btn => {
+            btn.addEventListener('mousedown', () => {
+                btn.style.transform = 'scale(0.95)';
             });
             
-            // Inicializar con el botón de detener deshabilitado
-            document.getElementById('stopBtn').disabled = true;
-            document.getElementById('stopBtn').classList.add('opacity-50');
+            btn.addEventListener('mouseup', () => {
+                btn.style.transform = '';
+            });
             
-            // Mostrar información inicial en el panel de depuración
-            document.getElementById('rawResponse').textContent = 'Esperando consulta...';
-            document.getElementById('processedData').textContent = 'Esperando consulta...';
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = '';
+            });
+        });
+        
+        // Efecto parallax en scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const mainImageContainer = document.querySelector('.main-image-container');
+            const rate = scrolled * -0.5;
+            
+            mainImageContainer.style.transform = `translateY(${rate}px)`;
         });
     </script>
 </body>
