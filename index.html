@@ -1,13 +1,67 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Villaitue</title>
+    <title>Autoservicio-Villaitue</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estilos para el carrusel */
+        /* Estilos para el carrusel de bienvenida */
+        .welcome-carousel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .welcome-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 2s ease-in-out; /* Transición más lenta - 2 segundos */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .welcome-slide.active {
+            opacity: 1;
+        }
+        
+        .welcome-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.5));
+        }
+        
+        /* Estilos para el contenido de bienvenida */
+        .welcome-content {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        /* Estilos para el carrusel de resultados */
         .carousel-container {
             position: relative;
             width: 100%;
@@ -24,7 +78,7 @@
             width: 100%;
             height: 100%;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            transition: opacity 0.8s ease-in-out; /* Transición más suave */
         }
         
         .carousel-slide.active {
@@ -96,31 +150,37 @@
         }
         
         .fade-in {
-            animation: fadeIn 0.5s ease-out;
+            animation: fadeIn 0.8s ease-out; /* Animación más suave */
         }
         
-        /* Estilos para el historial de chat */
-        .user-message {
-            background-color: #3b82f6;
-            color: white;
-            border-radius: 18px 18px 4px 18px;
-            max-width: 80%;
-            align-self: flex-end;
+        /* Botón de voz */
+        .voice-btn {
+            transition: all 0.4s ease; /* Transición más lenta */
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
         }
         
-        .bot-message {
-            background-color: #f3f4f6;
-            color: #1f2937;
-            border-radius: 18px 18px 18px 4px;
-            max-width: 80%;
-            align-self: flex-start;
+        .voice-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
         }
         
-        /* Estilos para mensajes de error */
-        .error-message {
-            background-color: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
+        .voice-btn.listening {
+            background-color: #ef4444;
+            animation: pulse 2s infinite; /* Pulso más lento */
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        
+        /* Contenedor de respuesta */
+        .response-container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
         }
         
         /* Scrollbar personalizado */
@@ -141,90 +201,75 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+        
+        /* Texto con sombra para mejor legibilidad */
+        .text-shadow-lg {
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Encabezado -->
-        <header class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">
-                <i class="fas fa-microphone text-blue-600 mr-3"></i>
-                Sistema autoservicio de Cabañas Villaitue
-            </h1>
-            <p class="text-gray-600">Sistema de reservas por voz interactivo</p>
-        </header>
+<body class="min-h-screen">
+    <!-- Carrusel de bienvenida (fondo fullscreen) -->
+    <div class="welcome-carousel">
+        <div class="welcome-slide active" style="background-image: url('https://vsn47925-tech.github.io/img/cab-amanecervilla.jpg')"></div>
+        <div class="welcome-slide" style="background-image: url('https://vsn47925-tech.github.io/img/volcan-entre-arboles.jpg')"></div>
+        <div class="welcome-slide" style="background-image: url('https://vsn47925-tech.github.io/img/jardin-manzano-mesa.jpg')"></div>
+        <div class="welcome-slide" style="background-image: url('https://vsn47925-tech.github.io/img/cab-entrada.jpg')"></div>
+    </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Panel de control izquierdo -->
-            <div class="lg:col-span-1 bg-white rounded-2xl shadow-xl p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">
-                    <i class="fas fa-sliders-h text-blue-600 mr-2"></i>
-                    Control del Sistema
-                </h2>
-                
-                <!-- Estado del sistema -->
-                <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Estado del Sistema</h3>
-                    <div class="flex items-center mb-2">
-                        <div id="statusIndicator" class="w-3 h-3 rounded-full bg-green-500 mr-3 animate-pulse"></div>
-                        <span id="statusText" class="text-gray-700 font-medium">Sistema de voz iniciado</span>
-                    </div>
-                    <p id="endpointInfo" class="text-sm text-gray-500 mt-1">
-                        Endpoint: <span class="font-mono text-blue-600">https://apps.villaitue.cl/webhook/autoservicio</span>
-                    </p>
-                    <p id="voicesInfo" class="text-sm text-gray-500">Voces cargadas: <span id="voicesCount" class="font-semibold">19</span></p>
-                </div>
-                
-                <!-- Controles de voz -->
-                <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Control de Voz</h3>
-                    <div class="flex justify-center space-x-4">
-                        <button id="startBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-medium flex items-center transition duration-300 shadow-md">
-                            <i class="fas fa-microphone mr-2"></i> Iniciar Voz
-                        </button>
-                        <button id="stopBtn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-medium flex items-center transition duration-300 shadow-md">
-                            <i class="fas fa-stop mr-2"></i> Detener
-                        </button>
-                    </div>
-                    <p class="text-sm text-gray-500 mt-3 text-center">Haz clic en "Iniciar Voz" y habla tu consulta</p>
-                </div>
-                
-                <!-- Historial de chat -->
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Historial de Conversación</h3>
-                    <div id="chatHistory" class="h-64 overflow-y-auto p-3 bg-gray-50 rounded-lg space-y-3">
-                        <!-- Los mensajes se agregarán aquí dinámicamente -->
-                        <div class="user-message p-3">
-                            <p class="font-medium">Hola tienes cabañas para dos personas</p>
-                        </div>
-                    </div>
+    <!-- Contenido de bienvenida centrado -->
+    <div class="welcome-content">
+        <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 text-shadow-lg">
+            Bienvenido a Cabañas Villaitue
+        </h1>
+        
+        <p class="text-xl md:text-2xl text-white mb-10 opacity-90 max-w-2xl">
+            Sistema de reservas por voz interactivo
+        </p>
+        
+        <!-- Botón para activar micrófono -->
+        <button id="startVoiceBtn" class="voice-btn bg-blue-600 hover:bg-blue-700 text-white p-5 rounded-full shadow-2xl flex items-center justify-center">
+            <i class="fas fa-microphone text-3xl"></i>
+        </button>
+        
+        <p class="text-white mt-6 text-lg opacity-80">
+            Haz clic para activar el micrófono
+        </p>
+        
+        <div class="mt-8 bg-black/20 backdrop-blur-sm rounded-xl p-4 max-w-md">
+            <p class="text-white text-sm">
+                <i class="fas fa-info-circle mr-2"></i>
+                Pregunta por disponibilidad, precios o características de nuestras cabañas
+            </p>
+        </div>
+    </div>
+
+    <!-- Botón de control de voz flotante (oculto inicialmente) -->
+    <div id="voiceControlContainer" class="fixed top-6 right-6 z-20 hidden">
+        <div class="relative">
+            <button id="voiceControlBtn" class="voice-btn bg-blue-600 text-white p-4 rounded-full shadow-lg flex items-center justify-center">
+                <i id="voiceIcon" class="fas fa-microphone text-2xl"></i>
+            </button>
+            <div id="voiceStatus" class="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg p-3 text-sm text-gray-700 whitespace-nowrap hidden">
+                <div class="flex items-center">
+                    <div id="statusIndicator" class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                    <span id="statusText">Listo para escuchar</span>
                 </div>
             </div>
-            
-            <!-- Panel principal central -->
-            <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
-                    <i class="fas fa-home text-blue-600 mr-2"></i>
-                    <span id="responseTitle">Resultado de la Consulta</span>
-                </h2>
-                
-                <!-- Contenedor de respuesta -->
-                <div id="responseContainer" class="min-h-[500px] flex flex-col justify-center items-center">
-                    <!-- Estado inicial o cuando no hay respuesta -->
-                    <div id="initialState" class="text-center p-8">
-                        <div class="text-gray-400 mb-6">
-                            <i class="fas fa-comment-alt text-6xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-600 mb-2">Esperando tu consulta</h3>
-                        <p class="text-gray-500">Haz clic en "Iniciar Voz" y pregunta por nuestras cabañas disponibles</p>
-                    </div>
-                    
+        </div>
+    </div>
+
+    <!-- Contenedor de respuesta (oculto inicialmente) -->
+    <div id="responseWrapper" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="response-container">
+            <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
+                <div id="responseContainer" class="w-full">
                     <!-- Respuesta del agente (se mostrará dinámicamente) -->
-                    <div id="agentResponse" class="hidden w-full">
+                    <div id="agentResponse" class="w-full">
                         <!-- Título de la respuesta -->
-                        <h3 id="descripcionTitle" class="text-2xl font-bold text-center text-gray-800 mb-6"></h3>
+                        <h2 id="descripcionTitle" class="text-3xl font-bold text-center text-gray-800 mb-6"></h2>
                         
-                        <!-- Carrusel de imágenes -->
+                        <!-- Carrusel de imágenes de resultados -->
                         <div id="carouselContainer" class="hidden">
                             <div class="carousel-container mb-4">
                                 <!-- Las imágenes del carrusel se insertarán aquí -->
@@ -235,69 +280,41 @@
                         </div>
                         
                         <!-- Texto de salida (para speech) -->
-                        <div id="outputText" class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <h4 class="font-semibold text-blue-800 mb-2">
-                                <i class="fas fa-volume-up mr-2"></i>Respuesta del sistema:
-                            </h4>
-                            <p id="outputContent" class="text-gray-700"></p>
+                        <div id="outputText" class="mt-8 p-5 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-volume-up text-blue-600 mr-2"></i>
+                                <h4 class="font-semibold text-blue-800">Respuesta del sistema:</h4>
+                            </div>
+                            <p id="outputContent" class="text-gray-700 text-lg leading-relaxed"></p>
                         </div>
                         
-                        <!-- Información adicional (precio, etc.) -->
-                        <div id="additionalInfo" class="mt-4 hidden">
-                            <!-- Información adicional se insertará aquí -->
+                        <!-- Botón para nueva consulta -->
+                        <div class="mt-8 text-center">
+                            <button id="newQueryBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition duration-300 shadow-md flex items-center mx-auto">
+                                <i class="fas fa-microphone mr-2"></i>Realizar nueva consulta
+                            </button>
                         </div>
                     </div>
                     
                     <!-- Estado de error -->
-                    <div id="errorState" class="hidden text-center p-8">
+                    <div id="errorState" class="hidden text-center p-8 w-full">
                         <div class="text-red-400 mb-6">
                             <i class="fas fa-exclamation-triangle text-6xl"></i>
                         </div>
                         <h3 class="text-xl font-semibold text-gray-600 mb-2">Error en el sistema</h3>
                         <p id="errorMessage" class="text-gray-500">Ha ocurrido un error al procesar tu solicitud</p>
-                        <button id="retryBtn" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-300">
+                        <button id="retryBtn" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition duration-300 shadow-md">
                             <i class="fas fa-redo mr-2"></i>Intentar nuevamente
                         </button>
                     </div>
                 </div>
-                
-                <!-- Información de depuración (solo para desarrollo) -->
-                <div class="mt-8 border-t pt-6">
-                    <details class="bg-gray-50 rounded-lg p-4">
-                        <summary class="font-medium text-gray-700 cursor-pointer">
-                            <i class="fas fa-bug mr-2"></i>Información de depuración
-                        </summary>
-                        <div class="mt-3 space-y-2">
-                            <div>
-                                <span class="font-medium text-gray-600">Última pregunta:</span>
-                                <span id="lastQuestion" class="ml-2 text-gray-800">Hola tienes cabañas para dos personas</span>
-                            </div>
-                            <div>
-                                <span class="font-medium text-gray-600">Respuesta HTTP:</span>
-                                <span id="httpResponse" class="ml-2 text-green-600 font-semibold">200</span>
-                            </div>
-                            <div>
-                                <span class="font-medium text-gray-600">Respuesta cruda del servidor:</span>
-                                <pre id="rawResponse" class="mt-2 p-3 bg-gray-800 text-green-400 rounded text-sm overflow-x-auto max-h-60 overflow-y-auto"></pre>
-                            </div>
-                            <div>
-                                <span class="font-medium text-gray-600">Datos procesados:</span>
-                                <pre id="processedData" class="mt-2 p-3 bg-blue-900 text-blue-100 rounded text-sm overflow-x-auto max-h-60 overflow-y-auto"></pre>
-                            </div>
-                        </div>
-                    </details>
-                </div>
             </div>
+            
+            <!-- Footer simplificado -->
+            <footer class="mt-8 text-center text-white text-sm">
+                <p>Villa Itue - Sistema de reservas por voz © 2026</p>
+            </footer>
         </div>
-        
-        <!-- Footer -->
-        <footer class="mt-12 text-center text-gray-500 text-sm">
-            <p>Villa Itue - Sistema de reservas por voz © 2026</p>
-            <p class="mt-1">
-                <i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>
-                tailwindcss.com no debe usarse en producción. Para usar Tailwind CSS en producción, instálalo como plugin de PostCSS o usa la CLI de Tailwind.
-            </p>
-        </footer>
     </div>
 
     <script>
@@ -306,6 +323,87 @@
         let currentCarouselIndex = 0;
         let carouselInterval = null;
         let currentResponseData = null;
+        let isListening = false;
+        
+        // Variables para el carrusel de bienvenida
+        let welcomeSlideIndex = 0;
+        let welcomeSlides = [];
+        let welcomeInterval = null;
+        
+        // Función para inicializar el carrusel de bienvenida
+        function initWelcomeCarousel() {
+            welcomeSlides = document.querySelectorAll('.welcome-slide');
+            
+            if (welcomeSlides.length === 0) return;
+            
+            // Iniciar autoplay del carrusel de bienvenida (cada 5 segundos en lugar de 2)
+            startWelcomeCarousel();
+        }
+        
+        // Función para cambiar slide del carrusel de bienvenida
+        function goToWelcomeSlide(index) {
+            if (welcomeSlides.length === 0) return;
+            
+            // Validar índice
+            if (index < 0) index = welcomeSlides.length - 1;
+            if (index >= welcomeSlides.length) index = 0;
+            
+            // Remover clase active de todos
+            welcomeSlides.forEach(slide => slide.classList.remove('active'));
+            
+            // Agregar clase active al slide seleccionado
+            welcomeSlides[index].classList.add('active');
+            
+            welcomeSlideIndex = index;
+        }
+        
+        function nextWelcomeSlide() {
+            const nextIndex = (welcomeSlideIndex + 1) % welcomeSlides.length;
+            goToWelcomeSlide(nextIndex);
+        }
+        
+        function startWelcomeCarousel() {
+            // Cambiar slide cada 5 segundos (más lento que antes)
+            if (welcomeSlides.length > 1) {
+                welcomeInterval = setInterval(nextWelcomeSlide, 5000);
+            }
+        }
+        
+        function stopWelcomeCarousel() {
+            if (welcomeInterval) {
+                clearInterval(welcomeInterval);
+                welcomeInterval = null;
+            }
+        }
+        
+        // Función para mostrar la interfaz de respuesta
+        function showResponseInterface() {
+            // Ocultar bienvenida
+            document.querySelector('.welcome-content').classList.add('hidden');
+            
+            // Mostrar contenedor de respuesta y botón de control de voz
+            document.getElementById('responseWrapper').classList.remove('hidden');
+            document.getElementById('voiceControlContainer').classList.remove('hidden');
+            
+            // Detener carrusel de bienvenida
+            stopWelcomeCarousel();
+        }
+        
+        // Función para volver a la bienvenida
+        function showWelcomeInterface() {
+            // Ocultar respuesta y botón de control de voz
+            document.getElementById('responseWrapper').classList.add('hidden');
+            document.getElementById('voiceControlContainer').classList.add('hidden');
+            
+            // Mostrar bienvenida
+            document.querySelector('.welcome-content').classList.remove('hidden');
+            
+            // Limpiar cualquier respuesta anterior
+            clearPreviousResponse();
+            
+            // Reanudar carrusel de bienvenida
+            startWelcomeCarousel();
+        }
         
         // Función para inicializar el reconocimiento de voz
         function initVoiceRecognition() {
@@ -323,25 +421,25 @@
             
             recognition.onstart = function() {
                 console.log("Reconocimiento de voz iniciado");
+                isListening = true;
+                updateVoiceButton(true);
                 updateStatus("Escuchando...", "bg-yellow-500");
-                document.getElementById('startBtn').disabled = true;
-                document.getElementById('stopBtn').disabled = false;
-                document.getElementById('startBtn').classList.add('opacity-50');
-                document.getElementById('stopBtn').classList.remove('opacity-50');
+                
+                // Mostrar estado de voz
+                document.getElementById('voiceStatus').classList.remove('hidden');
             };
             
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 console.log("Pregunta detectada:", transcript);
                 
-                // Mostrar en el historial de chat
-                addChatMessage(transcript, 'user');
-                
-                // Actualizar información de depuración
-                document.getElementById('lastQuestion').textContent = transcript;
-                
                 // Limpiar respuesta anterior
                 clearPreviousResponse();
+                
+                // Mostrar mensaje de procesamiento
+                document.getElementById('errorState').classList.add('hidden');
+                document.getElementById('descripcionTitle').textContent = "Procesando consulta...";
+                document.getElementById('outputContent').textContent = `"${transcript}"`;
                 
                 // Enviar a n8n
                 sendToN8N(transcript);
@@ -349,47 +447,67 @@
             
             recognition.onerror = function(event) {
                 console.error("Error en reconocimiento de voz:", event.error);
+                isListening = false;
+                updateVoiceButton(false);
                 updateStatus("Error en voz", "bg-red-500");
-                resetVoiceButtons();
                 
                 // Mostrar error específico
+                let errorMsg = "Error en el reconocimiento de voz. Intenta nuevamente.";
                 if (event.error === 'no-speech') {
-                    addChatMessage("No se detectó voz. Por favor habla más claro.", 'bot');
+                    errorMsg = "No se detectó voz. Por favor habla más claro.";
                 } else if (event.error === 'audio-capture') {
-                    addChatMessage("No se pudo acceder al micrófono. Verifica los permisos.", 'bot');
-                } else {
-                    addChatMessage("Error en el reconocimiento de voz. Intenta nuevamente.", 'bot');
+                    errorMsg = "No se pudo acceder al micrófono. Verifica los permisos.";
                 }
+                
+                showErrorState(errorMsg);
             };
             
             recognition.onend = function() {
                 console.log("Reconocimiento de voz finalizado");
+                isListening = false;
+                updateVoiceButton(false);
                 updateStatus("Listo para escuchar", "bg-green-500");
-                resetVoiceButtons();
+                
+                // Ocultar estado de voz después de un tiempo
+                setTimeout(() => {
+                    if (!isListening) {
+                        document.getElementById('voiceStatus').classList.add('hidden');
+                    }
+                }, 2000);
             };
             
             return recognition;
         }
         
+        // Función para actualizar el botón de voz
+        function updateVoiceButton(listening) {
+            const voiceBtn = document.getElementById('voiceControlBtn');
+            const voiceIcon = document.getElementById('voiceIcon');
+            
+            if (listening) {
+                voiceBtn.classList.add('listening');
+                voiceBtn.classList.remove('bg-blue-600');
+                voiceBtn.classList.add('bg-red-600');
+                voiceIcon.classList.remove('fa-microphone');
+                voiceIcon.classList.add('fa-stop');
+            } else {
+                voiceBtn.classList.remove('listening');
+                voiceBtn.classList.remove('bg-red-600');
+                voiceBtn.classList.add('bg-blue-600');
+                voiceIcon.classList.remove('fa-stop');
+                voiceIcon.classList.add('fa-microphone');
+            }
+        }
+        
         // Función para limpiar respuesta anterior
         function clearPreviousResponse() {
-            document.getElementById('initialState').classList.add('hidden');
-            document.getElementById('agentResponse').classList.add('hidden');
             document.getElementById('errorState').classList.add('hidden');
             
-            // Detener carrusel si está activo
+            // Detener carrusel de resultados si está activo
             if (carouselInterval) {
                 clearInterval(carouselInterval);
                 carouselInterval = null;
             }
-        }
-        
-        // Función para resetear botones de voz
-        function resetVoiceButtons() {
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('stopBtn').disabled = true;
-            document.getElementById('startBtn').classList.remove('opacity-50');
-            document.getElementById('stopBtn').classList.add('opacity-50');
         }
         
         // Función para enviar la consulta a n8n
@@ -409,15 +527,9 @@
                 });
                 
                 console.log("Respuesta HTTP:", response.status);
-                document.getElementById('httpResponse').textContent = response.status;
-                document.getElementById('httpResponse').className = response.status === 200 ? 
-                    "ml-2 text-green-600 font-semibold" : "ml-2 text-red-600 font-semibold";
                 
                 const responseText = await response.text();
                 console.log("Respuesta texto COMPLETA:", responseText);
-                
-                // Mostrar la respuesta cruda en la depuración
-                document.getElementById('rawResponse').textContent = responseText;
                 
                 // Procesar la respuesta
                 const processedData = processRespuetaN8N(responseText);
@@ -425,9 +537,6 @@
                 
                 // Guardar datos actuales
                 currentResponseData = processedData;
-                
-                // Mostrar en información de depuración
-                document.getElementById('processedData').textContent = JSON.stringify(processedData, null, 2);
                 
                 // Mostrar la respuesta en la interfaz
                 mostrarRespuestaAgente(processedData);
@@ -446,23 +555,18 @@
                 
                 // Mostrar estado de error
                 showErrorState("Error de conexión con el servidor. Por favor verifica tu internet e intenta nuevamente.");
-                
-                // Mostrar mensaje de error al usuario
-                addChatMessage("Lo siento, hubo un error al procesar tu consulta. Por favor intenta nuevamente.", 'bot');
             }
         }
         
-        // Función para procesar la respuesta de n8n (MEJORADA)
+        // Función para procesar la respuesta de n8n
         function processRespuetaN8N(responseText) {
             try {
-                // Verificar que la respuesta no esté vacía
                 if (!responseText || responseText.trim() === '') {
                     throw new Error('Respuesta vacía del servidor');
                 }
                 
                 console.log("Procesando respuesta n8n:", responseText);
                 
-                // Limpiar posibles problemas de formato
                 let cleanedText = responseText.trim();
                 
                 // Intentar parsear como JSON
@@ -472,7 +576,7 @@
                 } catch (parseError) {
                     console.error("Error parseando JSON:", parseError);
                     
-                    // Intentar limpiar el JSON (quitar comillas extras, etc.)
+                    // Intentar limpiar el JSON
                     cleanedText = cleanedText.replace(/\\\"/g, '"');
                     cleanedText = cleanedText.replace(/\"{/g, '{');
                     cleanedText = cleanedText.replace(/}\"/g, '}');
@@ -481,7 +585,7 @@
                     data = JSON.parse(cleanedText);
                 }
                 
-                // CASO 1: Si es un array (formato correcto)
+                // CASO 1: Si es un array
                 if (Array.isArray(data)) {
                     console.log("Respuesta recibida como array:", data);
                     
@@ -504,9 +608,9 @@
                                  (Array.isArray(item.images) ? item.images : [])
                     };
                     
-                    // Si hay precio, agregarlo
+                    // Si hay precio, incluirlo en el output (ya que eliminamos el recuadro separado)
                     if (item.precio) {
-                        normalizedItem.precio = item.precio;
+                        normalizedItem.output += `\n\nPrecio: ${item.precio}`;
                     }
                     
                     return [normalizedItem];
@@ -526,13 +630,20 @@
                 // CASO 3: Si es un objeto directo con los campos esperados
                 if (data && (data.output || data.tipo_plantilla)) {
                     console.log("Respuesta recibida como objeto:", data);
-                    return [{
+                    const result = {
                         output: data.output || data.msg || "Respuesta recibida",
                         tipo_plantilla: data.tipo_plantilla || "texto",
                         descripcion: data.descripcion || data.description || "Resultado",
                         imagenes: Array.isArray(data.imagenes) ? data.imagenes : 
                                 (Array.isArray(data.images) ? data.images : [])
-                    }];
+                    };
+                    
+                    // Si hay precio, incluirlo en el output
+                    if (data.precio) {
+                        result.output += `\n\nPrecio: ${data.precio}`;
+                    }
+                    
+                    return [result];
                 }
                 
                 // CASO 4: Formato no reconocido
@@ -542,7 +653,6 @@
             } catch (error) {
                 console.error('Error parseando respuesta n8n:', error.message, 'Response:', responseText);
                 
-                // Devolver una respuesta de error estructurada
                 return [{
                     output: "Lo siento, hubo un error al procesar la información. Por favor intenta nuevamente.",
                     tipo_plantilla: "texto",
@@ -554,7 +664,6 @@
         
         // Función para mostrar estado de error
         function showErrorState(message) {
-            document.getElementById('initialState').classList.add('hidden');
             document.getElementById('agentResponse').classList.add('hidden');
             document.getElementById('errorState').classList.remove('hidden');
             document.getElementById('errorMessage').textContent = message;
@@ -577,33 +686,14 @@
             agentResponse.classList.remove('hidden');
             agentResponse.classList.add('fade-in');
             
-            // Actualizar título de la página
-            document.getElementById('responseTitle').textContent = respuesta.descripcion || "Resultado de la Consulta";
+            // Ocultar error state
+            document.getElementById('errorState').classList.add('hidden');
             
-            // Mostrar descripción como título
-            document.getElementById('descripcionTitle').textContent = respuesta.descripcion || "Disponibilidad";
+            // Actualizar título de la respuesta
+            document.getElementById('descripcionTitle').textContent = respuesta.descripcion || "Resultado de la Consulta";
             
             // Mostrar texto de salida
             document.getElementById('outputContent').textContent = respuesta.output;
-            
-            // Añadir mensaje al historial de chat
-            addChatMessage(respuesta.output, 'bot');
-            
-            // Mostrar información adicional (precio)
-            const additionalInfo = document.getElementById('additionalInfo');
-            if (respuesta.precio) {
-                additionalInfo.classList.remove('hidden');
-                additionalInfo.innerHTML = `
-                    <div class="p-4 bg-green-50 rounded-lg border border-green-200">
-                        <h4 class="font-semibold text-green-800 mb-2">
-                            <i class="fas fa-tag mr-2"></i>Información de precio:
-                        </h4>
-                        <p class="text-gray-700 font-medium">${respuesta.precio}</p>
-                    </div>
-                `;
-            } else {
-                additionalInfo.classList.add('hidden');
-            }
             
             // Mostrar el tipo de plantilla correspondiente
             if (respuesta.tipo_plantilla === 'carrusel' && respuesta.imagenes && respuesta.imagenes.length > 0) {
@@ -612,13 +702,9 @@
                 // Si no es carrusel o no hay imágenes, ocultar el carrusel
                 document.getElementById('carouselContainer').classList.add('hidden');
             }
-            
-            // Ocultar estado inicial
-            document.getElementById('initialState').classList.add('hidden');
-            document.getElementById('errorState').classList.add('hidden');
         }
         
-        // Función para mostrar el carrusel de imágenes
+        // Función para mostrar el carrusel de imágenes de resultados
         function mostrarCarrusel(imagenes) {
             const carouselContainer = document.getElementById('carouselContainer');
             const carouselInner = carouselContainer.querySelector('.carousel-container');
@@ -646,9 +732,8 @@
                 img.alt = `Imagen ${index + 1} de la cabaña`;
                 img.loading = "lazy";
                 img.onerror = function() {
-                    // Si falla la carga de la imagen, mostrar un placeholder
                     this.src = "https://via.placeholder.com/800x400/3b82f6/ffffff?text=Imagen+no+disponible";
-                    this.onerror = null; // Prevenir bucles infinitos
+                    this.onerror = null;
                 };
                 
                 slide.appendChild(img);
@@ -689,7 +774,7 @@
             currentCarouselIndex = 0;
         }
         
-        // Funciones para controlar el carrusel
+        // Funciones para controlar el carrusel de resultados
         function goToSlide(index) {
             const slides = document.querySelectorAll('.carousel-slide');
             const dots = document.querySelectorAll('.carousel-dot');
@@ -761,7 +846,6 @@
                     utterance.voice = spanishVoice;
                 }
                 
-                // Configurar eventos
                 utterance.onstart = function() {
                     console.log("Comenzando a leer texto...");
                 };
@@ -780,77 +864,65 @@
             }
         }
         
-        // Función para añadir mensajes al historial de chat
-        function addChatMessage(mensaje, tipo) {
-            const chatHistory = document.getElementById('chatHistory');
-            const messageDiv = document.createElement('div');
-            
-            if (tipo === 'user') {
-                messageDiv.className = 'user-message p-3';
-            } else if (tipo === 'bot') {
-                messageDiv.className = 'bot-message p-3';
-            } else {
-                messageDiv.className = 'error-message p-3 rounded-lg';
-            }
-            
-            messageDiv.innerHTML = `<p>${mensaje}</p>`;
-            
-            chatHistory.appendChild(messageDiv);
-            
-            // Hacer scroll al final del historial
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        }
-        
         // Función para actualizar el estado del sistema
         function updateStatus(texto, colorClase) {
             const indicator = document.getElementById('statusIndicator');
             const statusText = document.getElementById('statusText');
             
-            // Remover todas las clases de color y animación
-            indicator.classList.remove('bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-blue-500', 'animate-pulse');
+            // Remover todas las clases de color
+            indicator.classList.remove('bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-blue-500');
             
             // Agregar la nueva clase de color
             indicator.classList.add(colorClase);
             
-            // Agregar animación para estados activos
-            if (colorClase !== 'bg-green-500') {
-                indicator.classList.add('animate-pulse');
-            }
-            
             // Actualizar texto
             statusText.textContent = texto;
+            
+            // Mostrar el estado
+            const voiceStatus = document.getElementById('voiceStatus');
+            voiceStatus.classList.remove('hidden');
         }
         
         // Inicialización cuando se carga la página
         document.addEventListener('DOMContentLoaded', function() {
             console.log("Sistema de voz Villaitue iniciado");
             
-            // Obtener y mostrar el número de voces disponibles
-            if ('speechSynthesis' in window) {
-                // Esperar a que las voces se carguen
-                const loadVoices = () => {
-                    const voices = speechSynthesis.getVoices();
-                    const spanishVoices = voices.filter(v => v.lang.startsWith('es'));
-                    document.getElementById('voicesCount').textContent = spanishVoices.length > 0 ? spanishVoices.length : voices.length;
-                };
-                
-                speechSynthesis.onvoiceschanged = loadVoices;
-                loadVoices(); // Llamar inmediatamente por si ya están cargadas
-            }
+            // Inicializar carrusel de bienvenida
+            initWelcomeCarousel();
             
             // Inicializar reconocimiento de voz
             recognition = initVoiceRecognition();
             
-            // Configurar botones
-            document.getElementById('startBtn').addEventListener('click', function() {
+            // Configurar botón de inicio de voz (en la bienvenida)
+            document.getElementById('startVoiceBtn').addEventListener('click', function() {
                 if (recognition) {
+                    // Mostrar interfaz de respuesta
+                    showResponseInterface();
+                    
+                    // Iniciar reconocimiento de voz después de un breve retraso
+                    setTimeout(() => {
+                        recognition.start();
+                    }, 500);
+                }
+            });
+            
+            // Configurar botón de control de voz (flotante)
+            document.getElementById('voiceControlBtn').addEventListener('click', function() {
+                if (!recognition) return;
+                
+                if (isListening) {
+                    // Si está escuchando, detener
+                    recognition.stop();
+                } else {
+                    // Si no está escuchando, iniciar
                     recognition.start();
                 }
             });
             
-            document.getElementById('stopBtn').addEventListener('click', function() {
+            // Configurar botón de nueva consulta
+            document.getElementById('newQueryBtn').addEventListener('click', function() {
                 if (recognition) {
-                    recognition.stop();
+                    recognition.start();
                 }
             });
             
@@ -859,20 +931,41 @@
                 if (currentResponseData) {
                     mostrarRespuestaAgente(currentResponseData);
                 } else {
-                    // Si no hay datos, volver al estado inicial
-                    document.getElementById('initialState').classList.remove('hidden');
-                    document.getElementById('errorState').classList.add('hidden');
-                    document.getElementById('agentResponse').classList.add('hidden');
+                    showWelcomeInterface();
                 }
             });
             
-            // Inicializar con el botón de detener deshabilitado
-            document.getElementById('stopBtn').disabled = true;
-            document.getElementById('stopBtn').classList.add('opacity-50');
+            // Mostrar/ocultar estado de voz al pasar el ratón
+            const voiceBtn = document.getElementById('voiceControlBtn');
+            const voiceStatus = document.getElementById('voiceStatus');
             
-            // Mostrar información inicial en el panel de depuración
-            document.getElementById('rawResponse').textContent = 'Esperando consulta...';
-            document.getElementById('processedData').textContent = 'Esperando consulta...';
+            if (voiceBtn && voiceStatus) {
+                voiceBtn.addEventListener('mouseenter', function() {
+                    voiceStatus.classList.remove('hidden');
+                });
+                
+                voiceBtn.addEventListener('mouseleave', function() {
+                    // Solo ocultar si no está escuchando
+                    if (!isListening) {
+                        setTimeout(() => {
+                            if (!voiceStatus.matches(':hover') && !voiceBtn.matches(':hover')) {
+                                voiceStatus.classList.add('hidden');
+                            }
+                        }, 300);
+                    }
+                });
+                
+                voiceStatus.addEventListener('mouseleave', function() {
+                    // Solo ocultar si no está escuchando
+                    if (!isListening) {
+                        setTimeout(() => {
+                            if (!voiceStatus.matches(':hover') && !voiceBtn.matches(':hover')) {
+                                voiceStatus.classList.add('hidden');
+                            }
+                        }, 300);
+                    }
+                });
+            }
         });
     </script>
 </body>
