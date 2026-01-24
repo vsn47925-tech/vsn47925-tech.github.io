@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autoservicio-Cabañas</title>
+    <title>Villaitue- Villarrica</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -61,7 +61,7 @@
             padding: 20px;
         }
         
-        /* Estilos para el carrusel de resultados */
+        /* Estilos para el carrusel de resultados - CORREGIDO */
         .carousel-container {
             position: relative;
             width: 100%;
@@ -69,6 +69,13 @@
             overflow: hidden;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .carousel-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
         }
         
         .carousel-slide {
@@ -78,40 +85,41 @@
             width: 100%;
             height: 100%;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            transition: opacity 0.8s ease-in-out;
+            z-index: 1;
         }
         
         .carousel-slide.active {
             opacity: 1;
+            z-index: 2;
         }
         
         .carousel-slide img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 8px;
         }
         
         .carousel-dots {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
             display: flex;
             justify-content: center;
             gap: 10px;
+            margin-top: 15px;
         }
         
         .carousel-dot {
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.5);
+            background-color: #cbd5e1;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
         }
         
         .carousel-dot.active {
             background-color: #3b82f6;
+            transform: scale(1.2);
         }
         
         .carousel-btn {
@@ -129,6 +137,7 @@
             align-items: center;
             justify-content: center;
             transition: background-color 0.3s;
+            z-index: 3;
         }
         
         .carousel-btn:hover {
@@ -228,10 +237,17 @@
                 <div id="agentResponse" class="w-full">
                     <h2 id="descripcionTitle" class="text-3xl font-bold text-center text-gray-800 mb-6"></h2>
                     
-                    <!-- Carrusel de imágenes -->
+                    <!-- Carrusel de imágenes - ESTRUCTURA CORREGIDA -->
                     <div id="carouselContainer" class="hidden">
-                        <div class="carousel-container mb-4"></div>
-                        <div class="carousel-dots"></div>
+                        <div class="carousel-container">
+                            <div class="carousel-inner">
+                                <!-- Las slides se insertarán aquí dinámicamente -->
+                            </div>
+                            <!-- Botones de navegación se insertarán aquí dinámicamente -->
+                        </div>
+                        <div class="carousel-dots">
+                            <!-- Los puntos se insertarán aquí dinámicamente -->
+                        </div>
                     </div>
                     
                     <!-- Texto de respuesta -->
@@ -279,6 +295,8 @@
         let welcomeSlideIndex = 0;
         let currentCarouselIndex = 0;
         let carouselInterval = null;
+        let carouselSlides = [];
+        let carouselDots = [];
         
         // Inicializar carrusel de fondo
         function initWelcomeCarousel() {
@@ -414,42 +432,115 @@
             leerTexto(datos.output);
         }
         
-        // Mostrar carrusel
+        // Mostrar carrusel - FUNCIÓN COMPLETAMENTE CORREGIDA
         function mostrarCarrusel(imagenes) {
             const container = document.getElementById('carouselContainer');
-            const inner = container.querySelector('.carousel-container');
-            const dots = container.querySelector('.carousel-dots');
+            const inner = container.querySelector('.carousel-inner');
+            const dotsContainer = container.querySelector('.carousel-dots');
             
+            // Limpiar contenido anterior
             inner.innerHTML = '';
-            dots.innerHTML = '';
+            dotsContainer.innerHTML = '';
             
+            // Detener intervalo anterior si existe
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+                carouselInterval = null;
+            }
+            
+            // Reiniciar variables
+            carouselSlides = [];
+            carouselDots = [];
+            currentCarouselIndex = 0;
+            
+            // Crear slides
             imagenes.forEach((img, index) => {
+                // Crear slide
                 const slide = document.createElement('div');
                 slide.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
-                slide.innerHTML = `<img src="${img}" alt="Cabaña ${index + 1}" loading="lazy">`;
-                inner.appendChild(slide);
                 
+                const imgElement = document.createElement('img');
+                imgElement.src = img;
+                imgElement.alt = `Cabaña ${index + 1}`;
+                imgElement.loading = 'lazy';
+                imgElement.onerror = function() {
+                    this.src = 'https://via.placeholder.com/800x400/3b82f6/ffffff?text=Imagen+no+disponible';
+                };
+                
+                slide.appendChild(imgElement);
+                inner.appendChild(slide);
+                carouselSlides.push(slide);
+                
+                // Crear punto de navegación
                 const dot = document.createElement('div');
                 dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
-                dot.onclick = () => goToSlide(index);
-                dots.appendChild(dot);
+                dot.dataset.index = index;
+                dot.addEventListener('click', () => goToSlide(index));
+                dotsContainer.appendChild(dot);
+                carouselDots.push(dot);
             });
             
+            // Agregar botones de navegación si hay más de una imagen
+            if (imagenes.length > 1) {
+                // Botón anterior
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'carousel-btn carousel-prev';
+                prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                prevBtn.addEventListener('click', prevSlide);
+                inner.appendChild(prevBtn);
+                
+                // Botón siguiente
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'carousel-btn carousel-next';
+                nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                nextBtn.addEventListener('click', nextSlide);
+                inner.appendChild(nextBtn);
+                
+                // Iniciar autoplay
+                carouselInterval = setInterval(nextSlide, 5000);
+            }
+            
+            // Mostrar el carrusel
             container.classList.remove('hidden');
         }
         
-        // Controlar carrusel
+        // Cambiar a slide específico
         function goToSlide(index) {
-            const slides = document.querySelectorAll('.carousel-slide');
-            const dots = document.querySelectorAll('.carousel-dot');
+            if (carouselSlides.length === 0) return;
             
-            slides.forEach(s => s.classList.remove('active'));
-            dots.forEach(d => d.classList.remove('active'));
+            // Validar índice
+            if (index < 0) index = carouselSlides.length - 1;
+            if (index >= carouselSlides.length) index = 0;
             
-            if (slides[index]) slides[index].classList.add('active');
-            if (dots[index]) dots[index].classList.add('active');
+            // Actualizar slides
+            carouselSlides.forEach(slide => slide.classList.remove('active'));
+            carouselSlides[index].classList.add('active');
+            
+            // Actualizar dots
+            carouselDots.forEach(dot => dot.classList.remove('active'));
+            if (carouselDots[index]) {
+                carouselDots[index].classList.add('active');
+            }
             
             currentCarouselIndex = index;
+            
+            // Reiniciar autoplay
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+                carouselInterval = setInterval(nextSlide, 5000);
+            }
+        }
+        
+        // Slide siguiente
+        function nextSlide() {
+            const nextIndex = (currentCarouselIndex + 1) % carouselSlides.length;
+            goToSlide(nextIndex);
+        }
+        
+        // Slide anterior
+        function prevSlide() {
+            const prevIndex = (currentCarouselIndex - 1 + carouselSlides.length) % carouselSlides.length;
+            goToSlide(prevIndex);
         }
         
         // Leer texto en voz alta
@@ -458,6 +549,9 @@
                 speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(texto);
                 utterance.lang = 'es-CL';
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
                 speechSynthesis.speak(utterance);
             }
         }
@@ -475,35 +569,35 @@
             recognition = initVoiceRecognition();
             
             // Botón de inicio
-            document.getElementById('startVoiceBtn').onclick = () => {
+            document.getElementById('startVoiceBtn').addEventListener('click', () => {
                 if (recognition) {
                     document.getElementById('welcomeScreen').classList.add('hidden');
                     document.getElementById('responseWrapper').classList.remove('hidden');
                     recognition.start();
                 }
-            };
+            });
             
             // Botón de control de voz
-            document.getElementById('voiceControlBtn').onclick = () => {
+            document.getElementById('voiceControlBtn').addEventListener('click', () => {
                 if (!recognition) return;
                 if (isListening) {
                     recognition.stop();
                 } else {
                     recognition.start();
                 }
-            };
+            });
             
             // Botón de nueva consulta
-            document.getElementById('newQueryBtn').onclick = () => {
+            document.getElementById('newQueryBtn').addEventListener('click', () => {
                 if (recognition) recognition.start();
-            };
+            });
             
             // Botón de reintento
-            document.getElementById('retryBtn').onclick = () => {
+            document.getElementById('retryBtn').addEventListener('click', () => {
                 document.getElementById('errorState').classList.add('hidden');
                 document.getElementById('agentResponse').classList.remove('hidden');
                 if (recognition) recognition.start();
-            };
+            });
         });
     </script>
 </body>
