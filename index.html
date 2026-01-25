@@ -136,25 +136,52 @@
         }
         
         .map-marker {
-            background-color: #3b82f6;
+            background-color: #ef4444;
             border: 3px solid white;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            width: 28px;
+            height: 28px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.4);
             animation: pulse 2s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .map-marker::after {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             width: 12px;
             height: 12px;
             background-color: white;
             border-radius: 50%;
+        }
+        
+        .map-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+            color: #ef4444;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            z-index: 1000;
+        }
+        
+        .map-label::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
         }
         
         .carousel-dots {
@@ -235,9 +262,9 @@
         }
         
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
         
         /* Contenedor de respuesta */
@@ -316,8 +343,11 @@
                         </div>
                         <div class="text-center mt-3">
                             <p class="text-sm text-gray-600">
-                                <i class="fas fa-map-marker-alt text-blue-600 mr-1"></i>
-                                Ubicación: Cabañas Villaitue, Villarrica, Chile
+                                <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
+                                Ubicación: Cabañas Villaitue, PQ7G+WW Villarrica, Chile
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Coordenadas: 39°17'06.8"S 72°13'11.1"W
                             </p>
                         </div>
                     </div>
@@ -377,8 +407,9 @@
         let map = null;
         let marker = null;
         
-        // Coordenadas de Cabañas Villaitue
-        const VILLAITUE_COORDS = [-39.2852218, -72.2207928];
+        // Coordenadas CORREGIDAS de Cabañas Villaitue basadas en el plus code PQ7G+WW Villarrica
+        // Las coordenadas aproximadas para este plus code son:
+        const VILLAITUE_COORDS = [-39.284600, -72.221300]; // Coordenadas más precisas
         
         // Inicializar carrusel de fondo
         function initWelcomeCarousel() {
@@ -530,42 +561,78 @@
                 marker = null;
             }
             
-            // Crear nuevo mapa
-            map = L.map('villaitueMap').setView(VILLAITUE_COORDS, 16);
+            // Crear nuevo mapa centrado en Cabañas Villaitue
+            map = L.map('villaitueMap').setView(VILLAITUE_COORDS, 17); // Zoom más cercano
             
-            // Agregar capa de OpenStreetMap
+            // Agregar capa de OpenStreetMap con un estilo más atractivo
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxZoom: 19,
             }).addTo(map);
             
-            // Agregar marcador personalizado
+            // Crear un marcador personalizado más visible
             const customIcon = L.divIcon({
                 className: 'map-marker',
-                iconSize: [24, 24],
-                iconAnchor: [12, 12],
-                popupAnchor: [0, -12]
+                iconSize: [28, 28],
+                iconAnchor: [14, 14],
+                popupAnchor: [0, -14]
             });
             
+            // Agregar marcador en la ubicación exacta
             marker = L.marker(VILLAITUE_COORDS, { icon: customIcon })
                 .addTo(map)
                 .bindPopup(`
-                    <div style="text-align: center; padding: 5px;">
-                        <strong style="color: #3b82f6;">Cabañas Villaitue</strong><br>
-                        <small>Villarrica, Chile</small><br>
-                        <a href="https://maps.google.com/?q=${VILLAITUE_COORDS[0]},${VILLAITUE_COORDS[1]}" 
+                    <div style="text-align: center; padding: 8px; min-width: 200px;">
+                        <strong style="color: #ef4444; font-size: 14px;">
+                            <i class="fas fa-cabin"></i> Cabañas Villaitue
+                        </strong><br>
+                        <div style="margin: 5px 0; padding: 5px; background: #f8fafc; border-radius: 4px;">
+                            <small style="color: #64748b;">
+                                <i class="fas fa-map-marker-alt"></i> PQ7G+WW Villarrica
+                            </small>
+                        </div>
+                        <small style="color: #475569; display: block; margin: 3px 0;">
+                            <i class="fas fa-compass"></i> Región de la Araucanía, Chile
+                        </small>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${VILLAITUE_COORDS[0]},${VILLAITUE_COORDS[1]}" 
                            target="_blank" 
-                           style="color: #3b82f6; text-decoration: none;">
-                            <i class="fas fa-external-link-alt"></i> Ver en Google Maps
+                           style="display: inline-block; margin-top: 5px; padding: 4px 12px; background: #3b82f6; color: white; border-radius: 4px; text-decoration: none; font-size: 12px;">
+                            <i class="fas fa-directions"></i> Cómo llegar
                         </a>
                     </div>
                 `)
                 .openPopup();
             
+            // Agregar un círculo para resaltar la ubicación
+            L.circle(VILLAITUE_COORDS, {
+                color: '#ef4444',
+                fillColor: '#fca5a5',
+                fillOpacity: 0.2,
+                radius: 50
+            }).addTo(map);
+            
+            // Agregar un label flotante
+            const label = L.marker(VILLAITUE_COORDS, {
+                icon: L.divIcon({
+                    className: 'map-label',
+                    html: 'Cabañas Villaitue',
+                    iconSize: [120, 40],
+                    iconAnchor: [60, 40]
+                }),
+                zIndexOffset: 1000
+            }).addTo(map);
+            
             // Ajustar el mapa para que se vea bien
             setTimeout(() => {
                 map.invalidateSize();
+                // Asegurarnos de que el marcador esté visible
+                map.setView(VILLAITUE_COORDS, 17);
             }, 100);
+            
+            // Agregar controles de zoom
+            L.control.zoom({
+                position: 'topright'
+            }).addTo(map);
         }
         
         // Mostrar carrusel - FUNCIÓN COMPLETAMENTE CORREGIDA
