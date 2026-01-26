@@ -321,7 +321,6 @@
             line-height: 1.4;
         }
 
-        /* Mensajes dinámicos de procesamiento */
         .processing-message {
             display: none;
         }
@@ -430,7 +429,7 @@
                                 Ubicación: Cabañas Villaitue, Villarrica, Chile
                             </p>
                             <p class="text-xs text-gray-500 mt-1">
-                                Coordenadas: -39.2852218, -72.2207928 | Plus Code: PQ7G+WW Villarrica
+                                Coordenadas: -39.2852346, -72.2227348 | Plus Code: PQ7G+WW Villarrica
                             </p>
                         </div>
                     </div>
@@ -504,9 +503,9 @@
         let currentMessageIndex = 0;
         let messageInterval = null;
         
-        // Coordenadas ORIGINALES de Cabañas Villaitue (las que funcionaban)
-        const VILLAITUE_COORDS = [-39.2852218, -72.2207928];
-        const MAP_ZOOM = 16;
+        // ✅ COORDENADAS CORRECTAS Y PRECISAS DE GOOGLE MAPS
+        const VILLAITUE_COORDS = [-39.2852346, -72.2227348]; // Extraídas directamente del enlace de Google Maps
+        const MAP_ZOOM = 17; // Zoom más cercano para ver la cabaña
         
         // Inicializar mensajes de procesamiento
         function initProcessingMessages() {
@@ -715,7 +714,7 @@
             };
         }
         
-        // Mostrar mapa de OpenStreetMap
+        // Mostrar mapa de OpenStreetMap - FUNCIÓN ACTUALIZADA CON COORDENADAS PRECISAS
         function mostrarMapa() {
             if (map) {
                 map.remove();
@@ -723,6 +722,7 @@
                 marker = null;
             }
             
+            // Crear nuevo mapa centrado en las coordenadas EXACTAS
             map = L.map('villaitueMap').setView(VILLAITUE_COORDS, MAP_ZOOM);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -750,10 +750,11 @@
                             </small>
                         </div>
                         <div style="font-size: 11px; color: #475569; margin: 3px 0;">
-                            <i class="fas fa-globe-americas"></i> Lat: -39.2852218<br>
-                            <i class="fas fa-globe-americas"></i> Lon: -72.2207928
+                            <i class="fas fa-globe-americas"></i> Lat: ${VILLAITUE_COORDS[0].toFixed(7)}<br>
+                            <i class="fas fa-globe-americas"></i> Lon: ${VILLAITUE_COORDS[1].toFixed(7)}
                         </div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=${VILLAITUE_COORDS[0]},${VILLAITUE_COORDS[1]}" 
+                        <!-- Enlace actualizado al lugar exacto en Google Maps -->
+                        <a href="https://www.google.com/maps/place/Caba%C3%B1as+Villaitue+Villarrica/@-39.2853426,-72.2249986,17z/data=!4m9!3m8!1s0x9614623075b3e52f:0x5d9f2d2671974ee4!5m2!4m1!1i2!8m2!3d-39.2852346!4d-72.2227348!16s%2Fg%2F11bxg08fzb?entry=ttu" 
                            target="_blank" 
                            style="display: inline-block; margin-top: 5px; padding: 4px 12px; background: #3b82f6; color: white; border-radius: 4px; text-decoration: none; font-size: 12px;">
                             <i class="fas fa-directions"></i> Cómo llegar (Google Maps)
@@ -762,21 +763,19 @@
                 `)
                 .openPopup();
             
+            // Agregar un círculo para resaltar la ubicación
             L.circle(VILLAITUE_COORDS, {
                 color: '#ef4444',
                 fillColor: '#fca5a5',
                 fillOpacity: 0.2,
-                radius: 40
+                radius: 25 // Radio más pequeño para mayor precisión
             }).addTo(map);
             
-            L.control.zoom({
-                position: 'topright'
-            }).addTo(map);
-            
+            // Asegurar que el mapa se renderice correctamente después de ser insertado en el DOM
             setTimeout(() => {
                 map.invalidateSize();
-                map.setView(VILLAITUE_COORDS, MAP_ZOOM);
-            }, 100);
+                map.setView(VILLAITUE_COORDS, MAP_ZOOM); // Forzar el centro nuevamente
+            }, 300);
         }
         
         // Mostrar carrusel - FUNCIÓN COMPLETAMENTE CORREGIDA
