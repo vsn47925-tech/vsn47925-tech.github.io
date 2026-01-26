@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoservicio de Cabañas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        #micBtn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            border: none;
+            margin: 20px 0;
+        }
+        #micBtn.recording {
+            background: #c0392b;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        #response {
+            max-width: 800px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .carousel {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        .carousel img {
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>¿En qué puedo ayudarte?</h1>
+    <button id="micBtn">🎤</button>
+    <div id="response"></div>
+
+    <script>
+        // CONFIGURACIÓN: Reemplaza con tu URL de webhook de n8n
+        const N8N_WEBHOOK_URL = "https://tu-n8n.dominio/webhook/cabanas-kiosco";
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById('micBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('micBtn');
+            
+            if (!mediaRecorder || mediaRecorder.state === "inactive") {
+                // Iniciar grabación
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    btn.textContent = "⏳";
+                    btn.disabled = true;
+                    
+                    // Enviar audio a n8n
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob, 'recording.wav');
+
+                    try {
+                        const response = await fetch(N8N_WEBHOOK_URL, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+                        renderResponse(data);
+                    } catch (error) {
+                        console.error("Error:", error);
+                        document.getElementById('response').innerHTML = 
+                            "<p style='color:red;'>Error al procesar tu solicitud. Intenta de nuevo.</p>";
+                    }
+
+                    btn.textContent = "🎤";
+                    btn.disabled = false;
+                    btn.classList.remove('recording');
+                };
+
+                mediaRecorder.start();
+                btn.classList.add('recording');
+                btn.textContent = "⏹️";
+                
+                // Detener grabación automáticamente después de 10 segundos
+                setTimeout(() => {
+                    if (mediaRecorder && mediaRecorder.state === "recording") {
+                        mediaRecorder.stop();
+                        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                    }
+                }, 10000);
+
+            } else {
+                // Detener grabación manualmente
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                btn.textContent = "🎤";
+                btn.classList.remove('recording');
+            }
+        });
+
+        function renderResponse(data) {
+            const responseDiv = document.getElementById('response');
+            let html = `<p>${data.output}</p>`;
+
+            if (data.tipo_plantilla === "carrusel" && data.imagenes) {
+                html += '<div class="carousel">';
+                data.imagenes.forEach(imgUrl => {
+                    // Limpiar espacios en blanco de la URL
+                    const cleanUrl = imgUrl.trim();
+                    html += `<img src="${cleanUrl}" alt="Imagen de cabaña">`;
+                });
+                html += '</div>';
+            }
+
+            responseDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
