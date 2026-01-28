@@ -401,7 +401,7 @@
         </div>
         
         <!-- ✅ TÍTULOS SIN MÁRGENES EXCESIVOS Y TOTALMENTE CENTRADOS -->
-        <p class="text-lg md:text-xl mt-6 mb-8 max-w-2xl">
+       <p class="text-lg md:text-xl mt-6 mb-8 max-w-2xl">
             Sistema de Consultas y Reservas interactivas por voz. 
             <span class="sr-only">Presione el botón del micrófono para comenzar.</span>
         </p>
@@ -557,7 +557,7 @@
         let processingMessages = [];
         let currentMessageIndex = 0;
         let messageInterval = null;
-        let autoResetTimeout = null; // Renombrado para mayor claridad
+        let autoResetTimeout = null; // Para el temporizador de 10 segundos
         
         // ✅ COORDENADAS CORRECTAS Y PRECISAS DE GOOGLE MAPS
         const VILLAITUE_COORDS = [-39.2852346, -72.2227348];
@@ -653,19 +653,15 @@
                 const errorMsg = "Error en el reconocimiento de voz";
                 showErrorState(errorMsg);
                 announceToScreenReader(errorMsg);
-                // Si el error es por falta de voz, programar el reinicio
-                if (event.error === 'no-speech' || event.error === 'audio-capture') {
-                    startAutoResetTimer();
-                }
+                // Si el error es por falta de voz, NO reiniciamos aquí.
+                // El reinicio solo ocurre tras la espera post-respuesta.
             };
             
             recognition.onend = () => {
                 isListening = false;
                 updateVoiceButton(false);
-                // Programar el reinicio solo si no estamos esperando un resultado
-                if (!autoResetTimeout) {
-                    startAutoResetTimer();
-                }
+                // No iniciamos el temporizador aquí.
+                // El temporizador se inicia SOLO después de que el agente termina de hablar.
             };
             
             return recognition;
@@ -777,7 +773,7 @@
             // ✅ CORRECCIÓN CLAVE: Asegurarse de que la pantalla de respuesta esté visible
             ensureResponseScreenIsVisible();
 
-            // Leer la respuesta y luego iniciar la escucha automática
+            // Leer la respuesta y luego activar escucha automática
             leerTextoYEscucharAutomaticamente(datos.output);
         }
 
@@ -811,19 +807,23 @@
                 utterance.pitch = 1.0;
                 utterance.volume = 1.0;
                 
-                // Cuando termine de hablar, activar el micrófono
+                // Cuando termine de hablar, activar el micrófono Y el temporizador
                 utterance.onend = () => {
                     announceToScreenReader("Escuchando para su próxima consulta...");
                     if (recognition) {
                         recognition.start();
+                        
+                        // ✅ CAMBIO PRINCIPAL: Iniciar el temporizador de 10s SOLO aquí
+                        startAutoResetTimer();
                     }
                 };
                 
                 speechSynthesis.speak(utterance);
             } else {
-                // Si no hay síntesis de voz, activar inmediatamente
+                // Si no hay síntesis de voz, activar inmediatamente y el temporizador
                 if (recognition) {
                     recognition.start();
+                    startAutoResetTimer();
                 }
             }
         }
@@ -1043,9 +1043,11 @@
         
         // Nueva función: Iniciar el temporizador de reinicio automático
         function startAutoResetTimer() {
+            // Limpiar cualquier temporizador existente
             if (autoResetTimeout) {
                 clearTimeout(autoResetTimeout);
             }
+            // Iniciar un nuevo temporizador de 10 segundos
             autoResetTimeout = setTimeout(() => {
                 resetToWelcomeScreen();
             }, AUTO_RESET_TIMEOUT_MS);
