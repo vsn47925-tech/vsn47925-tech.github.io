@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cabañas Villaitue Villarrica - Autoservicio Accesible</title>
+    <title>Autoservicio Cabañas Villaitue</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet CSS para OpenStreetMap -->
@@ -401,6 +401,8 @@
         </div>
         
         <!-- ✅ TÍTULOS SIN MÁRGENES EXCESIVOS Y TOTALMENTE CENTRADOS -->
+        <h1 class="text-4xl md:text-6xl font-bold">Bienvenido a Cabañas Villaitue</h1>
+        <h2 class="text-xl md:text-3xl font-normal italic mt-2">Tu Refugio en el Sur</h2>
         <p class="text-lg md:text-xl mt-6 mb-8 max-w-2xl">
             Sistema de Consultas y Reservas interactivas por voz. 
             <span class="sr-only">Presione el botón del micrófono para comenzar.</span>
@@ -545,7 +547,6 @@
             crossorigin=""></script>
 
     <script>
-        // ... (todo el JavaScript permanece EXACTAMENTE IGUAL al anterior)
         // Variables globales
         let recognition = null;
         let isListening = false;
@@ -560,10 +561,12 @@
         let processingMessages = [];
         let currentMessageIndex = 0;
         let messageInterval = null;
+        let autoListenTimeout = null; // Nuevo: Para manejar el timeout de escucha automática
         
         // ✅ COORDENADAS CORRECTAS Y PRECISAS DE GOOGLE MAPS
         const VILLAITUE_COORDS = [-39.2852346, -72.2227348];
         const MAP_ZOOM = 17;
+        const AUTO_LISTEN_TIMEOUT_MS = 10000; // 10 segundos
         
         // Función para anunciar mensajes a lectores de pantalla
         function announceToScreenReader(message) {
@@ -630,10 +633,20 @@
                 isListening = true;
                 updateVoiceButton(true);
                 announceToScreenReader("Escuchando. Puede hablar ahora.");
+                // Limpiar cualquier timeout anterior
+                if (autoListenTimeout) {
+                    clearTimeout(autoListenTimeout);
+                    autoListenTimeout = null;
+                }
             };
             
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
+                // Cancelar el timeout ya que hubo entrada
+                if (autoListenTimeout) {
+                    clearTimeout(autoListenTimeout);
+                    autoListenTimeout = null;
+                }
                 announceToScreenReader(`Ha dicho: ${transcript}. Procesando...`);
                 sendToN8N(transcript);
             };
@@ -644,13 +657,21 @@
                 const errorMsg = "Error en el reconocimiento de voz";
                 showErrorState(errorMsg);
                 announceToScreenReader(errorMsg);
+                // Si el error es por falta de voz, reiniciar
+                if (event.error === 'no-speech' || event.error === 'audio-capture') {
+                    resetToWelcomeScreen();
+                }
             };
             
             recognition.onend = () => {
                 isListening = false;
                 updateVoiceButton(false);
-                if (!isListening) {
-                    announceToScreenReader("Dejé de escuchar. Presione el micrófono para hablar nuevamente.");
+                // Si terminó sin resultado, programar el reinicio
+                if (!autoListenTimeout) {
+                    autoListenTimeout = setTimeout(() => {
+                        announceToScreenReader("No se detectó ninguna entrada. Volviendo a la pantalla de inicio.");
+                        resetToWelcomeScreen();
+                    }, AUTO_LISTEN_TIMEOUT_MS);
                 }
             };
             
@@ -760,7 +781,35 @@
                 announceToScreenReader("Mostrando ubicación en el mapa");
             }
             
-            leerTexto(datos.output);
+            // Leer la respuesta y luego iniciar la escucha automática
+            leerTextoYEscucharAutomaticamente(datos.output);
+        }
+        
+        // Nueva función: Leer texto y luego activar escucha automática
+        function leerTextoYEscucharAutomaticamente(texto) {
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(texto);
+                utterance.lang = 'es-CL';
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                // Cuando termine de hablar, activar el micrófono
+                utterance.onend = () => {
+                    announceToScreenReader("Escuchando para su próxima consulta...");
+                    if (recognition) {
+                        recognition.start();
+                    }
+                };
+                
+                speechSynthesis.speak(utterance);
+            } else {
+                // Si no hay síntesis de voz, activar inmediatamente
+                if (recognition) {
+                    recognition.start();
+                }
+            }
         }
         
         // Mostrar imagen única para respuesta-info
@@ -987,6 +1036,22 @@
                 document.getElementById('responseWrapper').classList.remove('hidden');
             }
             announceToScreenReader("Cambiando a la pantalla de respuesta");
+        }
+        
+        // Nueva función: Reiniciar a la pantalla de bienvenida
+        function resetToWelcomeScreen() {
+            // Limpiar timeouts y estados
+            if (autoListenTimeout) {
+                clearTimeout(autoListenTimeout);
+                autoListenTimeout = null;
+            }
+            isListening = false;
+            updateVoiceButton(false);
+            
+            // Ocultar la pantalla de respuesta y mostrar la de bienvenida
+            document.getElementById('responseWrapper').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            announceToScreenReader("Volviendo a la pantalla de inicio.");
         }
         
         // Inicializar
