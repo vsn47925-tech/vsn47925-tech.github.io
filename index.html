@@ -393,7 +393,7 @@
         <!-- ✅ LOGO NEGRO CENTRADO Y AUMENTADO EN 40% -->
         <div class="welcome-logo-container">
             <img 
-                src="https://vsn47925-tech.github.io/img/logo_blanco.png" 
+                src="https://vsn47925-tech.github.io/img/logo_nergro.png" 
                 alt="Logo de Cabañas Villaitue" 
                 class="welcome-logo"
                 loading="eager"
@@ -401,6 +401,8 @@
         </div>
         
         <!-- ✅ TÍTULOS SIN MÁRGENES EXCESIVOS Y TOTALMENTE CENTRADOS -->
+        <h1 class="text-4xl md:text-6xl font-bold">Bienvenido a Cabañas Villaitue</h1>
+        <h2 class="text-xl md:text-3xl font-normal italic mt-2">Tu Refugio en el Sur</h2>
         <p class="text-lg md:text-xl mt-6 mb-8 max-w-2xl">
             Sistema de Consultas y Reservas interactivas por voz. 
             <span class="sr-only">Presione el botón del micrófono para comenzar.</span>
@@ -654,15 +656,12 @@
                 showErrorState(errorMsg);
                 announceToScreenReader(errorMsg);
                 // ❌ NO HACEMOS NADA CON EL TEMPORIZADOR AQUÍ
-                // El temporizador sigue su curso independientemente de los errores de voz.
             };
             
             recognition.onend = () => {
                 isListening = false;
                 updateVoiceButton(false);
-                // ❌ NO INICIAMOS NI REINICIAMOS EL TEMPORIZADOR AQUÍ
-                // El temporizador ya fue iniciado al activar el micrófono.
-                // Si no hubo voz, el temporizador seguirá contando hasta los 10s.
+                // ❌ NO HACEMOS NADA CON EL TEMPORIZADOR AQUÍ
             };
             
             return recognition;
@@ -1054,19 +1053,27 @@
             }, AUTO_RESET_TIMEOUT_MS);
         }
         
-        // Nueva función: Reiniciar a la pantalla de bienvenida
+        // Nueva función: Reiniciar a la pantalla de bienvenida - FORZADO
         function resetToWelcomeScreen() {
-            // Limpiar timeouts y estados
+            // 1. Forzar el cierre del reconocedor de voz
+            if (recognition && isListening) {
+                recognition.stop();
+            }
+            
+            // 2. Limpiar el estado
+            isListening = false;
+            updateVoiceButton(false);
+            
+            // 3. Limpiar el temporizador
             if (autoResetTimeout) {
                 clearTimeout(autoResetTimeout);
                 autoResetTimeout = null;
             }
-            isListening = false;
-            updateVoiceButton(false);
             
-            // Ocultar la pantalla de respuesta y mostrar la de bienvenida
+            // 4. FORZAR la transición a la pantalla de inicio
             document.getElementById('responseWrapper').classList.add('hidden');
             document.getElementById('welcomeScreen').classList.remove('hidden');
+            
             announceToScreenReader("Volviendo a la pantalla de inicio.");
         }
         
