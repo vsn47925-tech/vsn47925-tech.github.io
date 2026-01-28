@@ -1059,8 +1059,53 @@
             console.log("⏱️ Temporizador de 10s iniciado.");
         }
         
-        // Nueva función: Reiniciar a la pantalla de bienvenida - ¡FORZADO Y SIMPLE!
+        // Nueva función: Limpia TODO el contenido de la respuesta antes de reiniciar
+        function clearResponseContent() {
+            console.log("🧹 Limpiando contenido de la respuesta.");
+            
+            // 1. Limpiar el carrusel
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+                carouselInterval = null;
+            }
+            carouselSlides = [];
+            carouselDots = [];
+            const carouselContainer = document.getElementById('carouselContainer');
+            if (carouselContainer) {
+                carouselContainer.innerHTML = '';
+                carouselContainer.classList.add('hidden');
+            }
+            
+            // 2. Limpiar el mapa
+            if (map) {
+                map.remove();
+                map = null;
+                marker = null;
+            }
+            const mapContainer = document.getElementById('mapContainer');
+            if (mapContainer) {
+                mapContainer.classList.add('hidden');
+            }
+            
+            // 3. Limpiar la imagen de info
+            const infoImageContainer = document.getElementById('infoImageContainer');
+            if (infoImageContainer) {
+                infoImageContainer.classList.add('hidden');
+            }
+            
+            // 4. Limpiar el texto de la respuesta
+            document.getElementById('outputContent').textContent = '';
+            document.getElementById('descripcionTitle').textContent = '';
+            
+            // 5. Asegurarse de que el estado de error esté oculto
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('agentResponse').classList.remove('hidden');
+        }
+
+        // Nueva función: Reiniciar a la pantalla de bienvenida - ¡COMPLETAMENTE LIMPIO!
         function resetToWelcomeScreen() {
+            console.log("🔄 Reiniciando a la pantalla de inicio.");
+            
             // 1. Detener el reconocedor de voz si está activo
             try {
                 if (recognition && isListening) {
@@ -1070,17 +1115,20 @@
                 console.error("Error al detener el reconocedor:", e);
             }
             
-            // 2. Resetear estados
+            // 2. LIMPIAR TODO EL CONTENIDO ANTES DE CAMBIAR LA VISTA
+            clearResponseContent();
+            
+            // 3. Resetear estados
             isListening = false;
             updateVoiceButton(false);
             
-            // 3. Limpiar el temporizador
+            // 4. Limpiar el temporizador
             if (autoResetTimeout) {
                 clearTimeout(autoResetTimeout);
                 autoResetTimeout = null;
             }
             
-            // 4. FORZAR la transición visual
+            // 5. FORZAR la transición visual
             const welcomeScreen = document.getElementById('welcomeScreen');
             const responseWrapper = document.getElementById('responseWrapper');
             
