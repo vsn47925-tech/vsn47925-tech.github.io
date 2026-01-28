@@ -393,7 +393,7 @@
         <!-- ✅ LOGO NEGRO CENTRADO Y AUMENTADO EN 40% -->
         <div class="welcome-logo-container">
             <img 
-                src="https://vsn47925-tech.github.io/img/logo_negro.png" 
+                src="https://vsn47925-tech.github.io/img/logo_nergro.png" 
                 alt="Logo de Cabañas Villaitue" 
                 class="welcome-logo"
                 loading="eager"
@@ -401,6 +401,8 @@
         </div>
         
         <!-- ✅ TÍTULOS SIN MÁRGENES EXCESIVOS Y TOTALMENTE CENTRADOS -->
+        <h1 class="text-4xl md:text-6xl font-bold">Bienvenido a Cabañas Villaitue</h1>
+        <h2 class="text-xl md:text-3xl font-normal italic mt-2">Tu Refugio en el Sur</h2>
         <p class="text-lg md:text-xl mt-6 mb-8 max-w-2xl">
             Sistema de Consultas y Reservas interactivas por voz. 
             <span class="sr-only">Presione el botón del micrófono para comenzar.</span>
@@ -653,13 +655,14 @@
                 const errorMsg = "Error en el reconocimiento de voz";
                 showErrorState(errorMsg);
                 announceToScreenReader(errorMsg);
-                // ❌ NO HACEMOS NADA CON EL TEMPORIZADOR AQUÍ
+                // No hacemos nada con el temporizador aquí.
             };
             
             recognition.onend = () => {
                 isListening = false;
                 updateVoiceButton(false);
-                // ❌ NO HACEMOS NADA CON EL TEMPORIZADOR AQUÍ
+                // No iniciamos el temporizador aquí.
+                // Nuestro temporizador ya fue iniciado al activar el micrófono.
             };
             
             return recognition;
@@ -811,7 +814,7 @@
                     if (recognition) {
                         recognition.start();
                         
-                        // ✅ CAMBIO PRINCIPAL: Iniciar el temporizador de 10s SOLO aquí
+                        // ✅ INICIAR EL TEMPORIZADOR DE FORMA ROBUSTA
                         startAutoResetTimer();
                     }
                 };
@@ -1039,26 +1042,35 @@
             announceToScreenReader("Cambiando a la pantalla de respuesta");
         }
         
-        // Nueva función: Iniciar el temporizador de reinicio automático
+        // Nueva función: Iniciar el temporizador de reinicio automático - ¡SIMPLIFICADA!
         function startAutoResetTimer() {
-            // Limpiar cualquier temporizador existente
+            // Primero, limpiamos cualquier temporizador existente
             if (autoResetTimeout) {
                 clearTimeout(autoResetTimeout);
-            }
-            // Iniciar un nuevo temporizador de 10 segundos
-            autoResetTimeout = setTimeout(() => {
-                resetToWelcomeScreen();
-            }, AUTO_RESET_TIMEOUT_MS);
-        }
-        
-        // Nueva función: Reiniciar a la pantalla de bienvenida - FORZADO
-        function resetToWelcomeScreen() {
-            // 1. Forzar el cierre del reconocedor de voz
-            if (recognition && isListening) {
-                recognition.stop();
+                autoResetTimeout = null;
             }
             
-            // 2. Limpiar el estado
+            // Luego, iniciamos uno nuevo
+            autoResetTimeout = setTimeout(() => {
+                console.log("⏰ Temporizador de 10s cumplido. Volviendo a inicio.");
+                resetToWelcomeScreen();
+            }, AUTO_RESET_TIMEOUT_MS);
+            
+            console.log("⏱️ Temporizador de 10s iniciado.");
+        }
+        
+        // Nueva función: Reiniciar a la pantalla de bienvenida - ¡FORZADO Y SIMPLE!
+        function resetToWelcomeScreen() {
+            // 1. Detener el reconocedor de voz si está activo
+            try {
+                if (recognition && isListening) {
+                    recognition.stop();
+                }
+            } catch (e) {
+                console.error("Error al detener el reconocedor:", e);
+            }
+            
+            // 2. Resetear estados
             isListening = false;
             updateVoiceButton(false);
             
@@ -1068,9 +1080,12 @@
                 autoResetTimeout = null;
             }
             
-            // 4. FORZAR la transición a la pantalla de inicio
-            document.getElementById('responseWrapper').classList.add('hidden');
-            document.getElementById('welcomeScreen').classList.remove('hidden');
+            // 4. FORZAR la transición visual
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const responseWrapper = document.getElementById('responseWrapper');
+            
+            responseWrapper.classList.add('hidden');
+            welcomeScreen.classList.remove('hidden');
             
             announceToScreenReader("Volviendo a la pantalla de inicio.");
         }
