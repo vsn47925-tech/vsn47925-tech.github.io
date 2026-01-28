@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cabañas-Villaitue-Autoservicio-Accesible</title>
+    <title>Cabañas Villaitue Villarrica - Autoservicio Accesible</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet CSS para OpenStreetMap -->
@@ -64,6 +64,24 @@
             text-align: center;
             padding: 20px;
             color: white;
+        }
+
+        /* Logo en la pantalla de bienvenida */
+        .welcome-logo-container {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .welcome-logo {
+            max-width: 280px;
+            width: 70%;
+            height: auto;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
         
         /* Estilos para el carrusel de resultados */
@@ -371,7 +389,17 @@
 
     <!-- Contenido de bienvenida -->
     <div id="welcomeScreen" class="welcome-content" role="main">
-        <h1 class="text-4xl md:text-6xl font-bold mb-4">Bienvenido a Cabañas Villaitue</h1>
+        <!-- ✅ LOGO NEGRO CENTRADO EN LA PARTE SUPERIOR -->
+        <div class="welcome-logo-container">
+            <img 
+                src="https://vsn47925-tech.github.io/img/logo_nergro.png" 
+                alt="Logo de Cabañas Villaitue" 
+                class="welcome-logo"
+                loading="eager"
+            />
+        </div>
+        
+        <h1 class="text-4xl md:text-6xl font-bold mb-4 mt-24">Bienvenido a Cabañas Villaitue</h1>
         <h2 class="text-xl md:text-3xl font-normal italic mb-6">Tu Refugio en el Sur</h2>
         <p class="text-lg md:text-xl mb-8 max-w-2xl">
             Sistema de Consultas y Reservas interactivas por voz. 
@@ -391,6 +419,8 @@
             <span class="sr-only">Instrucción: </span>Haz clic en el micrófono para comenzar
         </p>
     </div>
+
+    <!-- Resto del HTML (responseWrapper, processingIndicator, scripts) permanece exactamente igual -->
 
     <!-- Contenedor de respuesta -->
     <div id="responseWrapper" class="hidden min-h-screen flex items-center justify-center p-4" role="region" aria-label="Respuesta del sistema">
@@ -515,6 +545,7 @@
             crossorigin=""></script>
 
     <script>
+        // ... (todo el JavaScript permanece EXACTAMENTE IGUAL al anterior)
         // Variables globales
         let recognition = null;
         let isListening = false;
