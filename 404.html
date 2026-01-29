@@ -16,58 +16,66 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Elige el color de fondo que mejor combine con tu video */
-            background-color: #1a1a1a; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212; /* Fondo oscuro profundo */
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             color: white;
             overflow: hidden;
         }
 
-        .container {
+        .error-wrapper {
             text-align: center;
-            /* Aquí controlamos que ocupe el 70% (reducción del 30%) */
+            /* Aquí fijamos el ancho al 70% de la pantalla */
             width: 70vw; 
-            max-width: 1000px;
+            max-width: 900px; /* Evita que en pantallas gigantes se vea desproporcionado */
         }
 
         img {
-            width: 100%;
+            width: 100%; /* Ocupa el 100% de su contenedor (que es el 70% de la pantalla) */
             height: auto;
-            border-radius: 20px; /* Bordes redondeados para que se vea elegante */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
+            margin-bottom: 30px;
+            border: 1px solid #333;
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 2.5rem;
+            letter-spacing: -1px;
             margin-bottom: 10px;
+        }
+
+        p {
+            color: #aaa;
+            margin-bottom: 30px;
         }
 
         .btn {
             display: inline-block;
-            margin-top: 20px;
-            padding: 10px 30px;
-            background-color: #007bff;
-            color: white;
+            padding: 12px 35px;
+            background-color: #ffffff;
+            color: #000;
             text-decoration: none;
-            border-radius: 50px;
-            transition: background 0.3s;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
         .btn:hover {
-            background-color: #0056b3;
+            background-color: #e0e0e0;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255,255,255,0.2);
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <img src="cuatro.webp" alt="Error 404">
+    <div class="error-wrapper">
+        <img src="cuatro04_final.webp" alt="Error 404">
 
-        <h1>¡Ups! Página no encontrada</h1>
-        <p>Parece que te has desviado del camino.</p>
+        <h1>404</h1>
+        <p>Vaya, parece que has tomado un giro equivocado.</p>
         
-        <a href="/" class="btn">Volver al Inicio</a>
+        <a href="/" class="btn">Regresar al inicio</a>
     </div>
 
 </body>
