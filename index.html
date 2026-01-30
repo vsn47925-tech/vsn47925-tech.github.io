@@ -393,7 +393,7 @@
         <!-- ✅ LOGO NEGRO CENTRADO Y AUMENTADO EN 40% -->
         <div class="welcome-logo-container">
             <img 
-                src="https://vsn47925-tech.github.io/img/logo_blanco.png" 
+                src="https://vsn47925-tech.github.io/img/logo_negro.png" 
                 alt="Logo de Cabañas Villaitue" 
                 class="welcome-logo"
                 loading="eager"
@@ -401,8 +401,10 @@
         </div>
         
         <!-- ✅ TÍTULOS SIN MÁRGENES EXCESIVOS Y TOTALMENTE CENTRADOS -->
+        <h1 class="text-4xl md:text-6xl font-bold">Bienvenido a Cabañas Villaitue</h1>
+        <h2 class="text-xl md:text-3xl font-normal italic mt-2">Tu Refugio en el Sur</h2>
         <p class="text-lg md:text-xl mt-6 mb-8 max-w-2xl">
-            Sistema Autoconsultas por voz. 
+            Sistema de Consultas y Reservas interactivas por voz. 
             <span class="sr-only">Presione el botón del micrófono para comenzar.</span>
         </p>
         
@@ -812,7 +814,7 @@
                     if (recognition) {
                         recognition.start();
                         
-                        // ✅ INICIAR EL TEMPORIZADOR DE FORMA ROBUSTA
+                        // ✅ INICIAR EL TEMPORIZADOR PARA REINICIO COMPLETO
                         startAutoResetTimer();
                     }
                 };
@@ -1040,100 +1042,19 @@
             announceToScreenReader("Cambiando a la pantalla de respuesta");
         }
         
-        // Nueva función: Iniciar el temporizador de reinicio automático - ¡SIMPLIFICADA!
+        // Nueva función: Iniciar el temporizador para recarga completa
         function startAutoResetTimer() {
-            // Primero, limpiamos cualquier temporizador existente
+            // Limpiar cualquier temporizador existente
             if (autoResetTimeout) {
                 clearTimeout(autoResetTimeout);
-                autoResetTimeout = null;
             }
-            
-            // Luego, iniciamos uno nuevo
+            // Iniciar un nuevo temporizador que recargará la página
             autoResetTimeout = setTimeout(() => {
-                console.log("⏰ Temporizador de 10s cumplido. Volviendo a inicio.");
-                resetToWelcomeScreen();
+                console.log("⏰ 10s sin interacción. Recargando la página...");
+                location.reload(); // 🔁 ESTA ES LA ÚNICA LÍNEA CLAVE
             }, AUTO_RESET_TIMEOUT_MS);
             
             console.log("⏱️ Temporizador de 10s iniciado.");
-        }
-        
-        // Nueva función: Limpia TODO el contenido de la respuesta antes de reiniciar
-        function clearResponseContent() {
-            console.log("🧹 Limpiando contenido de la respuesta.");
-            
-            // 1. Limpiar el carrusel
-            if (carouselInterval) {
-                clearInterval(carouselInterval);
-                carouselInterval = null;
-            }
-            carouselSlides = [];
-            carouselDots = [];
-            const carouselContainer = document.getElementById('carouselContainer');
-            if (carouselContainer) {
-                carouselContainer.innerHTML = '';
-                carouselContainer.classList.add('hidden');
-            }
-            
-            // 2. Limpiar el mapa
-            if (map) {
-                map.remove();
-                map = null;
-                marker = null;
-            }
-            const mapContainer = document.getElementById('mapContainer');
-            if (mapContainer) {
-                mapContainer.classList.add('hidden');
-            }
-            
-            // 3. Limpiar la imagen de info
-            const infoImageContainer = document.getElementById('infoImageContainer');
-            if (infoImageContainer) {
-                infoImageContainer.classList.add('hidden');
-            }
-            
-            // 4. Limpiar el texto de la respuesta
-            document.getElementById('outputContent').textContent = '';
-            document.getElementById('descripcionTitle').textContent = '';
-            
-            // 5. Asegurarse de que el estado de error esté oculto
-            document.getElementById('errorState').classList.add('hidden');
-            document.getElementById('agentResponse').classList.remove('hidden');
-        }
-
-        // Nueva función: Reiniciar a la pantalla de bienvenida - ¡COMPLETAMENTE LIMPIO!
-        function resetToWelcomeScreen() {
-            console.log("🔄 Reiniciando a la pantalla de inicio.");
-            
-            // 1. Detener el reconocedor de voz si está activo
-            try {
-                if (recognition && isListening) {
-                    recognition.stop();
-                }
-            } catch (e) {
-                console.error("Error al detener el reconocedor:", e);
-            }
-            
-            // 2. LIMPIAR TODO EL CONTENIDO ANTES DE CAMBIAR LA VISTA
-            clearResponseContent();
-            
-            // 3. Resetear estados
-            isListening = false;
-            updateVoiceButton(false);
-            
-            // 4. Limpiar el temporizador
-            if (autoResetTimeout) {
-                clearTimeout(autoResetTimeout);
-                autoResetTimeout = null;
-            }
-            
-            // 5. FORZAR la transición visual
-            const welcomeScreen = document.getElementById('welcomeScreen');
-            const responseWrapper = document.getElementById('responseWrapper');
-            
-            responseWrapper.classList.add('hidden');
-            welcomeScreen.classList.remove('hidden');
-            
-            announceToScreenReader("Volviendo a la pantalla de inicio.");
         }
         
         // Inicializar
