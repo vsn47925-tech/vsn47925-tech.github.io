@@ -60,7 +60,6 @@
             color: var(--text-primary);
             overflow: hidden;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
         /* ===== ACCESIBILIDAD ===== */
@@ -112,7 +111,7 @@
             animation: float 3s ease-in-out infinite;
         }
         
-        /* ===== CARRUSEL DE FONDO ===== */
+        /* ===== CARRUSEL DE FONDO - SOLO PARA PANTALLA DE BIENVENIDA ===== */
         .welcome-carousel {
             position: fixed;
             top: 0;
@@ -151,6 +150,17 @@
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.4) 100%);
         }
         
+        /* ===== FONDO FIJO PARA PANTALLA DE RESPUESTA ===== */
+        .response-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            z-index: 0;
+        }
+        
         /* ===== CONTENIDO DE BIENVENIDA ===== */
         .welcome-content {
             position: fixed;
@@ -162,7 +172,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 1;
+            z-index: 10; /* Más alto que el carrusel */
             text-align: center;
             padding: clamp(1rem, 5vw, 2rem);
             color: white;
@@ -463,15 +473,15 @@
         
         /* ===== TARJETA DE RESPUESTA ===== */
         .response-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             border-radius: 1.5rem;
             box-shadow: var(--shadow-xl);
             padding: clamp(1.5rem, 5vw, 2.5rem);
             max-width: 900px;
             width: 95%;
             margin: 0 auto;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 20; /* Alto z-index para estar sobre el fondo */
         }
         
         .response-header {
@@ -546,6 +556,20 @@
             margin-top: 2rem;
         }
         
+        /* ===== PANTALLA DE RESPUESTA ===== */
+        .response-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 10; /* Más bajo que la tarjeta pero más alto que el fondo */
+        }
+        
         /* ===== UTILIDADES ===== */
         .hidden {
             display: none !important;
@@ -594,8 +618,8 @@
          aria-atomic="true"
          role="status"></div>
     
-    <!-- Carrusel de fondo CON TUS IMÁGENES ORIGINALES -->
-    <div class="welcome-carousel" aria-hidden="true">
+    <!-- Carrusel de fondo SOLO para pantalla de bienvenida -->
+    <div id="welcomeCarousel" class="welcome-carousel" aria-hidden="true">
         <div class="welcome-slide active" 
              style="background-image: url('https://vsn47925-tech.github.io/img/cab-amanecervilla.jpg')"
              role="presentation"></div>
@@ -664,12 +688,16 @@
         </div>
     </section>
     
-    <!-- Pantalla de respuesta -->
+    <!-- Pantalla de respuesta - CON FONDO FIJO -->
     <section id="responseScreen" 
-             class="hidden min-h-screen flex items-center justify-center p-4" 
+             class="hidden response-screen" 
              role="region" 
              aria-labelledby="response-title">
         
+        <!-- Fondo fijo para pantalla de respuesta -->
+        <div class="response-background"></div>
+        
+        <!-- Contenido de respuesta -->
         <div class="response-card fade-in">
             <div class="response-header">
                 <h2 id="response-title" class="response-title"></h2>
@@ -733,6 +761,11 @@
                     Nueva consulta
                 </button>
             </div>
+            
+            <!-- Footer en la tarjeta -->
+            <div class="mt-8 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm">
+                <p>Villaitue - Sistema de Autoconsultas por voz © VHSN 2026</p>
+            </div>
         </div>
     </section>
     
@@ -788,14 +821,6 @@
         </div>
     </div>
     
-    <!-- Footer -->
-    <footer class="app-footer" aria-label="Información del sistema">
-        <div class="container mx-auto">
-            <p>Villaitue - Sistema de Autoconsultas por voz © VHSN 2026</p>
-            <p class="mt-1 text-xs opacity-70">Diseñado con accesibilidad universal</p>
-        </div>
-    </footer>
-    
     <!-- Leaflet JS con SRI -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -827,6 +852,8 @@
         let resetTimerInterval = null;
         let micTimerSeconds = 7;
         let resetTimerSeconds = 2;
+        let welcomeCarouselInterval = null;
+        let welcomeSlideIndex = 0;
         
         // ===== FUNCIONES DE ACCESIBILIDAD =====
         function announceToScreenReader(message, priority = 'polite') {
@@ -942,6 +969,32 @@
             document.getElementById('timerIndicator').classList.add('hidden');
         }
         
+        // ===== CARRUSEL DE BIENVENIDA =====
+        function startWelcomeCarousel() {
+            const slides = document.querySelectorAll('.welcome-slide');
+            if (slides.length === 0) return;
+            
+            // Limpiar intervalo anterior si existe
+            if (welcomeCarouselInterval) {
+                clearInterval(welcomeCarouselInterval);
+            }
+            
+            welcomeCarouselInterval = setInterval(() => {
+                welcomeSlideIndex = (welcomeSlideIndex + 1) % slides.length;
+                slides.forEach((slide, index) => {
+                    slide.classList.toggle('active', index === welcomeSlideIndex);
+                });
+            }, 3000);
+        }
+        
+        function stopWelcomeCarousel() {
+            if (welcomeCarouselInterval) {
+                clearInterval(welcomeCarouselInterval);
+                welcomeCarouselInterval = null;
+            }
+        }
+        
+        // ===== REINICIAR APLICACIÓN =====
         function resetApplication() {
             console.log("🔄 Reiniciando aplicación...");
             
@@ -959,7 +1012,7 @@
                 currentAudio = null;
             }
             
-            // Detener carrusel
+            // Detener carrusel de respuesta
             if (carouselInterval) {
                 clearInterval(carouselInterval);
                 carouselInterval = null;
@@ -979,6 +1032,9 @@
             // Volver a pantalla de bienvenida
             document.getElementById('welcomeScreen').classList.remove('hidden');
             document.getElementById('responseScreen').classList.add('hidden');
+            
+            // Reiniciar carrusel de bienvenida
+            startWelcomeCarousel();
             
             announceToScreenReader("Sistema reiniciado. Bienvenido nuevamente.");
         }
@@ -1174,6 +1230,9 @@
             const responseScreen = document.getElementById('responseScreen');
             
             if (!welcomeScreen.classList.contains('hidden')) {
+                // Detener carrusel de bienvenida
+                stopWelcomeCarousel();
+                
                 if (document.startViewTransition) {
                     document.startViewTransition(() => {
                         welcomeScreen.classList.add('hidden');
@@ -1478,25 +1537,18 @@
         
         // ===== INICIALIZACIÓN =====
         document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar carrusel de bienvenida
+            startWelcomeCarousel();
+            
             // Inicializar reconocimiento de voz
             recognition = initVoiceRecognition();
-            
-            // Inicializar carrusel de fondo
-            const welcomeSlides = document.querySelectorAll('.welcome-slide');
-            let welcomeIndex = 0;
-            
-            setInterval(() => {
-                welcomeSlides.forEach((slide, i) => {
-                    slide.classList.toggle('active', i === welcomeIndex);
-                });
-                welcomeIndex = (welcomeIndex + 1) % welcomeSlides.length;
-            }, 3000);
             
             // Event Listeners
             document.getElementById('startVoiceBtn').addEventListener('click', () => {
                 if (recognition) {
                     document.getElementById('welcomeScreen').classList.add('hidden');
                     document.getElementById('responseScreen').classList.remove('hidden');
+                    stopWelcomeCarousel(); // Detener carrusel de bienvenida
                     recognition.start();
                 }
             });
@@ -1544,6 +1596,7 @@
             // Clean up on page unload
             window.addEventListener('beforeunload', () => {
                 clearAllTimers();
+                stopWelcomeCarousel();
                 if (recognition && isListening) {
                     recognition.stop();
                 }
