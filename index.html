@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de autoservicio por voz para Cabañas Villaitue en Villarrica, Chile">
+    <meta name="theme-color" content="#1d4ed8">
+    <title>Cabañas Villaitue Villarrica - Autoservicio Accesible</title>
+    
+    <!-- Preload de recursos críticos -->
+    <link rel="preload" href="https://cdn.tailwindcss.com" as="style" crossorigin="anonymous">
+    <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" crossorigin="anonymous">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" crossorigin="anonymous">
+    
+    <!-- Tailwind CSS con SRI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome con SRI -->
+    <link rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          crossorigin="anonymous" 
+          referrerpolicy="no-referrer">
+    
+    <!-- Leaflet CSS con SRI -->
+    <link rel="stylesheet" 
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="anonymous">
+    
+    <!-- CSS personalizado -->
+    <style>
+        /* ===== VARIABLES Y CONFIGURACIÓN ===== */
+        :root {
+            --primary-color: #1d4ed8;
+            --primary-light: #3b82f6;
+            --danger-color: #dc2626;
+            --success-color: #16a34a;
+            --warning-color: #f59e0b;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-light: #f8fafc;
+            --transition-speed: 300ms;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+        
+        /* ===== RESET Y BASE ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.5;
+            color: var(--text-primary);
+            overflow: hidden;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* ===== ACCESIBILIDAD ===== */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        .sr-only-focusable:focus,
+        .sr-only-focusable:active {
+            position: static;
+            width: auto;
+            height: auto;
+            overflow: visible;
+            clip: auto;
+            white-space: normal;
+        }
+        
+        *:focus-visible {
+            outline: 3px solid var(--primary-light);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+        
+        /* ===== ANIMACIONES ===== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* ===== CARRUSEL DE FONDO ===== */
+        .welcome-carousel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .welcome-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 3s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #1e40af;
+        }
+        
+        .welcome-slide.active {
+            opacity: 1;
+        }
+        
+        .welcome-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.4) 100%);
+        }
+        
+        /* ===== CONTENIDO DE BIENVENIDA ===== */
+        .welcome-content {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+            text-align: center;
+            padding: clamp(1rem, 5vw, 2rem);
+            color: white;
+        }
+        
+        .welcome-logo-container {
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-logo {
+            max-width: min(400px, 80vw);
+            height: auto;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+        }
+        
+        /* ===== BOTONES ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.875rem 1.75rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            line-height: 1;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            gap: 0.5rem;
+            text-decoration: none;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled),
+        .btn-primary:focus:not(:disabled) {
+            background-color: #1e40af;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover:not(:disabled),
+        .btn-danger:focus:not(:disabled) {
+            background-color: #b91c1c;
+            transform: translateY(-2px);
+        }
+        
+        .btn-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 1.5rem;
+        }
+        
+        .btn-icon-lg {
+            width: 5rem;
+            height: 5rem;
+            font-size: 2rem;
+        }
+        
+        .voice-btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+        }
+        
+        .voice-btn.listening {
+            background-color: var(--danger-color);
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.3);
+        }
+        
+        /* ===== CARRUSEL DE IMÁGENES ===== */
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: min(400px, 50vh);
+            overflow: hidden;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-xl);
+            margin-bottom: 1.5rem;
+            isolation: isolate;
+        }
+        
+        .carousel-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            z-index: 1;
+        }
+        
+        .carousel-slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+        
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0.75rem;
+        }
+        
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--text-primary);
+            border: none;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 3;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .carousel-nav:hover,
+        .carousel-nav:focus {
+            background-color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .carousel-nav-prev {
+            left: 1rem;
+        }
+        
+        .carousel-nav-next {
+            right: 1rem;
+        }
+        
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        
+        .carousel-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+            background-color: #cbd5e1;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .carousel-dot.active {
+            background-color: var(--primary-light);
+            transform: scale(1.2);
+            border-color: var(--primary-color);
+        }
+        
+        .carousel-dot:hover {
+            background-color: #94a3b8;
+        }
+        
+        /* ===== CONTENEDOR DE INFORMACIÓN ===== */
+        .info-container {
+            position: relative;
+            width: 100%;
+            height: min(400px, 50vh);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-xl);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            background-color: white;
+        }
+        
+        .info-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 1rem;
+        }
+        
+        .info-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+        
+        /* ===== MAPA ===== */
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: min(400px, 50vh);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-xl);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        #villaitueMap {
+            width: 100%;
+            height: 100%;
+            border-radius: 0.75rem;
+        }
+        
+        .map-marker {
+            background-color: var(--danger-color);
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 2rem;
+            height: 2rem;
+            box-shadow: var(--shadow-lg);
+            animation: float 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .map-marker::after {
+            content: '';
+            position: absolute;
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        /* ===== INDICADOR DE PROCESAMIENTO ===== */
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .processing-spinner {
+            width: 4rem;
+            height: 4rem;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid var(--primary-light);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+        
+        .processing-text {
+            font-size: 1.25rem;
+            max-width: 90%;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+        
+        .processing-subtext {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        
+        /* ===== TARJETA DE RESPUESTA ===== */
+        .response-card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow-xl);
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            max-width: 900px;
+            width: 95%;
+            margin: 0 auto;
+        }
+        
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .response-title {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+        
+        .response-content {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-light);
+            border-radius: 1rem;
+            border-left: 4px solid var(--primary-light);
+        }
+        
+        .response-text {
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+        
+        .response-price {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        /* ===== ESTADOS ===== */
+        .error-state {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        
+        .error-icon {
+            color: var(--danger-color);
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .error-message {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        /* ===== FOOTER ===== */
+        .app-footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: white;
+            font-size: 0.875rem;
+            margin-top: 2rem;
+        }
+        
+        /* ===== UTILIDADES ===== */
+        .hidden {
+            display: none !important;
+        }
+        
+        .visually-hidden {
+            position: absolute !important;
+            height: 1px;
+            width: 1px;
+            overflow: hidden;
+            clip: rect(1px, 1px, 1px, 1px);
+        }
+        
+        .text-balance {
+            text-wrap: balance;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+            }
+            
+            .btn-icon-lg {
+                width: 4rem;
+                height: 4rem;
+                font-size: 1.75rem;
+            }
+            
+            .response-card {
+                padding: 1.25rem;
+            }
+            
+            .carousel-container,
+            .info-container,
+            .map-container {
+                height: min(300px, 40vh);
+            }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* ===== ALTO CONTRASTE ===== */
+        @media (prefers-contrast: high) {
+            :root {
+                --primary-color: #0000ff;
+                --primary-light: #0000cc;
+                --danger-color: #ff0000;
+                --text-primary: #000000;
+                --text-secondary: #333333;
+            }
+            
+            .welcome-slide::before {
+                background: rgba(0, 0, 0, 0.8);
+            }
+            
+            .btn {
+                border: 2px solid currentColor;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Región ARIA para anuncios -->
+    <div id="aria-live-region" 
+         class="sr-only" 
+         aria-live="assertive" 
+         aria-atomic="true"
+         role="status"></div>
+    
+    <!-- Skip to main content -->
+    <a href="#main-content" class="sr-only-focusable skip-link">
+        Saltar al contenido principal
+    </a>
+    
+    <!-- Carrusel de fondo -->
+    <div class="welcome-carousel" aria-hidden="true">
+        <div class="welcome-slide active" 
+             style="background-image: url('https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80')"
+             role="presentation"></div>
+        <div class="welcome-slide" 
+             style="background-image: url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80')"
+             role="presentation"></div>
+        <div class="welcome-slide" 
+             style="background-image: url('https://images.unsplash.com/photo-1516496636080-14fb876e029d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80')"
+             role="presentation"></div>
+    </div>
+    
+    <!-- Pantalla de bienvenida -->
+    <section id="welcomeScreen" 
+             class="welcome-content fade-in" 
+             role="main" 
+             aria-labelledby="welcome-title"
+             id="main-content">
+        
+        <div class="welcome-logo-container">
+            <img src="https://via.placeholder.com/400x120/1d4ed8/ffffff?text=Cabañas+Villaitue" 
+                 alt="Cabañas Villaitue - Villarrica, Chile"
+                 class="welcome-logo"
+                 width="400"
+                 height="120"
+                 loading="eager"
+                 decoding="async">
+        </div>
+        
+        <div class="max-w-2xl">
+            <h1 id="welcome-title" class="text-4xl md:text-5xl font-bold mb-4 text-balance">
+                Bienvenido a Cabañas Villaitue
+            </h1>
+            
+            <p class="text-xl mb-8 opacity-90">
+                Sistema de autoservicio accesible por voz
+            </p>
+            
+            <div class="mb-10">
+                <button id="startVoiceBtn" 
+                        class="btn btn-primary btn-icon-lg voice-btn float-animation"
+                        aria-label="Iniciar consulta por voz. Presiona el botón y habla tu pregunta"
+                        data-voice-instruction="Presiona este botón y habla para hacer una consulta">
+                    <i class="fas fa-microphone" aria-hidden="true"></i>
+                </button>
+                
+                <div class="mt-4 text-lg">
+                    <span class="sr-only">Instrucción: </span>
+                    Presiona el botón y habla tu pregunta
+                </div>
+            </div>
+            
+            <div class="glass-effect rounded-xl p-6 max-w-md mx-auto">
+                <h2 class="text-xl font-semibold mb-3">¿Qué puedes preguntar?</h2>
+                <ul class="text-left space-y-2 text-sm">
+                    <li><i class="fas fa-home text-blue-300 mr-2"></i>Información sobre las cabañas</li>
+                    <li><i class="fas fa-money-bill-wave text-green-300 mr-2"></i>Precios y tarifas</li>
+                    <li><i class="fas fa-map-marked-alt text-red-300 mr-2"></i>Ubicación y cómo llegar</li>
+                    <li><i class="fas fa-calendar-alt text-purple-300 mr-2"></i>Disponibilidad y reservas</li>
+                </ul>
+            </div>
+            
+            <p class="mt-8 text-sm opacity-80">
+                También puedes presionar <kbd class="px-2 py-1 bg-white/20 rounded">Enter</kbd> para activar el micrófono
+            </p>
+        </div>
+    </section>
+    
+    <!-- Pantalla de respuesta -->
+    <section id="responseScreen" 
+             class="hidden min-h-screen flex items-center justify-center p-4" 
+             role="region" 
+             aria-labelledby="response-title">
+        
+        <div class="response-card fade-in">
+            <div class="response-header">
+                <h2 id="response-title" class="response-title text-balance"></h2>
+                
+                <div class="flex gap-2">
+                    <button id="voiceControlBtn" 
+                            class="btn btn-icon voice-btn"
+                            aria-label="Activar o desactivar micrófono"
+                            data-tooltip="Control de voz">
+                        <i id="voiceIcon" class="fas fa-microphone" aria-hidden="true"></i>
+                    </button>
+                    
+                    <button id="backToWelcomeBtn" 
+                            class="btn btn-icon"
+                            aria-label="Volver a la pantalla principal">
+                        <i class="fas fa-home" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Contenido dinámico -->
+            <div id="dynamicContent" role="region" aria-live="polite">
+                <!-- Se llena dinámicamente -->
+            </div>
+            
+            <!-- Respuesta de texto -->
+            <div id="textResponse" class="response-content hidden">
+                <div class="flex items-start gap-3 mb-3">
+                    <i class="fas fa-robot text-blue-600 text-xl mt-1" aria-hidden="true"></i>
+                    <h3 class="font-semibold text-blue-800 text-lg">Respuesta del sistema:</h3>
+                </div>
+                <div id="outputContent" class="response-text"></div>
+                <div id="priceContainer" class="mt-4"></div>
+            </div>
+            
+            <!-- Navegación -->
+            <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                <button id="newQueryBtn" 
+                        class="btn btn-primary"
+                        aria-label="Hacer una nueva consulta">
+                    <i class="fas fa-microphone mr-2" aria-hidden="true"></i>
+                    Nueva consulta
+                </button>
+                
+                <button id="repeatAudioBtn" 
+                        class="btn"
+                        aria-label="Repetir la respuesta en audio">
+                    <i class="fas fa-redo mr-2" aria-hidden="true"></i>
+                    Repetir audio
+                </button>
+            </div>
+            
+            <!-- Indicadores de accesibilidad -->
+            <div class="mt-6 pt-4 border-t border-gray-200">
+                <div class="flex items-center justify-center gap-4 text-sm text-gray-500">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-universal-access" aria-hidden="true"></i>
+                        Modo accesible
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-keyboard" aria-hidden="true"></i>
+                        Navegación por teclado
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-volume-up" aria-hidden="true"></i>
+                        Audio activado
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Indicador de procesamiento -->
+    <div id="processingIndicator" 
+         class="processing-overlay" 
+         role="status" 
+         aria-label="Procesando su solicitud"
+         aria-busy="true">
+        
+        <div class="processing-spinner" aria-hidden="true"></div>
+        
+        <div class="processing-text" id="processingMessage">
+            Procesando tu solicitud...
+        </div>
+        
+        <div class="processing-subtext">
+            Por favor, espera un momento
+        </div>
+        
+        <div class="mt-6 text-sm opacity-70">
+            <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>
+            El sistema se reiniciará automáticamente después de 10 segundos de inactividad
+        </div>
+    </div>
+    
+    <!-- Estado de error -->
+    <div id="errorState" 
+         class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50"
+         role="alert"
+         aria-live="assertive">
+        
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full">
+            <div class="error-state">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                </div>
+                
+                <h3 class="error-title" id="errorTitle">Ha ocurrido un error</h3>
+                <p id="errorMessage" class="error-message"></p>
+                
+                <div class="flex flex-col gap-3">
+                    <button id="retryBtn" 
+                            class="btn btn-primary"
+                            aria-label="Reintentar la última acción">
+                        <i class="fas fa-redo mr-2" aria-hidden="true"></i>
+                        Reintentar
+                    </button>
+                    
+                    <button id="resetAppBtn" 
+                            class="btn"
+                            aria-label="Reiniciar la aplicación">
+                        <i class="fas fa-sync-alt mr-2" aria-hidden="true"></i>
+                        Reiniciar aplicación
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="app-footer" aria-label="Información del sistema">
+        <div class="container mx-auto">
+            <p>Cabañas Villaitue - Sistema de Autoservicio por Voz</p>
+            <p class="mt-1 text-xs opacity-70">© 2024 - Diseñado con accesibilidad universal</p>
+            <p class="mt-2 text-xs opacity-60">
+                <i class="fas fa-shield-alt mr-1" aria-hidden="true"></i>
+                Sistema seguro | 
+                <i class="fas fa-heartbeat ml-3 mr-1" aria-hidden="true"></i>
+                Monitoreo activo
+            </p>
+        </div>
+    </footer>
+    
+    <!-- Leaflet JS con SRI -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin="anonymous"></script>
+    
+    <!-- Aplicación JavaScript modular -->
+    <script type="module">
+        // ===== CONFIGURACIÓN =====
+        const CONFIG = {
+            API_URL: "https://apps.villaitue.cl/webhook/autoservicio",
+            MAP_COORDS: [-39.2852346, -72.2227348],
+            MAP_ZOOM: 17,
+            AUTO_RESET_TIMEOUT: 10000, // 10 segundos
+            NO_INPUT_TIMEOUT: 2000,    // 2 segundos
+            SLIDE_INTERVAL: 5000,      // 5 segundos
+            PROCESSING_MESSAGES: [
+                "Estoy procesando tu solicitud...",
+                "Buscando la mejor información...",
+                "Un momento, por favor...",
+                "Analizando tu consulta..."
+            ]
+        };
+        
+        // ===== ESTADO DE LA APLICACIÓN =====
+        const AppState = {
+            voice: {
+                recognition: null,
+                isListening: false,
+                hasReceivedInput: false
+            },
+            ui: {
+                currentScreen: 'welcome',
+                isProcessing: false,
+                currentAudio: null
+            },
+            carousel: {
+                currentIndex: 0,
+                slides: [],
+                interval: null
+            },
+            timers: {
+                resetTimeout: null,
+                processingInterval: null,
+                slideInterval: null
+            }
+        };
+        
+        // ===== MÓDULO DE ACCESIBILIDAD =====
+        const Accessibility = {
+            announce(message, priority = 'polite') {
+                const region = document.getElementById('aria-live-region');
+                region.setAttribute('aria-live', priority);
+                region.textContent = message;
+                setTimeout(() => region.textContent = '', 1000);
+            },
+            
+            setFocus(element) {
+                if (element && element.focus) {
+                    element.focus();
+                }
+            },
+            
+            trapFocus(element) {
+                const focusableElements = element.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+                
+                element.addEventListener('keydown', (e) => {
+                    if (e.key === 'Tab') {
+                        if (e.shiftKey) {
+                            if (document.activeElement === firstElement) {
+                                lastElement.focus();
+                                e.preventDefault();
+                            }
+                        } else {
+                            if (document.activeElement === lastElement) {
+                                firstElement.focus();
+                                e.preventDefault();
+                            }
+                        }
+                    }
+                });
+            }
+        };
+        
+        // ===== MÓDULO DE VOZ =====
+        const VoiceModule = {
+            init() {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                
+                if (!SpeechRecognition) {
+                    this.showUnsupportedError();
+                    return null;
+                }
+                
+                AppState.voice.recognition = new SpeechRecognition();
+                const recognition = AppState.voice.recognition;
+                
+                recognition.lang = 'es-CL';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+                
+                // Event handlers
+                recognition.onstart = this.handleVoiceStart.bind(this);
+                recognition.onresult = this.handleVoiceResult.bind(this);
+                recognition.onerror = this.handleVoiceError.bind(this);
+                recognition.onend = this.handleVoiceEnd.bind(this);
+                
+                return recognition;
+            },
+            
+            handleVoiceStart() {
+                AppState.voice.isListening = true;
+                AppState.voice.hasReceivedInput = false;
+                this.updateUI(true);
+                Accessibility.announce("Escuchando. Puedes hablar ahora.");
+                
+                // Clear any existing timeout
+                TimerModule.clearResetTimeout();
+            },
+            
+            handleVoiceResult(event) {
+                const transcript = event.results[0][0].transcript;
+                AppState.voice.hasReceivedInput = true;
+                
+                Accessibility.announce(`Has dicho: ${transcript}. Procesando...`);
+                API.sendQuery(transcript);
+                
+                TimerModule.clearResetTimeout();
+            },
+            
+            handleVoiceError(event) {
+                AppState.voice.isListening = false;
+                this.updateUI(false);
+                
+                const errorMap = {
+                    'no-speech': 'No se detectó voz. Por favor, intenta de nuevo.',
+                    'audio-capture': 'No se puede acceder al micrófono.',
+                    'not-allowed': 'Permiso de micrófono denegado.',
+                    'network': 'Error de red. Verifica tu conexión.',
+                    'service-not-allowed': 'Servicio de voz no disponible.'
+                };
+                
+                const errorMessage = errorMap[event.error] || 'Error en el reconocimiento de voz';
+                ErrorModule.show(errorMessage);
+                
+                if (['no-speech', 'audio-capture'].includes(event.error)) {
+                    TimerModule.startNoInputTimeout();
+                }
+            },
+            
+            handleVoiceEnd() {
+                AppState.voice.isListening = false;
+                this.updateUI(false);
+                
+                if (!AppState.voice.hasReceivedInput) {
+                    TimerModule.startNoInputTimeout();
+                }
+            },
+            
+            updateUI(isListening) {
+                const voiceBtn = document.getElementById('voiceControlBtn');
+                const startBtn = document.getElementById('startVoiceBtn');
+                const voiceIcon = document.getElementById('voiceIcon');
+                
+                if (isListening) {
+                    voiceBtn?.classList.add('listening', 'btn-danger');
+                    startBtn?.classList.add('listening');
+                    voiceIcon?.classList.replace('fa-microphone', 'fa-stop');
+                    Accessibility.announce("Micrófono activado", 'assertive');
+                } else {
+                    voiceBtn?.classList.remove('listening', 'btn-danger');
+                    startBtn?.classList.remove('listening');
+                    voiceIcon?.classList.replace('fa-stop', 'fa-microphone');
+                }
+            },
+            
+            showUnsupportedError() {
+                ErrorModule.show(
+                    'Tu navegador no soporta reconocimiento de voz. ' +
+                    'Por favor, usa Chrome o Edge para esta funcionalidad.'
+                );
+            },
+            
+            start() {
+                if (!AppState.voice.recognition) {
+                    AppState.voice.recognition = this.init();
+                }
+                
+                if (AppState.voice.recognition && !AppState.voice.isListening) {
+                    try {
+                        AppState.voice.recognition.start();
+                    } catch (error) {
+                        ErrorModule.show('Error al iniciar el reconocimiento de voz');
+                    }
+                }
+            },
+            
+            stop() {
+                if (AppState.voice.recognition && AppState.voice.isListening) {
+                    AppState.voice.recognition.stop();
+                }
+            }
+        };
+        
+        // ===== MÓDULO DE API =====
+        const API = {
+            async sendQuery(pregunta) {
+                UI.showProcessing();
+                
+                try {
+                    const response = await fetch(CONFIG.API_URL, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ pregunta: pregunta }),
+                        signal: AbortSignal.timeout(15000) // Timeout de 15 segundos
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    UI.hideProcessing();
+                    ResponseHandler.process(data);
+                    
+                } catch (error) {
+                    UI.hideProcessing();
+                    
+                    if (error.name === 'AbortError') {
+                        ErrorModule.show('Tiempo de espera agotado. Por favor, intenta de nuevo.');
+                    } else {
+                        ErrorModule.show('Error de conexión con el servidor');
+                    }
+                    
+                    console.error('API Error:', error);
+                }
+            }
+        };
+        
+        // ===== MÓDULO DE RESPUESTA =====
+        const ResponseHandler = {
+            process(rawData) {
+                const data = this.normalizeResponse(rawData);
+                
+                // Update UI
+                document.getElementById('response-title').textContent = data.descripcion;
+                document.getElementById('outputContent').textContent = data.output;
+                
+                // Announce
+                Accessibility.announce(`Respuesta: ${data.descripcion}`);
+                
+                // Clear dynamic content
+                const dynamicContent = document.getElementById('dynamicContent');
+                dynamicContent.innerHTML = '';
+                
+                // Handle response type
+                switch (data.tipo_plantilla) {
+                    case 'carrusel':
+                        if (data.imagenes?.length > 0) {
+                            CarouselModule.create(data.imagenes, dynamicContent);
+                        }
+                        break;
+                        
+                    case 'respuesta-info':
+                        if (data.imagenes?.length > 0) {
+                            ImageModule.create(data.imagenes[0], data.caption, dynamicContent);
+                        }
+                        break;
+                        
+                    case 'mapa-villaitue':
+                        MapModule.create(dynamicContent);
+                        break;
+                }
+                
+                // Show text response
+                const textResponse = document.getElementById('textResponse');
+                textResponse.classList.remove('hidden');
+                
+                // Show price if available
+                if (data.precio) {
+                    const priceContainer = document.getElementById('priceContainer');
+                    priceContainer.innerHTML = `
+                        <div class="response-price">
+                            <i class="fas fa-tag mr-2" aria-hidden="true"></i>
+                            ${data.precio}
+                        </div>
+                    `;
+                }
+                
+                // Switch to response screen
+                UI.switchToScreen('response');
+                
+                // Play audio if available
+                if (data.audioContent) {
+                    AudioModule.playBase64(data.audioContent);
+                }
+                
+                // Start auto-reset timer
+                TimerModule.startAutoResetTimeout();
+            },
+            
+            normalizeResponse(data) {
+                if (Array.isArray(data) && data.length > 0) {
+                    const item = data[0];
+                    return {
+                        output: item.output || item.msg || "Respuesta recibida",
+                        descripcion: item.descripcion || item.description || "Resultado",
+                        imagenes: item.imagenes || item.images || [],
+                        tipo_plantilla: item.tipo_plantilla || "texto",
+                        precio: item.precio || null,
+                        caption: item.caption || item.descripcion_imagen || "",
+                        audioContent: item.audioContent || ""
+                    };
+                }
+                
+                return {
+                    output: "No se encontraron resultados para tu consulta.",
+                    descripcion: "Sin resultados",
+                    imagenes: [],
+                    tipo_plantilla: "texto",
+                    precio: null,
+                    caption: "",
+                    audioContent: ""
+                };
+            }
+        };
+        
+        // ===== MÓDULO DE AUDIO =====
+        const AudioModule = {
+            playBase64(base64String) {
+                try {
+                    // Clean up previous audio
+                    if (AppState.ui.currentAudio) {
+                        AppState.ui.currentAudio.pause();
+                        URL.revokeObjectURL(AppState.ui.currentAudio.src);
+                    }
+                    
+                    // Decode base64
+                    const binaryString = atob(base64String);
+                    const bytes = new Uint8Array(binaryString.length);
+                    
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    
+                    // Create and play audio
+                    const blob = new Blob([bytes], { type: 'audio/mpeg' });
+                    const audioUrl = URL.createObjectURL(blob);
+                    const audio = new Audio(audioUrl);
+                    
+                    AppState.ui.currentAudio = audio;
+                    
+                    audio.onended = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        Accessibility.announce("Audio finalizado. Micrófono activado para nueva consulta.");
+                        VoiceModule.start();
+                    };
+                    
+                    audio.onerror = (error) => {
+                        console.error('Audio error:', error);
+                        URL.revokeObjectURL(audioUrl);
+                        VoiceModule.start();
+                    };
+                    
+                    audio.play();
+                    Accessibility.announce("Reproduciendo respuesta en audio");
+                    
+                } catch (error) {
+                    console.error('Error playing audio:', error);
+                    VoiceModule.start();
+                }
+            },
+            
+            repeat() {
+                if (AppState.ui.currentAudio) {
+                    AppState.ui.currentAudio.currentTime = 0;
+                    AppState.ui.currentAudio.play();
+                }
+            }
+        };
+        
+        // ===== MÓDULO DEL CARRUSEL =====
+        const CarouselModule = {
+            create(images, container) {
+                if (!images || images.length === 0) return;
+                
+                const carouselHTML = `
+                    <div class="carousel-container" role="region" aria-label="Galería de imágenes">
+                        <div class="carousel-inner" role="group" aria-label="${images.length} imágenes">
+                            ${images.map((img, index) => `
+                                <div class="carousel-slide ${index === 0 ? 'active' : ''}" 
+                                     role="tabpanel" 
+                                     aria-label="Imagen ${index + 1} de ${images.length}">
+                                    <img src="${img}" 
+                                         alt="Vista de la cabaña ${index + 1}"
+                                         loading="lazy"
+                                         width="800"
+                                         height="400"
+                                         onerror="this.src='https://via.placeholder.com/800x400/3b82f6/ffffff?text=Imagen+no+disponible'">
+                                </div>
+                            `).join('')}
+                            
+                            ${images.length > 1 ? `
+                                <button class="carousel-nav carousel-nav-prev" aria-label="Imagen anterior">
+                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                </button>
+                                <button class="carousel-nav carousel-nav-next" aria-label="Siguiente imagen">
+                                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    ${images.length > 1 ? `
+                        <div class="carousel-dots" role="tablist" aria-label="Navegación de galería">
+                            ${images.map((_, index) => `
+                                <button class="carousel-dot ${index === 0 ? 'active' : ''}" 
+                                        data-index="${index}"
+                                        role="tab"
+                                        aria-selected="${index === 0}"
+                                        aria-label="Ir a la imagen ${index + 1}">
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                `;
+                
+                container.innerHTML = carouselHTML;
+                this.init(images);
+            },
+            
+            init(images) {
+                if (images.length <= 1) return;
+                
+                AppState.carousel.slides = Array.from(document.querySelectorAll('.carousel-slide'));
+                AppState.carousel.currentIndex = 0;
+                
+                // Clear existing interval
+                if (AppState.timers.slideInterval) {
+                    clearInterval(AppState.timers.slideInterval);
+                }
+                
+                // Setup event listeners
+                const prevBtn = document.querySelector('.carousel-nav-prev');
+                const nextBtn = document.querySelector('.carousel-nav-next');
+                const dots = document.querySelectorAll('.carousel-dot');
+                
+                prevBtn?.addEventListener('click', () => this.prev());
+                nextBtn?.addEventListener('click', () => this.next());
+                
+                dots.forEach(dot => {
+                    dot.addEventListener('click', () => {
+                        const index = parseInt(dot.dataset.index);
+                        this.goTo(index);
+                    });
+                });
+                
+                // Auto-advance
+                AppState.timers.slideInterval = setInterval(() => this.next(), CONFIG.SLIDE_INTERVAL);
+            },
+            
+            goTo(index) {
+                if (index < 0) index = AppState.carousel.slides.length - 1;
+                if (index >= AppState.carousel.slides.length) index = 0;
+                
+                // Update slides
+                AppState.carousel.slides.forEach((slide, i) => {
+                    slide.classList.toggle('active', i === index);
+                });
+                
+                // Update dots
+                document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                    dot.setAttribute('aria-selected', i === index);
+                });
+                
+                AppState.carousel.currentIndex = index;
+                
+                // Restart auto-advance timer
+                if (AppState.timers.slideInterval) {
+                    clearInterval(AppState.timers.slideInterval);
+                    AppState.timers.slideInterval = setInterval(() => this.next(), CONFIG.SLIDE_INTERVAL);
+                }
+                
+                Accessibility.announce(`Imagen ${index + 1} de ${AppState.carousel.slides.length}`);
+            },
+            
+            next() {
+                const nextIndex = (AppState.carousel.currentIndex + 1) % AppState.carousel.slides.length;
+                this.goTo(nextIndex);
+            },
+            
+            prev() {
+                const prevIndex = (AppState.carousel.currentIndex - 1 + AppState.carousel.slides.length) % AppState.carousel.slides.length;
+                this.goTo(prevIndex);
+            },
+            
+            destroy() {
+                if (AppState.timers.slideInterval) {
+                    clearInterval(AppState.timers.slideInterval);
+                    AppState.timers.slideInterval = null;
+                }
+                
+                AppState.carousel.slides = [];
+                AppState.carousel.currentIndex = 0;
+            }
+        };
+        
+        // ===== MÓDULO DE IMAGEN =====
+        const ImageModule = {
+            create(imageUrl, caption, container) {
+                const imageHTML = `
+                    <div class="info-container" role="region" aria-label="Infografía informativa">
+                        <img src="${imageUrl}" 
+                             class="info-image" 
+                             alt="${caption || 'Infografía informativa'}"
+                             loading="lazy"
+                             width="800"
+                             height="400"
+                             onerror="this.src='https://via.placeholder.com/800x400/10b981/ffffff?text=Infografía+no+disponible'">
+                        
+                        ${caption ? `
+                            <div class="info-caption" role="note">
+                                ${caption}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                container.innerHTML = imageHTML;
+                Accessibility.announce("Mostrando infografía informativa");
+            }
+        };
+        
+        // ===== MÓDULO DE MAPA =====
+        const MapModule = {
+            map: null,
+            marker: null,
+            
+            create(container) {
+                const mapHTML = `
+                    <div class="map-container" role="region" aria-label="Ubicación en el mapa">
+                        <div id="villaitueMap"></div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <p class="text-sm text-gray-600">
+                            <i class="fas fa-map-marker-alt text-red-500 mr-1" aria-hidden="true"></i>
+                            Ubicación: Cabañas Villaitue, Villarrica, Chile
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Coordenadas: ${CONFIG.MAP_COORDS[0]}, ${CONFIG.MAP_COORDS[1]}
+                        </p>
+                    </div>
+                `;
+                
+                container.innerHTML = mapHTML;
+                this.init();
+                
+                Accessibility.announce("Mostrando ubicación en el mapa");
+            },
+            
+            init() {
+                // Remove existing map
+                if (this.map) {
+                    this.map.remove();
+                    this.map = null;
+                    this.marker = null;
+                }
+                
+                // Create new map
+                this.map = L.map('villaitueMap').setView(CONFIG.MAP_COORDS, CONFIG.MAP_ZOOM);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                    maxZoom: 19,
+                }).addTo(this.map);
+                
+                // Custom marker
+                const customIcon = L.divIcon({
+                    className: 'map-marker',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16]
+                });
+                
+                this.marker = L.marker(CONFIG.MAP_COORDS, { icon: customIcon })
+                    .addTo(this.map)
+                    .bindPopup(`
+                        <div style="padding: 8px; min-width: 200px; text-align: center;">
+                            <strong style="color: #dc2626; font-size: 14px;">
+                                <i class="fas fa-cabin"></i> Cabañas Villaitue
+                            </strong><br>
+                            <div style="margin: 5px 0; padding: 5px; background: #f8fafc; border-radius: 4px;">
+                                <small style="color: #64748b;">
+                                    <i class="fas fa-map-pin"></i> Villarrica, Chile
+                                </small>
+                            </div>
+                            <a href="https://www.google.com/maps?q=${CONFIG.MAP_COORDS[0]},${CONFIG.MAP_COORDS[1]}" 
+                               target="_blank" 
+                               style="display: inline-block; margin-top: 5px; padding: 4px 12px; background: #3b82f6; color: white; border-radius: 4px; text-decoration: none; font-size: 12px;">
+                                <i class="fas fa-directions"></i> Cómo llegar
+                            </a>
+                        </div>
+                    `)
+                    .openPopup();
+                
+                // Add circle for visual reference
+                L.circle(CONFIG.MAP_COORDS, {
+                    color: '#dc2626',
+                    fillColor: '#fca5a5',
+                    fillOpacity: 0.2,
+                    radius: 25
+                }).addTo(this.map);
+                
+                // Ensure proper rendering
+                setTimeout(() => {
+                    this.map.invalidateSize();
+                }, 100);
+            },
+            
+            destroy() {
+                if (this.map) {
+                    this.map.remove();
+                    this.map = null;
+                    this.marker = null;
+                }
+            }
+        };
+        
+        // ===== MÓDULO DE TEMPORIZADORES =====
+        const TimerModule = {
+            startAutoResetTimeout() {
+                this.clearResetTimeout();
+                
+                AppState.timers.resetTimeout = setTimeout(() => {
+                    console.log('⏰ Auto-reset por inactividad');
+                    this.resetApp();
+                }, CONFIG.AUTO_RESET_TIMEOUT);
+            },
+            
+            startNoInputTimeout() {
+                this.clearResetTimeout();
+                
+                AppState.timers.resetTimeout = setTimeout(() => {
+                    console.log('🔇 No input detected, resetting...');
+                    this.resetApp();
+                }, CONFIG.NO_INPUT_TIMEOUT);
+            },
+            
+            clearResetTimeout() {
+                if (AppState.timers.resetTimeout) {
+                    clearTimeout(AppState.timers.resetTimeout);
+                    AppState.timers.resetTimeout = null;
+                }
+            },
+            
+            resetApp() {
+                // Clean up
+                CarouselModule.destroy();
+                MapModule.destroy();
+                VoiceModule.stop();
+                
+                // Reset state
+                AppState.ui.currentScreen = 'welcome';
+                AppState.voice.hasReceivedInput = false;
+                AppState.voice.isListening = false;
+                
+                // Clear all timeouts
+                Object.values(AppState.timers).forEach(timer => {
+                    if (timer) clearTimeout(timer);
+                });
+                
+                // Switch to welcome screen
+                UI.switchToScreen('welcome');
+                Accessibility.announce("Sistema reiniciado. Bienvenido nuevamente.");
+            }
+        };
+        
+        // ===== MÓDULO DE ERRORES =====
+        const ErrorModule = {
+            show(message) {
+                document.getElementById('errorMessage').textContent = message;
+                document.getElementById('errorState').classList.remove('hidden');
+                Accessibility.announce(`Error: ${message}`, 'assertive');
+                
+                // Trap focus in error modal
+                Accessibility.trapFocus(document.getElementById('errorState'));
+            },
+            
+            hide() {
+                document.getElementById('errorState').classList.add('hidden');
+            }
+        };
+        
+        // ===== MÓDULO DE UI =====
+        const UI = {
+            showProcessing() {
+                AppState.ui.isProcessing = true;
+                const indicator = document.getElementById('processingIndicator');
+                const message = document.getElementById('processingMessage');
+                
+                // Random message
+                const randomMessage = CONFIG.PROCESSING_MESSAGES[
+                    Math.floor(Math.random() * CONFIG.PROCESSING_MESSAGES.length)
+                ];
+                
+                message.textContent = randomMessage;
+                indicator.style.display = 'flex';
+                
+                Accessibility.announce(randomMessage);
+            },
+            
+            hideProcessing() {
+                AppState.ui.isProcessing = false;
+                document.getElementById('processingIndicator').style.display = 'none';
+            },
+            
+            switchToScreen(screenName) {
+                const welcomeScreen = document.getElementById('welcomeScreen');
+                const responseScreen = document.getElementById('responseScreen');
+                
+                // Update state
+                AppState.ui.currentScreen = screenName;
+                
+                // Use View Transition API if available
+                if (document.startViewTransition) {
+                    document.startViewTransition(() => {
+                        welcomeScreen.classList.toggle('hidden', screenName !== 'welcome');
+                        responseScreen.classList.toggle('hidden', screenName !== 'response');
+                    });
+                } else {
+                    welcomeScreen.classList.toggle('hidden', screenName !== 'welcome');
+                    responseScreen.classList.toggle('hidden', screenName !== 'response');
+                }
+                
+                // Set focus
+                if (screenName === 'response') {
+                    Accessibility.setFocus(document.getElementById('response-title'));
+                } else {
+                    Accessibility.setFocus(document.getElementById('startVoiceBtn'));
+                }
+                
+                Accessibility.announce(`Cambiando a pantalla de ${screenName}`);
+            }
+        };
+        
+        // ===== INICIALIZACIÓN =====
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize modules
+            VoiceModule.init();
+            UI.switchToScreen('welcome');
+            
+            // Welcome carousel
+            const welcomeSlides = document.querySelectorAll('.welcome-slide');
+            let welcomeIndex = 0;
+            
+            setInterval(() => {
+                welcomeSlides.forEach((slide, i) => {
+                    slide.classList.toggle('active', i === welcomeIndex);
+                });
+                welcomeIndex = (welcomeIndex + 1) % welcomeSlides.length;
+            }, 3000);
+            
+            // Event Listeners
+            document.getElementById('startVoiceBtn').addEventListener('click', () => {
+                VoiceModule.start();
+                UI.switchToScreen('response');
+            });
+            
+            document.getElementById('voiceControlBtn').addEventListener('click', () => {
+                if (AppState.voice.isListening) {
+                    VoiceModule.stop();
+                } else {
+                    VoiceModule.start();
+                }
+            });
+            
+            document.getElementById('newQueryBtn').addEventListener('click', () => {
+                VoiceModule.start();
+            });
+            
+            document.getElementById('repeatAudioBtn').addEventListener('click', () => {
+                AudioModule.repeat();
+            });
+            
+            document.getElementById('backToWelcomeBtn').addEventListener('click', () => {
+                TimerModule.resetApp();
+            });
+            
+            document.getElementById('retryBtn').addEventListener('click', () => {
+                ErrorModule.hide();
+                VoiceModule.start();
+            });
+            
+            document.getElementById('resetAppBtn').addEventListener('click', () => {
+                ErrorModule.hide();
+                TimerModule.resetApp();
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Enter to start voice
+                if (e.key === 'Enter' && !AppState.voice.isListening) {
+                    e.preventDefault();
+                    if (AppState.ui.currentScreen === 'welcome') {
+                        document.getElementById('startVoiceBtn').click();
+                    } else {
+                        VoiceModule.start();
+                    }
+                }
+                
+                // Escape to cancel
+                if (e.key === 'Escape') {
+                    if (AppState.voice.isListening) {
+                        VoiceModule.stop();
+                    } else if (AppState.ui.currentScreen === 'response') {
+                        TimerModule.resetApp();
+                    }
+                }
+                
+                // Arrow keys for carousel
+                if (AppState.ui.currentScreen === 'response') {
+                    if (e.key === 'ArrowLeft') {
+                        CarouselModule.prev();
+                    } else if (e.key === 'ArrowRight') {
+                        CarouselModule.next();
+                    }
+                }
+            });
+            
+            // Handle page visibility
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    VoiceModule.stop();
+                    TimerModule.clearResetTimeout();
+                }
+            });
+            
+            // Initial announcement
+            setTimeout(() => {
+                Accessibility.announce(
+                    "Bienvenido al sistema de autoservicio de Cabañas Villaitue. " +
+                    "Presiona el botón del micrófono para hacer una consulta por voz."
+                );
+            }, 1000);
+        });
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            TimerModule.clearResetTimeout();
+            VoiceModule.stop();
+        });
+    </script>
+</body>
+</html>
