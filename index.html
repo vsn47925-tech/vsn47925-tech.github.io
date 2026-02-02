@@ -12,7 +12,7 @@
     <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" crossorigin="anonymous">
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" crossorigin="anonymous">
     
-    <!-- Tailwind CSS con SRI -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Font Awesome con SRI -->
@@ -76,16 +76,6 @@
             border: 0;
         }
         
-        .sr-only-focusable:focus,
-        .sr-only-focusable:active {
-            position: static;
-            width: auto;
-            height: auto;
-            overflow: visible;
-            clip: auto;
-            white-space: normal;
-        }
-        
         *:focus-visible {
             outline: 3px solid var(--primary-light);
             outline-offset: 2px;
@@ -96,11 +86,6 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
         }
         
         @keyframes pulse {
@@ -478,13 +463,15 @@
         
         /* ===== TARJETA DE RESPUESTA ===== */
         .response-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 1.5rem;
             box-shadow: var(--shadow-xl);
             padding: clamp(1.5rem, 5vw, 2.5rem);
             max-width: 900px;
             width: 95%;
             margin: 0 auto;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .response-header {
@@ -564,24 +551,6 @@
             display: none !important;
         }
         
-        .visually-hidden {
-            position: absolute !important;
-            height: 1px;
-            width: 1px;
-            overflow: hidden;
-            clip: rect(1px, 1px, 1px, 1px);
-        }
-        
-        .text-balance {
-            text-wrap: balance;
-        }
-        
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
         /* ===== RESPONSIVE ===== */
         @media (max-width: 640px) {
             .btn {
@@ -615,25 +584,6 @@
                 transition-duration: 0.01ms !important;
             }
         }
-        
-        /* ===== ALTO CONTRASTE ===== */
-        @media (prefers-contrast: high) {
-            :root {
-                --primary-color: #0000ff;
-                --primary-light: #0000cc;
-                --danger-color: #ff0000;
-                --text-primary: #000000;
-                --text-secondary: #333333;
-            }
-            
-            .welcome-slide::before {
-                background: rgba(0, 0, 0, 0.8);
-            }
-            
-            .btn {
-                border: 2px solid currentColor;
-            }
-        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -644,21 +594,19 @@
          aria-atomic="true"
          role="status"></div>
     
-    <!-- Skip to main content -->
-    <a href="#main-content" class="sr-only-focusable skip-link">
-        Saltar al contenido principal
-    </a>
-    
-    <!-- Carrusel de fondo -->
+    <!-- Carrusel de fondo CON TUS IMÁGENES ORIGINALES -->
     <div class="welcome-carousel" aria-hidden="true">
         <div class="welcome-slide active" 
-             style="background-image: url('https://vsn47925-tech.github.io/img/cab-volcan.jpg')"
-             role="presentation"></div>
-        <div class="welcome-slide" 
              style="background-image: url('https://vsn47925-tech.github.io/img/cab-amanecervilla.jpg')"
              role="presentation"></div>
         <div class="welcome-slide" 
-             style="background-image: url('https://vsn47925-tech.github.io/img/cab-comun4.jpg')"
+             style="background-image: url('https://vsn47925-tech.github.io/img/volcan-entre-arboles.jpg')"
+             role="presentation"></div>
+        <div class="welcome-slide" 
+             style="background-image: url('https://vsn47925-tech.github.io/img/jardin-manzano-mesa.jpg')"
+             role="presentation"></div>
+        <div class="welcome-slide" 
+             style="background-image: url('https://vsn47925-tech.github.io/img/cab-entrada.jpg')"
              role="presentation"></div>
     </div>
     
@@ -666,21 +614,20 @@
     <section id="welcomeScreen" 
              class="welcome-content fade-in" 
              role="main" 
-             aria-labelledby="welcome-title"
-             id="main-content">
+             aria-labelledby="welcome-title">
         
         <div class="welcome-logo-container">
-            <img src="https://via.placeholder.com/400x120/1d4ed8/ffffff?text=Cabañas+Villaitue" 
+            <img src="https://vsn47925-tech.github.io/img/logo_blanco.png" 
                  alt="Cabañas Villaitue - Villarrica, Chile"
                  class="welcome-logo"
-                 width="400"
-                 height="120"
+                 width="392"
+                 height="auto"
                  loading="eager"
                  decoding="async">
         </div>
         
         <div class="max-w-2xl">
-            <h1 id="welcome-title" class="text-4xl md:text-5xl font-bold mb-4 text-balance">
+            <h1 id="welcome-title" class="text-4xl md:text-5xl font-bold mb-4">
                 Bienvenido a Cabañas Villaitue
             </h1>
             
@@ -691,18 +638,17 @@
             <div class="mb-10">
                 <button id="startVoiceBtn" 
                         class="btn btn-primary btn-icon-lg voice-btn float-animation"
-                        aria-label="Iniciar consulta por voz. Presiona el botón y habla tu pregunta"
-                        data-voice-instruction="Presiona este botón y habla para hacer una consulta">
+                        aria-label="Iniciar consulta por voz. Presiona el botón y habla tu pregunta">
                     <i class="fas fa-microphone" aria-hidden="true"></i>
                 </button>
                 
                 <div class="mt-4 text-lg">
                     <span class="sr-only">Instrucción: </span>
-                    Presiona el botón y habla tu pregunta
+                    Haz clic en el micrófono y realiza tu pregunta
                 </div>
             </div>
             
-            <div class="glass-effect rounded-xl p-6 max-w-md mx-auto">
+            <div class="bg-white/10 rounded-xl p-6 max-w-md mx-auto backdrop-blur-sm">
                 <h2 class="text-xl font-semibold mb-3">¿Qué puedes preguntar?</h2>
                 <ul class="text-left space-y-2 text-sm">
                     <li><i class="fas fa-home text-blue-300 mr-2"></i>Información sobre las cabañas</li>
@@ -726,13 +672,12 @@
         
         <div class="response-card fade-in">
             <div class="response-header">
-                <h2 id="response-title" class="response-title text-balance"></h2>
+                <h2 id="response-title" class="response-title"></h2>
                 
                 <div class="flex gap-2">
                     <button id="voiceControlBtn" 
                             class="btn btn-icon voice-btn"
-                            aria-label="Activar o desactivar micrófono"
-                            data-tooltip="Control de voz">
+                            aria-label="Activar o desactivar micrófono">
                         <i id="voiceIcon" class="fas fa-microphone" aria-hidden="true"></i>
                     </button>
                     
@@ -744,13 +689,13 @@
                 </div>
             </div>
             
-            <!-- Contenido dinámico -->
-            <div id="dynamicContent" role="region" aria-live="polite">
+            <!-- Contenedor para carrusel/imagen/mapa -->
+            <div id="mediaContainer" class="mb-6" role="region" aria-live="polite">
                 <!-- Se llena dinámicamente -->
             </div>
             
-            <!-- Respuesta de texto -->
-            <div id="textResponse" class="response-content hidden">
+            <!-- Respuesta de texto - SIEMPRE VISIBLE -->
+            <div id="textResponse" class="response-content">
                 <div class="flex items-start gap-3 mb-3">
                     <i class="fas fa-robot text-blue-600 text-xl mt-1" aria-hidden="true"></i>
                     <h3 class="font-semibold text-blue-800 text-lg">Respuesta del sistema:</h3>
@@ -759,7 +704,27 @@
                 <div id="priceContainer" class="mt-4"></div>
             </div>
             
-            <!-- Navegación -->
+            <!-- Indicador de temporizadores -->
+            <div id="timerIndicator" class="mt-6 pt-4 border-t border-gray-200 hidden">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <div id="micTimerIndicator" class="hidden">
+                            <i class="fas fa-microphone text-blue-500"></i>
+                            <span>Micrófono abierto por: <span id="micTimerValue">7</span>s</span>
+                        </div>
+                        <div id="resetTimerIndicator" class="hidden">
+                            <i class="fas fa-clock text-orange-500"></i>
+                            <span>Reinicio en: <span id="resetTimerValue">2</span>s</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        El sistema se reiniciará automáticamente
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botones de acción -->
             <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                 <button id="newQueryBtn" 
                         class="btn btn-primary"
@@ -767,31 +732,6 @@
                     <i class="fas fa-microphone mr-2" aria-hidden="true"></i>
                     Nueva consulta
                 </button>
-                
-                <button id="repeatAudioBtn" 
-                        class="btn"
-                        aria-label="Repetir la respuesta en audio">
-                    <i class="fas fa-redo mr-2" aria-hidden="true"></i>
-                    Repetir audio
-                </button>
-            </div>
-            
-            <!-- Indicadores de accesibilidad -->
-            <div class="mt-6 pt-4 border-t border-gray-200">
-                <div class="flex items-center justify-center gap-4 text-sm text-gray-500">
-                    <span class="flex items-center gap-1">
-                        <i class="fas fa-universal-access" aria-hidden="true"></i>
-                        Modo accesible
-                    </span>
-                    <span class="flex items-center gap-1">
-                        <i class="fas fa-keyboard" aria-hidden="true"></i>
-                        Navegación por teclado
-                    </span>
-                    <span class="flex items-center gap-1">
-                        <i class="fas fa-volume-up" aria-hidden="true"></i>
-                        Audio activado
-                    </span>
-                </div>
             </div>
         </div>
     </section>
@@ -811,11 +751,6 @@
         
         <div class="processing-subtext">
             Por favor, espera un momento
-        </div>
-        
-        <div class="mt-6 text-sm opacity-70">
-            <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>
-            El sistema se reiniciará automáticamente después de 10 segundos de inactividad
         </div>
     </div>
     
@@ -856,14 +791,8 @@
     <!-- Footer -->
     <footer class="app-footer" aria-label="Información del sistema">
         <div class="container mx-auto">
-            <p>Cabañas Villaitue - Sistema de Autoservicio por Voz</p>
-            <p class="mt-1 text-xs opacity-70">© 2024 - Diseñado con accesibilidad universal</p>
-            <p class="mt-2 text-xs opacity-60">
-                <i class="fas fa-shield-alt mr-1" aria-hidden="true"></i>
-                Sistema seguro | 
-                <i class="fas fa-heartbeat ml-3 mr-1" aria-hidden="true"></i>
-                Monitoreo activo
-            </p>
+            <p>Villaitue - Sistema de Autoconsultas por voz © VHSN 2026</p>
+            <p class="mt-1 text-xs opacity-70">Diseñado con accesibilidad universal</p>
         </div>
     </footer>
     
@@ -872,762 +801,687 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin="anonymous"></script>
     
-    <!-- Aplicación JavaScript modular -->
-    <script type="module">
+    <!-- Aplicación JavaScript -->
+    <script>
         // ===== CONFIGURACIÓN =====
         const CONFIG = {
             API_URL: "https://apps.villaitue.cl/webhook/autoservicio",
             MAP_COORDS: [-39.2852346, -72.2227348],
             MAP_ZOOM: 17,
-            AUTO_RESET_TIMEOUT: 10000, // 10 segundos
-            NO_INPUT_TIMEOUT: 2000,    // 2 segundos
-            SLIDE_INTERVAL: 5000,      // 5 segundos
-            PROCESSING_MESSAGES: [
-                "Estoy procesando tu solicitud...",
-                "Buscando la mejor información...",
-                "Un momento, por favor...",
-                "Analizando tu consulta..."
-            ]
+            POST_AUDIO_MIC_TIMEOUT: 7000,  // 7 segundos de micrófono abierto después del audio
+            NO_INPUT_TIMEOUT: 2000,        // 2 segundos después de cerrar micrófono sin input
+            SLIDE_INTERVAL: 5000
         };
         
         // ===== ESTADO DE LA APLICACIÓN =====
-        const AppState = {
-            voice: {
-                recognition: null,
-                isListening: false,
-                hasReceivedInput: false
-            },
-            ui: {
-                currentScreen: 'welcome',
-                isProcessing: false,
-                currentAudio: null
-            },
-            carousel: {
-                currentIndex: 0,
-                slides: [],
-                interval: null
-            },
-            timers: {
-                resetTimeout: null,
-                processingInterval: null,
-                slideInterval: null
-            }
-        };
+        let recognition = null;
+        let isListening = false;
+        let hasReceivedInput = false;
+        let currentAudio = null;
+        let carouselInterval = null;
+        let currentCarouselIndex = 0;
+        let mapInstance = null;
+        let postAudioMicTimer = null;
+        let noInputTimer = null;
+        let micTimerInterval = null;
+        let resetTimerInterval = null;
+        let micTimerSeconds = 7;
+        let resetTimerSeconds = 2;
         
-        // ===== MÓDULO DE ACCESIBILIDAD =====
-        const Accessibility = {
-            announce(message, priority = 'polite') {
-                const region = document.getElementById('aria-live-region');
-                region.setAttribute('aria-live', priority);
-                region.textContent = message;
-                setTimeout(() => region.textContent = '', 1000);
-            },
+        // ===== FUNCIONES DE ACCESIBILIDAD =====
+        function announceToScreenReader(message, priority = 'polite') {
+            const region = document.getElementById('aria-live-region');
+            region.setAttribute('aria-live', priority);
+            region.textContent = message;
+            setTimeout(() => region.textContent = '', 1000);
+        }
+        
+        // ===== TEMPORIZADORES =====
+        function startPostAudioMicTimer() {
+            console.log("🎤 Iniciando temporizador de 7s para micrófono post-audio");
             
-            setFocus(element) {
-                if (element && element.focus) {
-                    element.focus();
-                }
-            },
+            // Resetear valores
+            micTimerSeconds = 7;
+            resetTimerSeconds = 2;
             
-            trapFocus(element) {
-                const focusableElements = element.querySelectorAll(
-                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-                );
+            // Mostrar indicador de temporizador de micrófono
+            const timerIndicator = document.getElementById('timerIndicator');
+            const micTimerIndicator = document.getElementById('micTimerIndicator');
+            const resetTimerIndicator = document.getElementById('resetTimerIndicator');
+            
+            timerIndicator.classList.remove('hidden');
+            micTimerIndicator.classList.remove('hidden');
+            resetTimerIndicator.classList.add('hidden');
+            
+            // Actualizar valor del temporizador
+            document.getElementById('micTimerValue').textContent = micTimerSeconds;
+            
+            // Iniciar intervalo para actualizar visualmente
+            micTimerInterval = setInterval(() => {
+                micTimerSeconds--;
+                document.getElementById('micTimerValue').textContent = micTimerSeconds;
                 
-                const firstElement = focusableElements[0];
-                const lastElement = focusableElements[focusableElements.length - 1];
-                
-                element.addEventListener('keydown', (e) => {
-                    if (e.key === 'Tab') {
-                        if (e.shiftKey) {
-                            if (document.activeElement === firstElement) {
-                                lastElement.focus();
-                                e.preventDefault();
-                            }
-                        } else {
-                            if (document.activeElement === lastElement) {
-                                firstElement.focus();
-                                e.preventDefault();
-                            }
-                        }
+                if (micTimerSeconds <= 0) {
+                    clearInterval(micTimerInterval);
+                    console.log("⏰ Temporizador de micrófono terminado, cerrando micrófono...");
+                    if (recognition && isListening) {
+                        recognition.stop();
                     }
-                });
-            }
-        };
-        
-        // ===== MÓDULO DE VOZ =====
-        const VoiceModule = {
-            init() {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                
-                if (!SpeechRecognition) {
-                    this.showUnsupportedError();
-                    return null;
+                    startNoInputTimer();
                 }
-                
-                AppState.voice.recognition = new SpeechRecognition();
-                const recognition = AppState.voice.recognition;
-                
-                recognition.lang = 'es-CL';
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.maxAlternatives = 1;
-                
-                // Event handlers
-                recognition.onstart = this.handleVoiceStart.bind(this);
-                recognition.onresult = this.handleVoiceResult.bind(this);
-                recognition.onerror = this.handleVoiceError.bind(this);
-                recognition.onend = this.handleVoiceEnd.bind(this);
-                
-                return recognition;
-            },
+            }, 1000);
             
-            handleVoiceStart() {
-                AppState.voice.isListening = true;
-                AppState.voice.hasReceivedInput = false;
-                this.updateUI(true);
-                Accessibility.announce("Escuchando. Puedes hablar ahora.");
-                
-                // Clear any existing timeout
-                TimerModule.clearResetTimeout();
-            },
+            // Configurar timeout para cerrar el micrófono después de 7 segundos
+            postAudioMicTimer = setTimeout(() => {
+                console.log("🕒 7 segundos completados, cerrando micrófono...");
+                clearInterval(micTimerInterval);
+                if (recognition && isListening) {
+                    recognition.stop();
+                }
+                startNoInputTimer();
+            }, 7000);
+        }
+        
+        function startNoInputTimer() {
+            console.log("⏳ Iniciando temporizador de 2s sin input...");
             
-            handleVoiceResult(event) {
+            // Resetear valores
+            resetTimerSeconds = 2;
+            
+            // Cambiar indicador visual
+            const micTimerIndicator = document.getElementById('micTimerIndicator');
+            const resetTimerIndicator = document.getElementById('resetTimerIndicator');
+            
+            micTimerIndicator.classList.add('hidden');
+            resetTimerIndicator.classList.remove('hidden');
+            document.getElementById('resetTimerValue').textContent = resetTimerSeconds;
+            
+            // Iniciar intervalo para actualizar visualmente
+            resetTimerInterval = setInterval(() => {
+                resetTimerSeconds--;
+                document.getElementById('resetTimerValue').textContent = resetTimerSeconds;
+                
+                if (resetTimerSeconds <= 0) {
+                    clearInterval(resetTimerInterval);
+                    resetApplication();
+                }
+            }, 1000);
+            
+            // Configurar timeout para reiniciar aplicación después de 2 segundos
+            noInputTimer = setTimeout(() => {
+                console.log("🔄 2 segundos sin input, reiniciando aplicación...");
+                clearInterval(resetTimerInterval);
+                resetApplication();
+            }, 2000);
+        }
+        
+        function clearAllTimers() {
+            console.log("🧹 Limpiando todos los temporizadores...");
+            
+            if (postAudioMicTimer) {
+                clearTimeout(postAudioMicTimer);
+                postAudioMicTimer = null;
+            }
+            
+            if (noInputTimer) {
+                clearTimeout(noInputTimer);
+                noInputTimer = null;
+            }
+            
+            if (micTimerInterval) {
+                clearInterval(micTimerInterval);
+                micTimerInterval = null;
+            }
+            
+            if (resetTimerInterval) {
+                clearInterval(resetTimerInterval);
+                resetTimerInterval = null;
+            }
+            
+            // Ocultar indicador de temporizadores
+            document.getElementById('timerIndicator').classList.add('hidden');
+        }
+        
+        function resetApplication() {
+            console.log("🔄 Reiniciando aplicación...");
+            
+            // Limpiar todo
+            clearAllTimers();
+            
+            // Detener reconocimiento de voz
+            if (recognition && isListening) {
+                recognition.stop();
+            }
+            
+            // Detener audio si está reproduciendo
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            // Detener carrusel
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+                carouselInterval = null;
+            }
+            
+            // Limpiar mapa
+            if (mapInstance) {
+                mapInstance.remove();
+                mapInstance = null;
+            }
+            
+            // Resetear estado
+            isListening = false;
+            hasReceivedInput = false;
+            currentCarouselIndex = 0;
+            
+            // Volver a pantalla de bienvenida
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            document.getElementById('responseScreen').classList.add('hidden');
+            
+            announceToScreenReader("Sistema reiniciado. Bienvenido nuevamente.");
+        }
+        
+        // ===== INICIALIZACIÓN DE VOZ =====
+        function initVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                announceToScreenReader("Su navegador no soporta reconocimiento de voz. Por favor, use Chrome.");
+                return null;
+            }
+            
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-CL';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            
+            recognition.onstart = () => {
+                isListening = true;
+                hasReceivedInput = false;
+                updateVoiceButton(true);
+                announceToScreenReader("Escuchando. Puede hablar ahora.");
+                
+                // Limpiar temporizadores cuando se inicia el micrófono
+                clearAllTimers();
+            };
+            
+            recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
-                AppState.voice.hasReceivedInput = true;
+                hasReceivedInput = true;
                 
-                Accessibility.announce(`Has dicho: ${transcript}. Procesando...`);
-                API.sendQuery(transcript);
+                // Cancelar cualquier temporizador activo
+                clearAllTimers();
                 
-                TimerModule.clearResetTimeout();
-            },
+                announceToScreenReader(`Ha dicho: ${transcript}. Procesando...`);
+                sendToN8N(transcript);
+            };
             
-            handleVoiceError(event) {
-                AppState.voice.isListening = false;
-                this.updateUI(false);
+            recognition.onerror = (event) => {
+                isListening = false;
+                updateVoiceButton(false);
                 
-                const errorMap = {
-                    'no-speech': 'No se detectó voz. Por favor, intenta de nuevo.',
-                    'audio-capture': 'No se puede acceder al micrófono.',
-                    'not-allowed': 'Permiso de micrófono denegado.',
-                    'network': 'Error de red. Verifica tu conexión.',
-                    'service-not-allowed': 'Servicio de voz no disponible.'
-                };
-                
-                const errorMessage = errorMap[event.error] || 'Error en el reconocimiento de voz';
-                ErrorModule.show(errorMessage);
-                
-                if (['no-speech', 'audio-capture'].includes(event.error)) {
-                    TimerModule.startNoInputTimeout();
-                }
-            },
-            
-            handleVoiceEnd() {
-                AppState.voice.isListening = false;
-                this.updateUI(false);
-                
-                if (!AppState.voice.hasReceivedInput) {
-                    TimerModule.startNoInputTimeout();
-                }
-            },
-            
-            updateUI(isListening) {
-                const voiceBtn = document.getElementById('voiceControlBtn');
-                const startBtn = document.getElementById('startVoiceBtn');
-                const voiceIcon = document.getElementById('voiceIcon');
-                
-                if (isListening) {
-                    voiceBtn?.classList.add('listening', 'btn-danger');
-                    startBtn?.classList.add('listening');
-                    voiceIcon?.classList.replace('fa-microphone', 'fa-stop');
-                    Accessibility.announce("Micrófono activado", 'assertive');
+                if (event.error === 'no-speech' || event.error === 'audio-capture') {
+                    // Si no hay input durante el periodo post-audio, iniciar temporizador de no input
+                    if (postAudioMicTimer) {
+                        startNoInputTimer();
+                    }
                 } else {
-                    voiceBtn?.classList.remove('listening', 'btn-danger');
-                    startBtn?.classList.remove('listening');
-                    voiceIcon?.classList.replace('fa-stop', 'fa-microphone');
+                    const errorMsg = "Error en el reconocimiento de voz";
+                    showErrorState(errorMsg);
+                    announceToScreenReader(errorMsg);
                 }
-            },
+            };
             
-            showUnsupportedError() {
-                ErrorModule.show(
-                    'Tu navegador no soporta reconocimiento de voz. ' +
-                    'Por favor, usa Chrome o Edge para esta funcionalidad.'
-                );
-            },
-            
-            start() {
-                if (!AppState.voice.recognition) {
-                    AppState.voice.recognition = this.init();
-                }
+            recognition.onend = () => {
+                isListening = false;
+                updateVoiceButton(false);
                 
-                if (AppState.voice.recognition && !AppState.voice.isListening) {
-                    try {
-                        AppState.voice.recognition.start();
-                    } catch (error) {
-                        ErrorModule.show('Error al iniciar el reconocimiento de voz');
-                    }
+                // Si el micrófono se cerró después del periodo post-audio y no hubo input,
+                // iniciar el temporizador de 2 segundos
+                if (postAudioMicTimer && !hasReceivedInput) {
+                    startNoInputTimer();
                 }
-            },
+            };
             
-            stop() {
-                if (AppState.voice.recognition && AppState.voice.isListening) {
-                    AppState.voice.recognition.stop();
-                }
-            }
-        };
+            return recognition;
+        }
         
-        // ===== MÓDULO DE API =====
-        const API = {
-            async sendQuery(pregunta) {
-                UI.showProcessing();
-                
-                try {
-                    const response = await fetch(CONFIG.API_URL, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ pregunta: pregunta }),
-                        signal: AbortSignal.timeout(15000) // Timeout de 15 segundos
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    UI.hideProcessing();
-                    ResponseHandler.process(data);
-                    
-                } catch (error) {
-                    UI.hideProcessing();
-                    
-                    if (error.name === 'AbortError') {
-                        ErrorModule.show('Tiempo de espera agotado. Por favor, intenta de nuevo.');
-                    } else {
-                        ErrorModule.show('Error de conexión con el servidor');
-                    }
-                    
-                    console.error('API Error:', error);
-                }
-            }
-        };
-        
-        // ===== MÓDULO DE RESPUESTA =====
-        const ResponseHandler = {
-            process(rawData) {
-                const data = this.normalizeResponse(rawData);
-                
-                // Update UI
-                document.getElementById('response-title').textContent = data.descripcion;
-                document.getElementById('outputContent').textContent = data.output;
-                
-                // Announce
-                Accessibility.announce(`Respuesta: ${data.descripcion}`);
-                
-                // Clear dynamic content
-                const dynamicContent = document.getElementById('dynamicContent');
-                dynamicContent.innerHTML = '';
-                
-                // Handle response type
-                switch (data.tipo_plantilla) {
-                    case 'carrusel':
-                        if (data.imagenes?.length > 0) {
-                            CarouselModule.create(data.imagenes, dynamicContent);
-                        }
-                        break;
-                        
-                    case 'respuesta-info':
-                        if (data.imagenes?.length > 0) {
-                            ImageModule.create(data.imagenes[0], data.caption, dynamicContent);
-                        }
-                        break;
-                        
-                    case 'mapa-villaitue':
-                        MapModule.create(dynamicContent);
-                        break;
-                }
-                
-                // Show text response
-                const textResponse = document.getElementById('textResponse');
-                textResponse.classList.remove('hidden');
-                
-                // Show price if available
-                if (data.precio) {
-                    const priceContainer = document.getElementById('priceContainer');
-                    priceContainer.innerHTML = `
-                        <div class="response-price">
-                            <i class="fas fa-tag mr-2" aria-hidden="true"></i>
-                            ${data.precio}
-                        </div>
-                    `;
-                }
-                
-                // Switch to response screen
-                UI.switchToScreen('response');
-                
-                // Play audio if available
-                if (data.audioContent) {
-                    AudioModule.playBase64(data.audioContent);
-                }
-                
-                // Start auto-reset timer
-                TimerModule.startAutoResetTimeout();
-            },
+        function updateVoiceButton(listening) {
+            const voiceBtn = document.getElementById('voiceControlBtn');
+            const voiceIcon = document.getElementById('voiceIcon');
+            const startBtn = document.getElementById('startVoiceBtn');
             
-            normalizeResponse(data) {
-                if (Array.isArray(data) && data.length > 0) {
-                    const item = data[0];
-                    return {
-                        output: item.output || item.msg || "Respuesta recibida",
-                        descripcion: item.descripcion || item.description || "Resultado",
-                        imagenes: item.imagenes || item.images || [],
-                        tipo_plantilla: item.tipo_plantilla || "texto",
-                        precio: item.precio || null,
-                        caption: item.caption || item.descripcion_imagen || "",
-                        audioContent: item.audioContent || ""
-                    };
-                }
-                
-                return {
-                    output: "No se encontraron resultados para tu consulta.",
-                    descripcion: "Sin resultados",
-                    imagenes: [],
-                    tipo_plantilla: "texto",
-                    precio: null,
-                    caption: "",
-                    audioContent: ""
-                };
+            if (listening) {
+                voiceBtn?.classList.add('listening');
+                voiceBtn?.classList.add('btn-danger');
+                voiceIcon?.classList.remove('fa-microphone');
+                voiceIcon?.classList.add('fa-stop');
+                startBtn?.classList.add('listening');
+            } else {
+                voiceBtn?.classList.remove('listening');
+                voiceBtn?.classList.remove('btn-danger');
+                voiceIcon?.classList.remove('fa-stop');
+                voiceIcon?.classList.add('fa-microphone');
+                startBtn?.classList.remove('listening');
             }
-        };
+        }
         
-        // ===== MÓDULO DE AUDIO =====
-        const AudioModule = {
-            playBase64(base64String) {
-                try {
-                    // Clean up previous audio
-                    if (AppState.ui.currentAudio) {
-                        AppState.ui.currentAudio.pause();
-                        URL.revokeObjectURL(AppState.ui.currentAudio.src);
-                    }
-                    
-                    // Decode base64
-                    const binaryString = atob(base64String);
-                    const bytes = new Uint8Array(binaryString.length);
-                    
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    
-                    // Create and play audio
-                    const blob = new Blob([bytes], { type: 'audio/mpeg' });
-                    const audioUrl = URL.createObjectURL(blob);
-                    const audio = new Audio(audioUrl);
-                    
-                    AppState.ui.currentAudio = audio;
-                    
-                    audio.onended = () => {
-                        URL.revokeObjectURL(audioUrl);
-                        Accessibility.announce("Audio finalizado. Micrófono activado para nueva consulta.");
-                        VoiceModule.start();
-                    };
-                    
-                    audio.onerror = (error) => {
-                        console.error('Audio error:', error);
-                        URL.revokeObjectURL(audioUrl);
-                        VoiceModule.start();
-                    };
-                    
-                    audio.play();
-                    Accessibility.announce("Reproduciendo respuesta en audio");
-                    
-                } catch (error) {
-                    console.error('Error playing audio:', error);
-                    VoiceModule.start();
-                }
-            },
+        // ===== API =====
+        async function sendToN8N(pregunta) {
+            showProcessingIndicator();
             
-            repeat() {
-                if (AppState.ui.currentAudio) {
-                    AppState.ui.currentAudio.currentTime = 0;
-                    AppState.ui.currentAudio.play();
-                }
-            }
-        };
-        
-        // ===== MÓDULO DEL CARRUSEL =====
-        const CarouselModule = {
-            create(images, container) {
-                if (!images || images.length === 0) return;
-                
-                const carouselHTML = `
-                    <div class="carousel-container" role="region" aria-label="Galería de imágenes">
-                        <div class="carousel-inner" role="group" aria-label="${images.length} imágenes">
-                            ${images.map((img, index) => `
-                                <div class="carousel-slide ${index === 0 ? 'active' : ''}" 
-                                     role="tabpanel" 
-                                     aria-label="Imagen ${index + 1} de ${images.length}">
-                                    <img src="${img}" 
-                                         alt="Vista de la cabaña ${index + 1}"
-                                         loading="lazy"
-                                         width="800"
-                                         height="400"
-                                         onerror="this.src='https://via.placeholder.com/800x400/3b82f6/ffffff?text=Imagen+no+disponible'">
-                                </div>
-                            `).join('')}
-                            
-                            ${images.length > 1 ? `
-                                <button class="carousel-nav carousel-nav-prev" aria-label="Imagen anterior">
-                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
-                                </button>
-                                <button class="carousel-nav carousel-nav-next" aria-label="Siguiente imagen">
-                                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                    
-                    ${images.length > 1 ? `
-                        <div class="carousel-dots" role="tablist" aria-label="Navegación de galería">
-                            ${images.map((_, index) => `
-                                <button class="carousel-dot ${index === 0 ? 'active' : ''}" 
-                                        data-index="${index}"
-                                        role="tab"
-                                        aria-selected="${index === 0}"
-                                        aria-label="Ir a la imagen ${index + 1}">
-                                </button>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                `;
-                
-                container.innerHTML = carouselHTML;
-                this.init(images);
-            },
-            
-            init(images) {
-                if (images.length <= 1) return;
-                
-                AppState.carousel.slides = Array.from(document.querySelectorAll('.carousel-slide'));
-                AppState.carousel.currentIndex = 0;
-                
-                // Clear existing interval
-                if (AppState.timers.slideInterval) {
-                    clearInterval(AppState.timers.slideInterval);
-                }
-                
-                // Setup event listeners
-                const prevBtn = document.querySelector('.carousel-nav-prev');
-                const nextBtn = document.querySelector('.carousel-nav-next');
-                const dots = document.querySelectorAll('.carousel-dot');
-                
-                prevBtn?.addEventListener('click', () => this.prev());
-                nextBtn?.addEventListener('click', () => this.next());
-                
-                dots.forEach(dot => {
-                    dot.addEventListener('click', () => {
-                        const index = parseInt(dot.dataset.index);
-                        this.goTo(index);
-                    });
+            try {
+                const response = await fetch(CONFIG.API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pregunta: pregunta })
                 });
+
+                const data = await response.json();
+                hideProcessingIndicator();
                 
-                // Auto-advance
-                AppState.timers.slideInterval = setInterval(() => this.next(), CONFIG.SLIDE_INTERVAL);
-            },
-            
-            goTo(index) {
-                if (index < 0) index = AppState.carousel.slides.length - 1;
-                if (index >= AppState.carousel.slides.length) index = 0;
-                
-                // Update slides
-                AppState.carousel.slides.forEach((slide, i) => {
-                    slide.classList.toggle('active', i === index);
-                });
-                
-                // Update dots
-                document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
-                    dot.classList.toggle('active', i === index);
-                    dot.setAttribute('aria-selected', i === index);
-                });
-                
-                AppState.carousel.currentIndex = index;
-                
-                // Restart auto-advance timer
-                if (AppState.timers.slideInterval) {
-                    clearInterval(AppState.timers.slideInterval);
-                    AppState.timers.slideInterval = setInterval(() => this.next(), CONFIG.SLIDE_INTERVAL);
-                }
-                
-                Accessibility.announce(`Imagen ${index + 1} de ${AppState.carousel.slides.length}`);
-            },
-            
-            next() {
-                const nextIndex = (AppState.carousel.currentIndex + 1) % AppState.carousel.slides.length;
-                this.goTo(nextIndex);
-            },
-            
-            prev() {
-                const prevIndex = (AppState.carousel.currentIndex - 1 + AppState.carousel.slides.length) % AppState.carousel.slides.length;
-                this.goTo(prevIndex);
-            },
-            
-            destroy() {
-                if (AppState.timers.slideInterval) {
-                    clearInterval(AppState.timers.slideInterval);
-                    AppState.timers.slideInterval = null;
-                }
-                
-                AppState.carousel.slides = [];
-                AppState.carousel.currentIndex = 0;
-            }
-        };
-        
-        // ===== MÓDULO DE IMAGEN =====
-        const ImageModule = {
-            create(imageUrl, caption, container) {
-                const imageHTML = `
-                    <div class="info-container" role="region" aria-label="Infografía informativa">
-                        <img src="${imageUrl}" 
-                             class="info-image" 
-                             alt="${caption || 'Infografía informativa'}"
-                             loading="lazy"
-                             width="800"
-                             height="400"
-                             onerror="this.src='https://via.placeholder.com/800x400/10b981/ffffff?text=Infografía+no+disponible'">
-                        
-                        ${caption ? `
-                            <div class="info-caption" role="note">
-                                ${caption}
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-                
-                container.innerHTML = imageHTML;
-                Accessibility.announce("Mostrando infografía informativa");
-            }
-        };
-        
-        // ===== MÓDULO DE MAPA =====
-        const MapModule = {
-            map: null,
-            marker: null,
-            
-            create(container) {
-                const mapHTML = `
-                    <div class="map-container" role="region" aria-label="Ubicación en el mapa">
-                        <div id="villaitueMap"></div>
-                    </div>
-                    <div class="text-center mt-3">
-                        <p class="text-sm text-gray-600">
-                            <i class="fas fa-map-marker-alt text-red-500 mr-1" aria-hidden="true"></i>
-                            Ubicación: Cabañas Villaitue, Villarrica, Chile
-                        </p>
-                        <p class="text-xs text-gray-500 mt-1">
-                            Coordenadas: ${CONFIG.MAP_COORDS[0]}, ${CONFIG.MAP_COORDS[1]}
-                        </p>
-                    </div>
-                `;
-                
-                container.innerHTML = mapHTML;
-                this.init();
-                
-                Accessibility.announce("Mostrando ubicación en el mapa");
-            },
-            
-            init() {
-                // Remove existing map
-                if (this.map) {
-                    this.map.remove();
-                    this.map = null;
-                    this.marker = null;
-                }
-                
-                // Create new map
-                this.map = L.map('villaitueMap').setView(CONFIG.MAP_COORDS, CONFIG.MAP_ZOOM);
-                
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                    maxZoom: 19,
-                }).addTo(this.map);
-                
-                // Custom marker
-                const customIcon = L.divIcon({
-                    className: 'map-marker',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
-                    popupAnchor: [0, -16]
-                });
-                
-                this.marker = L.marker(CONFIG.MAP_COORDS, { icon: customIcon })
-                    .addTo(this.map)
-                    .bindPopup(`
-                        <div style="padding: 8px; min-width: 200px; text-align: center;">
-                            <strong style="color: #dc2626; font-size: 14px;">
-                                <i class="fas fa-cabin"></i> Cabañas Villaitue
-                            </strong><br>
-                            <div style="margin: 5px 0; padding: 5px; background: #f8fafc; border-radius: 4px;">
-                                <small style="color: #64748b;">
-                                    <i class="fas fa-map-pin"></i> Villarrica, Chile
-                                </small>
-                            </div>
-                            <a href="https://www.google.com/maps?q=${CONFIG.MAP_COORDS[0]},${CONFIG.MAP_COORDS[1]}" 
-                               target="_blank" 
-                               style="display: inline-block; margin-top: 5px; padding: 4px 12px; background: #3b82f6; color: white; border-radius: 4px; text-decoration: none; font-size: 12px;">
-                                <i class="fas fa-directions"></i> Cómo llegar
-                            </a>
-                        </div>
-                    `)
-                    .openPopup();
-                
-                // Add circle for visual reference
-                L.circle(CONFIG.MAP_COORDS, {
-                    color: '#dc2626',
-                    fillColor: '#fca5a5',
-                    fillOpacity: 0.2,
-                    radius: 25
-                }).addTo(this.map);
-                
-                // Ensure proper rendering
-                setTimeout(() => {
-                    this.map.invalidateSize();
-                }, 100);
-            },
-            
-            destroy() {
-                if (this.map) {
-                    this.map.remove();
-                    this.map = null;
-                    this.marker = null;
-                }
-            }
-        };
-        
-        // ===== MÓDULO DE TEMPORIZADORES =====
-        const TimerModule = {
-            startAutoResetTimeout() {
-                this.clearResetTimeout();
-                
-                AppState.timers.resetTimeout = setTimeout(() => {
-                    console.log('⏰ Auto-reset por inactividad');
-                    this.resetApp();
-                }, CONFIG.AUTO_RESET_TIMEOUT);
-            },
-            
-            startNoInputTimeout() {
-                this.clearResetTimeout();
-                
-                AppState.timers.resetTimeout = setTimeout(() => {
-                    console.log('🔇 No input detected, resetting...');
-                    this.resetApp();
-                }, CONFIG.NO_INPUT_TIMEOUT);
-            },
-            
-            clearResetTimeout() {
-                if (AppState.timers.resetTimeout) {
-                    clearTimeout(AppState.timers.resetTimeout);
-                    AppState.timers.resetTimeout = null;
-                }
-            },
-            
-            resetApp() {
-                // Clean up
-                CarouselModule.destroy();
-                MapModule.destroy();
-                VoiceModule.stop();
-                
-                // Reset state
-                AppState.ui.currentScreen = 'welcome';
-                AppState.voice.hasReceivedInput = false;
-                AppState.voice.isListening = false;
-                
-                // Clear all timeouts
-                Object.values(AppState.timers).forEach(timer => {
-                    if (timer) clearTimeout(timer);
-                });
-                
-                // Switch to welcome screen
-                UI.switchToScreen('welcome');
-                Accessibility.announce("Sistema reiniciado. Bienvenido nuevamente.");
-            }
-        };
-        
-        // ===== MÓDULO DE ERRORES =====
-        const ErrorModule = {
-            show(message) {
-                document.getElementById('errorMessage').textContent = message;
-                document.getElementById('errorState').classList.remove('hidden');
-                Accessibility.announce(`Error: ${message}`, 'assertive');
-                
-                // Trap focus in error modal
-                Accessibility.trapFocus(document.getElementById('errorState'));
-            },
-            
-            hide() {
-                document.getElementById('errorState').classList.add('hidden');
-            }
-        };
-        
-        // ===== MÓDULO DE UI =====
-        const UI = {
-            showProcessing() {
-                AppState.ui.isProcessing = true;
-                const indicator = document.getElementById('processingIndicator');
-                const message = document.getElementById('processingMessage');
-                
-                // Random message
-                const randomMessage = CONFIG.PROCESSING_MESSAGES[
-                    Math.floor(Math.random() * CONFIG.PROCESSING_MESSAGES.length)
-                ];
-                
-                message.textContent = randomMessage;
-                indicator.style.display = 'flex';
-                
-                Accessibility.announce(randomMessage);
-            },
-            
-            hideProcessing() {
-                AppState.ui.isProcessing = false;
-                document.getElementById('processingIndicator').style.display = 'none';
-            },
-            
-            switchToScreen(screenName) {
-                const welcomeScreen = document.getElementById('welcomeScreen');
-                const responseScreen = document.getElementById('responseScreen');
-                
-                // Update state
-                AppState.ui.currentScreen = screenName;
-                
-                // Use View Transition API if available
                 if (document.startViewTransition) {
                     document.startViewTransition(() => {
-                        welcomeScreen.classList.toggle('hidden', screenName !== 'welcome');
-                        responseScreen.classList.toggle('hidden', screenName !== 'response');
+                        mostrarRespuestaAgente(data);
                     });
                 } else {
-                    welcomeScreen.classList.toggle('hidden', screenName !== 'welcome');
-                    responseScreen.classList.toggle('hidden', screenName !== 'response');
+                    mostrarRespuestaAgente(data);
                 }
                 
-                // Set focus
-                if (screenName === 'response') {
-                    Accessibility.setFocus(document.getElementById('response-title'));
-                } else {
-                    Accessibility.setFocus(document.getElementById('startVoiceBtn'));
-                }
-                
-                Accessibility.announce(`Cambiando a pantalla de ${screenName}`);
+            } catch (error) {
+                hideProcessingIndicator();
+                const errorMsg = "Error de conexión con el servidor";
+                showErrorState(errorMsg);
+                announceToScreenReader(errorMsg);
             }
-        };
+        }
+        
+        function processResponse(data) {
+            if (Array.isArray(data) && data.length > 0) {
+                const item = data[0];
+                return {
+                    output: item.output || item.msg || "Respuesta recibida",
+                    descripcion: item.descripcion || item.description || "Resultado",
+                    imagenes: item.imagenes || item.images || [],
+                    tipo_plantilla: item.tipo_plantilla || "texto",
+                    precio: item.precio || null,
+                    caption: item.caption || item.descripcion_imagen || "",
+                    audioContent: item.audioContent || ""
+                };
+            }
+            
+            return {
+                output: "No se encontraron resultados",
+                descripcion: "Sin resultados",
+                imagenes: [],
+                tipo_plantilla: "texto",
+                precio: null,
+                caption: "",
+                audioContent: ""
+            };
+        }
+        
+        // ===== MOSTRAR RESPUESTA =====
+        function mostrarRespuestaAgente(rawData) {
+            const datos = processResponse(rawData);
+            
+            // Actualizar título y contenido
+            document.getElementById('response-title').textContent = datos.descripcion;
+            document.getElementById('outputContent').textContent = datos.output;
+            
+            // Anunciar respuesta
+            announceToScreenReader(`Respuesta: ${datos.descripcion}`);
+            
+            // Limpiar contenedor multimedia
+            const mediaContainer = document.getElementById('mediaContainer');
+            mediaContainer.innerHTML = '';
+            
+            // Manejar diferentes tipos de respuesta
+            if (datos.tipo_plantilla === 'carrusel' && datos.imagenes.length > 0) {
+                mostrarCarrusel(datos.imagenes, mediaContainer);
+            } else if (datos.tipo_plantilla === 'respuesta-info' && datos.imagenes.length > 0) {
+                mostrarInfoImage(datos.imagenes[0], datos.caption, mediaContainer);
+            } else if (datos.tipo_plantilla === 'mapa-villaitue') {
+                mostrarMapa(mediaContainer);
+            }
+            
+            // Mostrar precio si está disponible
+            const priceContainer = document.getElementById('priceContainer');
+            priceContainer.innerHTML = datos.precio ? 
+                `<div class="response-price"><i class="fas fa-tag mr-2"></i>${datos.precio}</div>` : '';
+            
+            // Asegurar que la pantalla de respuesta esté visible
+            ensureResponseScreenIsVisible();
+            
+            // Reproducir audio y configurar temporizadores
+            if (datos.audioContent) {
+                playAudioBase64(datos.audioContent);
+            } else {
+                // Si no hay audio, iniciar micrófono inmediatamente
+                if (recognition) {
+                    setTimeout(() => {
+                        recognition.start();
+                        startPostAudioMicTimer();
+                    }, 500);
+                }
+            }
+        }
+        
+        function ensureResponseScreenIsVisible() {
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const responseScreen = document.getElementById('responseScreen');
+            
+            if (!welcomeScreen.classList.contains('hidden')) {
+                if (document.startViewTransition) {
+                    document.startViewTransition(() => {
+                        welcomeScreen.classList.add('hidden');
+                        responseScreen.classList.remove('hidden');
+                    });
+                } else {
+                    welcomeScreen.classList.add('hidden');
+                    responseScreen.classList.remove('hidden');
+                }
+            }
+        }
+        
+        // ===== REPRODUCIR AUDIO =====
+        function playAudioBase64(audioBase64) {
+            try {
+                // Limpiar audio anterior
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+                
+                // Decodificar base64
+                const binaryString = atob(audioBase64);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                
+                // Crear y reproducir audio
+                const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                
+                currentAudio = audio;
+                
+                audio.onended = () => {
+                    URL.revokeObjectURL(audioUrl);
+                    console.log("🎵 Audio finalizado, abriendo micrófono por 7 segundos...");
+                    announceToScreenReader("Audio finalizado. Micrófono activado para nueva consulta.");
+                    
+                    // Abrir micrófono después del audio
+                    if (recognition) {
+                        recognition.start();
+                    }
+                    
+                    // Iniciar temporizador de 7 segundos para el micrófono
+                    startPostAudioMicTimer();
+                };
+                
+                audio.onerror = () => {
+                    console.error("Error al reproducir el audio.");
+                    URL.revokeObjectURL(audioUrl);
+                    
+                    // Si falla el audio, igual abrir micrófono
+                    if (recognition) {
+                        recognition.start();
+                    }
+                    startPostAudioMicTimer();
+                };
+                
+                audio.play();
+                announceToScreenReader("Reproduciendo respuesta en audio");
+                
+            } catch (error) {
+                console.error("Error al decodificar el audio:", error);
+                // Si falla, activar el micrófono de inmediato
+                if (recognition) {
+                    recognition.start();
+                }
+                startPostAudioMicTimer();
+            }
+        }
+        
+        // ===== CARRUSEL =====
+        function mostrarCarrusel(imagenes, container) {
+            if (!imagenes || imagenes.length === 0) return;
+            
+            const carouselHTML = `
+                <div class="carousel-container" role="region" aria-label="Galería de imágenes">
+                    <div class="carousel-inner" role="group" aria-label="${imagenes.length} imágenes">
+                        ${imagenes.map((img, index) => `
+                            <div class="carousel-slide ${index === 0 ? 'active' : ''}" 
+                                 role="tabpanel" 
+                                 aria-label="Imagen ${index + 1} de ${imagenes.length}">
+                                <img src="${img}" 
+                                     alt="Vista de la cabaña ${index + 1}"
+                                     loading="lazy"
+                                     width="800"
+                                     height="400"
+                                     onerror="this.src='https://via.placeholder.com/800x400/3b82f6/ffffff?text=Imagen+no+disponible'">
+                            </div>
+                        `).join('')}
+                        
+                        ${imagenes.length > 1 ? `
+                            <button class="carousel-nav carousel-nav-prev" aria-label="Imagen anterior">
+                                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                            </button>
+                            <button class="carousel-nav carousel-nav-next" aria-label="Siguiente imagen">
+                                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                ${imagenes.length > 1 ? `
+                    <div class="carousel-dots" role="tablist" aria-label="Navegación de galería">
+                        ${imagenes.map((_, index) => `
+                            <button class="carousel-dot ${index === 0 ? 'active' : ''}" 
+                                    data-index="${index}"
+                                    role="tab"
+                                    aria-selected="${index === 0}"
+                                    aria-label="Ir a la imagen ${index + 1}">
+                            </button>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            `;
+            
+            container.innerHTML = carouselHTML;
+            initCarousel(imagenes);
+        }
+        
+        function initCarousel(imagenes) {
+            if (imagenes.length <= 1) return;
+            
+            const slides = document.querySelectorAll('.carousel-slide');
+            const dots = document.querySelectorAll('.carousel-dot');
+            const prevBtn = document.querySelector('.carousel-nav-prev');
+            const nextBtn = document.querySelector('.carousel-nav-next');
+            
+            // Configurar eventos
+            prevBtn?.addEventListener('click', () => carouselPrev());
+            nextBtn?.addEventListener('click', () => carouselNext());
+            
+            dots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const index = parseInt(dot.dataset.index);
+                    goToSlide(index);
+                });
+            });
+            
+            // Auto-avance
+            if (carouselInterval) clearInterval(carouselInterval);
+            carouselInterval = setInterval(() => carouselNext(), CONFIG.SLIDE_INTERVAL);
+        }
+        
+        function goToSlide(index) {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const dots = document.querySelectorAll('.carousel-dot');
+            
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+            
+            // Actualizar slides
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+            });
+            
+            // Actualizar dots
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+                dot.setAttribute('aria-selected', i === index);
+            });
+            
+            currentCarouselIndex = index;
+            
+            // Reiniciar auto-avance
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+                carouselInterval = setInterval(() => carouselNext(), CONFIG.SLIDE_INTERVAL);
+            }
+            
+            announceToScreenReader(`Imagen ${index + 1} de ${slides.length}`);
+        }
+        
+        function carouselNext() {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const nextIndex = (currentCarouselIndex + 1) % slides.length;
+            goToSlide(nextIndex);
+        }
+        
+        function carouselPrev() {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const prevIndex = (currentCarouselIndex - 1 + slides.length) % slides.length;
+            goToSlide(prevIndex);
+        }
+        
+        // ===== IMAGEN INFO =====
+        function mostrarInfoImage(imagenUrl, caption, container) {
+            const imageHTML = `
+                <div class="info-container" role="region" aria-label="Infografía informativa">
+                    <img src="${imagenUrl}" 
+                         class="info-image" 
+                         alt="${caption || 'Infografía informativa'}"
+                         loading="lazy"
+                         width="800"
+                         height="400"
+                         onerror="this.src='https://via.placeholder.com/800x400/10b981/ffffff?text=Infografía+no+disponible'">
+                    
+                    ${caption ? `
+                        <div class="info-caption" role="note">
+                            ${caption}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            container.innerHTML = imageHTML;
+            announceToScreenReader("Mostrando infografía informativa");
+        }
+        
+        // ===== MAPA =====
+        function mostrarMapa(container) {
+            const mapHTML = `
+                <div class="map-container" role="region" aria-label="Ubicación en el mapa">
+                    <div id="villaitueMap"></div>
+                </div>
+                <div class="text-center mt-3">
+                    <p class="text-sm text-gray-600">
+                        <i class="fas fa-map-marker-alt text-red-500 mr-1" aria-hidden="true"></i>
+                        Ubicación: Cabañas Villaitue, Villarrica, Chile
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        Coordenadas: ${CONFIG.MAP_COORDS[0]}, ${CONFIG.MAP_COORDS[1]}
+                    </p>
+                </div>
+            `;
+            
+            container.innerHTML = mapHTML;
+            initMap();
+            announceToScreenReader("Mostrando ubicación en el mapa");
+        }
+        
+        function initMap() {
+            if (mapInstance) {
+                mapInstance.remove();
+            }
+            
+            mapInstance = L.map('villaitueMap').setView(CONFIG.MAP_COORDS, CONFIG.MAP_ZOOM);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 19,
+            }).addTo(mapInstance);
+            
+            const customIcon = L.divIcon({
+                className: 'map-marker',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+                popupAnchor: [0, -16]
+            });
+            
+            L.marker(CONFIG.MAP_COORDS, { icon: customIcon })
+                .addTo(mapInstance)
+                .bindPopup(`
+                    <div style="padding: 8px; min-width: 200px; text-align: center;">
+                        <strong style="color: #dc2626; font-size: 14px;">
+                            <i class="fas fa-cabin"></i> Cabañas Villaitue
+                        </strong><br>
+                        <div style="margin: 5px 0; padding: 5px; background: #f8fafc; border-radius: 4px;">
+                            <small style="color: #64748b;">
+                                <i class="fas fa-map-pin"></i> Villarrica, Chile
+                            </small>
+                        </div>
+                        <a href="https://www.google.com/maps?q=${CONFIG.MAP_COORDS[0]},${CONFIG.MAP_COORDS[1]}" 
+                           target="_blank" 
+                           style="display: inline-block; margin-top: 5px; padding: 4px 12px; background: #3b82f6; color: white; border-radius: 4px; text-decoration: none; font-size: 12px;">
+                            <i class="fas fa-directions"></i> Cómo llegar
+                        </a>
+                    </div>
+                `)
+                .openPopup();
+            
+            L.circle(CONFIG.MAP_COORDS, {
+                color: '#dc2626',
+                fillColor: '#fca5a5',
+                fillOpacity: 0.2,
+                radius: 25
+            }).addTo(mapInstance);
+            
+            setTimeout(() => {
+                mapInstance.invalidateSize();
+            }, 100);
+        }
+        
+        // ===== UI HELPERS =====
+        function showProcessingIndicator() {
+            document.getElementById('processingIndicator').style.display = 'flex';
+            announceToScreenReader("Procesando su solicitud. Por favor, espere.");
+        }
+        
+        function hideProcessingIndicator() {
+            document.getElementById('processingIndicator').style.display = 'none';
+        }
+        
+        function showErrorState(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorState').classList.remove('hidden');
+            announceToScreenReader(`Error: ${message}`, 'assertive');
+        }
         
         // ===== INICIALIZACIÓN =====
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize modules
-            VoiceModule.init();
-            UI.switchToScreen('welcome');
+            // Inicializar reconocimiento de voz
+            recognition = initVoiceRecognition();
             
-            // Welcome carousel
+            // Inicializar carrusel de fondo
             const welcomeSlides = document.querySelectorAll('.welcome-slide');
             let welcomeIndex = 0;
             
@@ -1640,92 +1494,68 @@
             
             // Event Listeners
             document.getElementById('startVoiceBtn').addEventListener('click', () => {
-                VoiceModule.start();
-                UI.switchToScreen('response');
+                if (recognition) {
+                    document.getElementById('welcomeScreen').classList.add('hidden');
+                    document.getElementById('responseScreen').classList.remove('hidden');
+                    recognition.start();
+                }
             });
             
             document.getElementById('voiceControlBtn').addEventListener('click', () => {
-                if (AppState.voice.isListening) {
-                    VoiceModule.stop();
+                if (!recognition) return;
+                if (isListening) {
+                    recognition.stop();
                 } else {
-                    VoiceModule.start();
+                    recognition.start();
                 }
             });
             
             document.getElementById('newQueryBtn').addEventListener('click', () => {
-                VoiceModule.start();
-            });
-            
-            document.getElementById('repeatAudioBtn').addEventListener('click', () => {
-                AudioModule.repeat();
+                if (recognition) {
+                    // Limpiar temporizadores anteriores
+                    clearAllTimers();
+                    recognition.start();
+                }
             });
             
             document.getElementById('backToWelcomeBtn').addEventListener('click', () => {
-                TimerModule.resetApp();
+                resetApplication();
             });
             
             document.getElementById('retryBtn').addEventListener('click', () => {
-                ErrorModule.hide();
-                VoiceModule.start();
+                document.getElementById('errorState').classList.add('hidden');
+                if (recognition) recognition.start();
             });
             
             document.getElementById('resetAppBtn').addEventListener('click', () => {
-                ErrorModule.hide();
-                TimerModule.resetApp();
+                resetApplication();
             });
             
-            // Keyboard shortcuts
+            // Keyboard support
             document.addEventListener('keydown', (e) => {
-                // Enter to start voice
-                if (e.key === 'Enter' && !AppState.voice.isListening) {
-                    e.preventDefault();
-                    if (AppState.ui.currentScreen === 'welcome') {
-                        document.getElementById('startVoiceBtn').click();
-                    } else {
-                        VoiceModule.start();
-                    }
+                if (e.key === 'Enter' && !isListening) {
+                    if (recognition) recognition.start();
                 }
-                
-                // Escape to cancel
                 if (e.key === 'Escape') {
-                    if (AppState.voice.isListening) {
-                        VoiceModule.stop();
-                    } else if (AppState.ui.currentScreen === 'response') {
-                        TimerModule.resetApp();
-                    }
-                }
-                
-                // Arrow keys for carousel
-                if (AppState.ui.currentScreen === 'response') {
-                    if (e.key === 'ArrowLeft') {
-                        CarouselModule.prev();
-                    } else if (e.key === 'ArrowRight') {
-                        CarouselModule.next();
-                    }
+                    resetApplication();
                 }
             });
             
-            // Handle page visibility
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    VoiceModule.stop();
-                    TimerModule.clearResetTimeout();
+            // Clean up on page unload
+            window.addEventListener('beforeunload', () => {
+                clearAllTimers();
+                if (recognition && isListening) {
+                    recognition.stop();
                 }
             });
             
             // Initial announcement
             setTimeout(() => {
-                Accessibility.announce(
+                announceToScreenReader(
                     "Bienvenido al sistema de autoservicio de Cabañas Villaitue. " +
                     "Presiona el botón del micrófono para hacer una consulta por voz."
                 );
             }, 1000);
-        });
-        
-        // Clean up on page unload
-        window.addEventListener('beforeunload', () => {
-            TimerModule.clearResetTimeout();
-            VoiceModule.stop();
         });
     </script>
 </body>
