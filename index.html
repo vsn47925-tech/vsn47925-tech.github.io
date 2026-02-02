@@ -393,7 +393,7 @@
         <!-- ✅ LOGO NEGRO CENTRADO Y AUMENTADO EN 40% -->
         <div class="welcome-logo-container">
             <img 
-                src="https://vsn47925-tech.github.io/img/logo_nergro.png" 
+                src="https://vsn47925-tech.github.io/img/logo_negro.png" 
                 alt="Logo de Cabañas Villaitue" 
                 class="welcome-logo"
                 loading="eager"
@@ -548,6 +548,7 @@
         // Variables globales
         let recognition = null;
         let isListening = false;
+        let hasReceivedInput = false; // Nueva bandera para detectar entrada
         let welcomeInterval = null;
         let welcomeSlideIndex = 0;
         let currentCarouselIndex = 0;
@@ -559,12 +560,13 @@
         let processingMessages = [];
         let currentMessageIndex = 0;
         let messageInterval = null;
-        let autoResetTimeout = null; // Temporizador para el reinicio POST-respuesta
+        let autoResetTimeout = null; // Temporizador para el reinicio
         
         // ✅ COORDENADAS CORRECTAS Y PRECISAS DE GOOGLE MAPS
         const VILLAITUE_COORDS = [-39.2852346, -72.2227348];
         const MAP_ZOOM = 17;
-        const AUTO_RESET_TIMEOUT_MS = 10000; // 10 segundos
+        const AUTO_RESET_TIMEOUT_MS = 10000; // 10 segundos para post-respuesta
+        const NO_INPUT_TIMEOUT_MS = 5000; // 5 segundos para no-input
         
         // Función para anunciar mensajes a lectores de pantalla
         function announceToScreenReader(message) {
@@ -613,7 +615,7 @@
             }, 3000);
         }
         
-        // Inicializar reconocimiento de voz
+        // Inicializar reconocimiento de voz - ¡CORREGIDO!
         function initVoiceRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             
@@ -629,6 +631,7 @@
             
             recognition.onstart = () => {
                 isListening = true;
+                hasReceivedInput = false; // Reiniciar la bandera al empezar a escuchar
                 updateVoiceButton(true);
                 announceToScreenReader("Escuchando. Puede hablar ahora.");
                 // Limpiar cualquier timeout de reinicio anterior
@@ -640,6 +643,7 @@
             
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
+                hasReceivedInput = true; // Marcar que hubo entrada
                 // Cancelar el timeout de reinicio YA QUE HUBO ENTRADA DEL USUARIO
                 if (autoResetTimeout) {
                     clearTimeout(autoResetTimeout);
@@ -655,16 +659,32 @@
                 const errorMsg = "Error en el reconocimiento de voz";
                 showErrorState(errorMsg);
                 announceToScreenReader(errorMsg);
+                // Si el error es por falta de voz, tratamos como si no hubiera entrada
+                if (event.error === 'no-speech' || event.error === 'audio-capture') {
+                    handleNoInputDetected();
+                }
             };
             
             recognition.onend = () => {
                 isListening = false;
                 updateVoiceButton(false);
-                // El micrófono se cerró, pero NO iniciamos el temporizador aquí.
-                // El temporizador se inicia SOLO después de que el sistema termina de hablar.
+                // Si no se recibió ninguna entrada, programar el reinicio
+                if (!hasReceivedInput) {
+                    handleNoInputDetected();
+                }
             };
             
             return recognition;
+        }
+        
+        // Nueva función: Maneja el caso de "no input"
+        function handleNoInputDetected() {
+            console.log("🔇 No se detectó entrada de voz. Iniciando temporizador de 5s para reinicio.");
+            // Iniciar el temporizador de 5 segundos
+            autoResetTimeout = setTimeout(() => {
+                console.log("✅ ¡Recargando la página!");
+                location.reload();
+            }, NO_INPUT_TIMEOUT_MS);
         }
         
         // Actualizar botón de voz
@@ -823,6 +843,7 @@
                     if (recognition) {
                         recognition.start();
                     }
+                    // Iniciar el temporizador de inactividad POST-RESPUESTA (10s)
                     startAutoResetTimer();
                 };
 
@@ -849,7 +870,7 @@
             }
         }
 
-        // Nueva función: Iniciar el temporizador de reinicio automático
+        // Nueva función: Iniciar el temporizador de reinicio automático (post-respuesta)
         function startAutoResetTimer() {
             // Limpiar cualquier temporizador existente
             if (autoResetTimeout) {
