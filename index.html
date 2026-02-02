@@ -393,7 +393,7 @@
         <!-- ✅ LOGO NEGRO CENTRADO Y AUMENTADO EN 40% -->
         <div class="welcome-logo-container">
             <img 
-                src="https://vsn47925-tech.github.io/img/logo_negro.png" 
+                src="https://vsn47925-tech.github.io/img/logo_blanco.png" 
                 alt="Logo de Cabañas Villaitue" 
                 class="welcome-logo"
                 loading="eager"
@@ -565,8 +565,8 @@
         // ✅ COORDENADAS CORRECTAS Y PRECISAS DE GOOGLE MAPS
         const VILLAITUE_COORDS = [-39.2852346, -72.2227348];
         const MAP_ZOOM = 17;
-        const AUTO_RESET_TIMEOUT_MS = 10000; // 10 segundos para post-respuesta
-        const NO_INPUT_TIMEOUT_MS = 5000; // 5 segundos para no-input
+        const AUTO_RESET_TIMEOUT_MS = 7000; // 10 segundos para post-respuesta
+        const NO_INPUT_TIMEOUT_MS = 2000; // 5 segundos para no-input
         
         // Función para anunciar mensajes a lectores de pantalla
         function announceToScreenReader(message) {
@@ -679,7 +679,7 @@
         
         // Nueva función: Maneja el caso de "no input"
         function handleNoInputDetected() {
-            console.log("🔇 No se detectó entrada de voz. Iniciando temporizador de 5s para reinicio.");
+            console.log("🔇 No se detectó entrada de voz. Iniciando temporizador de 2s para reinicio.");
             // Iniciar el temporizador de 5 segundos
             autoResetTimeout = setTimeout(() => {
                 console.log("✅ ¡Recargando la página!");
