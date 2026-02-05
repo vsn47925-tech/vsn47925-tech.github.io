@@ -11,7 +11,7 @@
 integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
 crossorigin=""/>
 <style>
-/* Estilos para el carrusel de fondo */
+/* ✅ CORREGIDO: Carrusel de fondo con z-index MUY BAJO para permanecer SIEMPRE en background */
 .welcome-carousel {
 position: fixed;
 top: 0;
@@ -19,7 +19,8 @@ left: 0;
 width: 100vw;
 height: 100vh;
 overflow: hidden;
-z-index: 0;
+z-index: -1; /* ✅ Clave: z-index negativo para mantenerlo SIEMPRE detrás de todo */
+pointer-events: none; /* ✅ Evita que interfiera con clics */
 }
 .welcome-slide {
 position: absolute;
@@ -45,7 +46,7 @@ width: 100%;
 height: 100%;
 background: rgba(0, 0, 0, 0.4);
 }
-/* Estilos para el contenido central */
+/* Contenido de bienvenida */
 .welcome-content {
 position: fixed;
 top: 0;
@@ -56,12 +57,11 @@ display: flex;
 flex-direction: column;
 justify-content: center;
 align-items: center;
-z-index: 1;
+z-index: 10; /* ✅ Por encima del carrusel de fondo */
 text-align: center;
 padding: 20px;
 color: white;
 }
-/* Logo en la pantalla de bienvenida - AUMENTADO EN 40% */
 .welcome-logo-container {
 position: absolute;
 top: 20px;
@@ -69,16 +69,38 @@ left: 0;
 right: 0;
 display: flex;
 justify-content: center;
-z-index: 2;
-margin-bottom: 1.5rem; /* Espacio entre logo y título */
+z-index: 11;
+margin-bottom: 1.5rem;
 }
 .welcome-logo {
-max-width: 392px; /* 280px + 40% = 392px */
+max-width: 392px;
 width: 80%;
 height: auto;
 filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
-/* Estilos para el carrusel de resultados */
+/* ✅ Contenedor de respuesta con posicionamiento absoluto y z-index alto */
+#responseWrapper {
+position: fixed;
+top: 0;
+left: 0;
+width: 100vw;
+height: 100vh;
+display: none;
+flex-direction: column;
+overflow-y: auto; /* ✅ Permite scroll cuando hay mucho contenido */
+overflow-x: hidden;
+z-index: 20; /* ✅ SIEMPRE por encima del carrusel de fondo */
+background-color: rgba(243, 244, 246, 0.98); /* ✅ Fondo semi-transparente para mejor legibilidad */
+backdrop-filter: blur(5px);
+}
+.response-content {
+max-width: 900px;
+width: 100%;
+margin: 0 auto;
+padding: 20px;
+padding-top: 80px; /* ✅ Espacio para logo/header */
+}
+/* Estilos para carrusel de resultados */
 .carousel-container {
 position: relative;
 width: 100%;
@@ -238,7 +260,6 @@ left: 15px;
 .carousel-next {
 right: 15px;
 }
-/* Animación para mostrar respuesta */
 @keyframes fadeIn {
 from { opacity: 0; transform: translateY(10px); }
 to { opacity: 1; transform: translateY(0); }
@@ -268,23 +289,6 @@ animation: pulse 1.5s infinite;
 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
 70% { box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); }
 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
-}
-/* Contenedor de respuesta - PERMITE SCROLL */
-.response-container {
-max-width: 900px;
-margin: 0 auto;
-position: relative;
-z-index: 10;
-}
-/* Contenedor de respuesta con scroll habilitado */
-#responseWrapper {
-min-height: 100vh;
-/* overflow: hidden ya no se aplica aquí */
-}
-.response-content {
-max-width: 900px;
-margin: 0 auto;
-padding: 20px;
 }
 /* Indicador de procesamiento accesible */
 #processingIndicator {
@@ -325,7 +329,6 @@ line-height: 1.4;
 .processing-message {
 display: none;
 }
-/* Región viva para lectores de pantalla */
 #sr-only-region {
 position: absolute;
 left: -10000px;
@@ -334,21 +337,20 @@ width: 1px;
 height: 1px;
 overflow: hidden;
 }
-/* Enfoque visible para navegación por teclado */
 *:focus-visible {
 outline: 2px solid #3b82f6;
 outline-offset: 2px;
 }
-/* Permitir scroll en el body */
-body {
-overflow-y: auto !important;
-overflow-x: hidden;
-}
-/* Scroll suave para mejor UX */
+/* ✅ PERMITE SCROLL EN TODO EL BODY */
 html {
 scroll-behavior: smooth;
 }
-/* Estilos para texto largo */
+body {
+overflow-x: hidden;
+min-height: 100vh;
+background-color: #f3f4f6;
+}
+/* Estilos para texto largo con scroll */
 #outputText {
 max-height: 600px;
 overflow-y: auto;
@@ -357,12 +359,21 @@ overflow-y: auto;
 line-height: 1.6;
 word-wrap: break-word;
 }
+/* Footer fijo en la parte inferior */
+footer {
+margin-top: 40px;
+padding: 20px;
+text-align: center;
+color: #64748b;
+font-size: 0.875rem;
+width: 100%;
+}
 </style>
 </head>
 <body class="min-h-screen bg-gray-100">
 <!-- Región oculta para anuncios a lectores de pantalla -->
 <div id="sr-only-region" aria-live="polite" aria-atomic="true"></div>
-<!-- Carrusel de fondo fullscreen -->
+<!-- ✅ CARRUSEL DE FONDO SIEMPRE EN BACKGROUND (z-index: -1) -->
 <div class="welcome-carousel" role="presentation" aria-hidden="true">
 <div class="welcome-slide active" style="background-image: url('https://vsn47925-tech.github.io/img/cab-amanecervilla.jpg')"></div>
 <div class="welcome-slide" style="background-image: url('https://vsn47925-tech.github.io/img/volcan-entre-arboles.jpg')"></div>
@@ -371,7 +382,7 @@ word-wrap: break-word;
 </div>
 <!-- Contenido de bienvenida -->
 <div id="welcomeScreen" class="welcome-content" role="main">
-<!-- ✅ LOGO BLANCO CENTRADO Y AUMENTADO EN 40% -->
+<!-- ✅ LOGO BLANCO.JPG CENTRADO -->
 <div class="welcome-logo-container">
 <img
 src="https://vsn47925-tech.github.io/img/logo_blanco.jpg"
@@ -380,7 +391,6 @@ class="welcome-logo"
 loading="eager"
 />
 </div>
-<!-- Botón para activar micrófono -->
 <button
 id="startVoiceBtn"
 class="voice-btn bg-blue-600 hover:bg-blue-700 text-white p-5 rounded-full shadow-2xl text-3xl"
@@ -392,8 +402,8 @@ aria-label="Iniciar consulta por voz"
 <span class="sr-only">instrucción: </span>Haz clic en el micrófono y realiza tu pregunta
 </p>
 </div>
-<!-- Contenedor de respuesta -->
-<div id="responseWrapper" class="hidden min-h-screen flex items-start justify-center p-4 pt-20" role="region" aria-label="Respuesta del sistema">
+<!-- ✅ CONTENEDOR DE RESPUESTA CON POSICIONAMIENTO CORRECTO -->
+<div id="responseWrapper" class="hidden" role="region" aria-label="Respuesta del sistema">
 <div class="response-content w-full">
 <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
 <!-- Botón de control de voz -->
@@ -478,8 +488,8 @@ aria-label="Reintentar la última acción"
 </button>
 </div>
 </div>
-<!--Footer -->
-<footer class="mt-8 text-center text-gray-600 text-sm py-4" aria-label="Información del pie de página">
+<!-- Footer dentro del contenedor scrollable -->
+<footer class="text-center text-gray-600 text-sm py-4" aria-label="Información del pie de página">
 <p>Villaitue - Sistema de Autoconsultas por voz © VHSN 2026</p>
 </footer>
 </div>
@@ -524,15 +534,14 @@ let voiceTimeout = null;
 let lastVoiceActivityTime = 0;
 let silenceDetected = false;
 
-// ✅ COORDENADAS CORRECTAS Y PRECISAS DE GOOGLE MAPS
+// ✅ TEMPORIZADORES AJUSTADOS A TUS REQUERIMIENTOS EXACTOS
 const VILLAITUE_COORDS = [-39.2852346, -72.2227348];
 const MAP_ZOOM = 17;
-const AUTO_RESET_TIMEOUT_MS = 7000; // 7 segundos para post-respuesta
-const NO_INPUT_TIMEOUT_MS = 2000; // 2 segundos para no-input
-const VOICE_ACTIVITY_TIMEOUT_MS = 10000; // 10 segundos de escucha activa máxima
-const SILENCE_THRESHOLD_MS = 3000; // 3 segundos de silencio para cerrar micrófono
+const AUTO_RESET_AFTER_MIC_CLOSE_MS = 5000; // ✅ 5 segundos después de cerrar micrófono
+const VOICE_ACTIVITY_TIMEOUT_MS = 10000;     // ✅ 10 segundos máximo de escucha
+const SILENCE_THRESHOLD_MS = 3000;           // 3 segundos de silencio para cerrar
 
-// Función para anunciar mensajes a lectores de pantalla
+// Anunciar a lectores de pantalla
 function announceToScreenReader(message) {
 const srRegion = document.getElementById('sr-only-region');
 srRegion.textContent = message;
@@ -556,12 +565,11 @@ announceToScreenReader(processingMessages[currentMessageIndex]);
 }
 }
 
-// Mostrar/Ocultar indicador de procesamiento
+// Mostrar/Ocultar indicador
 function showProcessingIndicator() {
 document.getElementById('processingIndicator').style.display = 'flex';
 announceToScreenReader("Procesando su solicitud. Por favor, espere.");
 }
-
 function hideProcessingIndicator() {
 document.getElementById('processingIndicator').style.display = 'none';
 }
@@ -578,7 +586,7 @@ slide.classList.toggle('active', index === welcomeSlideIndex);
 }, 3000);
 }
 
-// Inicializar reconocimiento de voz - ¡MEJORADO PARA DETECTAR ACTIVIDAD!
+// ✅ SISTEMA DE MICRÓFONO INTELIGENTE: permanece abierto mientras haya actividad
 function initVoiceRecognition() {
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (!SpeechRecognition) {
@@ -588,9 +596,8 @@ return null;
 
 recognition = new SpeechRecognition();
 recognition.lang = 'es-CL';
-recognition.continuous = true; // ✅ Permitir escucha continua
-recognition.interimResults = true; // ✅ Detectar resultados intermedios
-recognition.maxAlternatives = 1;
+recognition.continuous = true;  // ✅ Escucha continua
+recognition.interimResults = true; // ✅ Detecta resultados intermedios
 
 recognition.onstart = () => {
 isListening = true;
@@ -601,13 +608,11 @@ updateVoiceButton(true);
 announceToScreenReader("Escuchando. Puede hablar ahora.");
 console.log("🎤 Micrófono activado");
 
-// Limpiar cualquier timeout de reinicio anterior
-if (autoResetTimeout) {
-clearTimeout(autoResetTimeout);
-autoResetTimeout = null;
-}
+// Limpiar timeouts anteriores
+if (autoResetTimeout) clearTimeout(autoResetTimeout);
+if (voiceTimeout) clearTimeout(voiceTimeout);
 
-// Iniciar temporizador de actividad máxima (10 segundos)
+// ✅ Temporizador máximo de 10 segundos
 voiceTimeout = setTimeout(() => {
 if (isListening) {
 console.log("⏰ Tiempo máximo de escucha (10s) alcanzado. Cerrando micrófono...");
@@ -615,12 +620,11 @@ recognition.stop();
 }
 }, VOICE_ACTIVITY_TIMEOUT_MS);
 
-// Iniciar monitoreo de silencio
+// ✅ Monitorear silencio para cerrar micrófono
 startSilenceMonitor();
 };
 
 recognition.onresult = (event) => {
-// Detectar resultados intermedios y finales
 const isFinal = event.results[event.results.length - 1].isFinal;
 const transcript = event.results[event.results.length - 1][0].transcript.trim();
 
@@ -633,19 +637,13 @@ if (isFinal && !hasReceivedInput) {
 hasReceivedInput = true;
 console.log("✅ Entrada de voz confirmada");
 
-// Cancelar el timeout de reinicio YA QUE HUBO ENTRADA DEL USUARIO
-if (autoResetTimeout) {
-clearTimeout(autoResetTimeout);
-autoResetTimeout = null;
-}
+// Cancelar reinicio automático
+if (autoResetTimeout) clearTimeout(autoResetTimeout);
 
-// Detener el micrófono después de recibir input válido
+// Detener micrófono después de recibir input válido
 setTimeout(() => {
-if (isListening) {
-recognition.stop();
-}
-}, 500); // Pequeño delay para asegurar captura completa
-
+if (isListening) recognition.stop();
+}, 300);
 announceToScreenReader(`Ha dicho: ${transcript}. Procesando...`);
 sendToN8N(transcript);
 }
@@ -656,13 +654,8 @@ recognition.onerror = (event) => {
 console.error("❌ Error de reconocimiento:", event.error);
 isListening = false;
 updateVoiceButton(false);
+if (voiceTimeout) clearTimeout(voiceTimeout);
 
-if (voiceTimeout) {
-clearTimeout(voiceTimeout);
-voiceTimeout = null;
-}
-
-// Si el error es por falta de voz, tratamos como si no hubiera entrada
 if (event.error === 'no-speech' || event.error === 'audio-capture') {
 handleNoInputDetected();
 } else {
@@ -676,73 +669,55 @@ recognition.onend = () => {
 console.log("🔇 Micrófono cerrado");
 isListening = false;
 updateVoiceButton(false);
+if (voiceTimeout) clearTimeout(voiceTimeout);
 
-if (voiceTimeout) {
-clearTimeout(voiceTimeout);
-voiceTimeout = null;
-}
-
-// Si no se recibió ninguna entrada, programar el reinicio
+// ✅ Si no hubo entrada, iniciar reinicio en 5 segundos
 if (!hasReceivedInput && !silenceDetected) {
 handleNoInputDetected();
 }
 };
 
-recognition.onaudioend = () => {
-console.log("🔇 Audio stream terminado");
-};
-
 return recognition;
 }
 
-// Nueva función: Monitorear silencio para cerrar micrófono
+// ✅ Monitorear silencio activamente
 function startSilenceMonitor() {
 setInterval(() => {
 if (!isListening) return;
-
 const now = Date.now();
 const silenceDuration = now - lastVoiceActivityTime;
-
 if (silenceDuration >= SILENCE_THRESHOLD_MS && !silenceDetected) {
 silenceDetected = true;
 console.log(`🔇 Silencio detectado por ${Math.floor(silenceDuration/1000)}s. Cerrando micrófono...`);
-recognition.stop();
+if (isListening) recognition.stop();
 }
 }, 500);
 }
 
-// Nueva función: Maneja el caso de "no input"
+// ✅ Manejar caso de "no input" - reiniciar en 5 segundos
 function handleNoInputDetected() {
-console.log("🔇 No se detectó entrada de voz. Iniciando temporizador de 2s para reinicio.");
-// Iniciar el temporizador de 2 segundos
+console.log("🔇 No se detectó entrada de voz. Iniciando temporizador de 5s para reinicio.");
 autoResetTimeout = setTimeout(() => {
 console.log("✅ ¡Recargando la página!");
 location.reload();
-}, NO_INPUT_TIMEOUT_MS);
+}, AUTO_RESET_AFTER_MIC_CLOSE_MS);
 }
 
-// Actualizar botón de voz
 function updateVoiceButton(listening) {
 const voiceBtn = document.getElementById('voiceControlBtn');
 const voiceIcon = document.getElementById('voiceIcon');
 const startBtn = document.getElementById('startVoiceBtn');
-
 if (listening) {
-voiceBtn.classList.add('listening');
-voiceBtn.classList.add('bg-red-600');
+voiceBtn.classList.add('listening', 'bg-red-600');
 voiceIcon.classList.add('fa-stop');
-startBtn?.classList.add('listening');
-startBtn?.classList.add('bg-red-600');
+startBtn?.classList.add('listening', 'bg-red-600');
 } else {
-voiceBtn.classList.remove('listening');
-voiceBtn.classList.remove('bg-red-600');
+voiceBtn.classList.remove('listening', 'bg-red-600');
 voiceIcon.classList.remove('fa-stop');
-startBtn?.classList.remove('listening');
-startBtn?.classList.remove('bg-red-600');
+startBtn?.classList.remove('listening', 'bg-red-600');
 }
 }
 
-// Enviar consulta a n8n
 async function sendToN8N(pregunta) {
 showProcessingIndicator();
 try {
@@ -753,13 +728,7 @@ body: JSON.stringify({ pregunta: pregunta })
 });
 const data = await response.json();
 hideProcessingIndicator();
-if (document.startViewTransition) {
-document.startViewTransition(() => {
 mostrarRespuestaAgente(data);
-});
-} else {
-mostrarRespuestaAgente(data);
-}
 } catch (error) {
 hideProcessingIndicator();
 const errorMsg = "Error de conexión con el servidor";
@@ -768,7 +737,6 @@ announceToScreenReader(errorMsg);
 }
 }
 
-// Procesar respuesta - ¡Incluye audioContent!
 function processResponse(data) {
 if (Array.isArray(data) && data.length > 0) {
 const item = data[0];
@@ -779,7 +747,6 @@ imagenes: item.imagenes || item.images || [],
 tipo_plantilla: item.tipo_plantilla || "texto",
 precio: item.precio || null,
 caption: item.caption || item.descripcion_imagen || "",
-// ✅ Añadir el audioContent al objeto procesado
 audioContent: item.audioContent || ""
 };
 }
@@ -794,15 +761,11 @@ audioContent: ""
 };
 }
 
-// Mostrar respuesta - ¡AHORA USA EL AUDIO EN BASE64!
 function mostrarRespuestaAgente(rawData) {
 const datos = processResponse(rawData);
 document.getElementById('descripcionTitle').textContent = datos.descripcion;
 document.getElementById('outputContent').textContent = datos.output + (datos.precio ? `
 Precio: ${datos.precio}` : '');
-
-// Anunciar la respuesta principal (solo texto para lectores de pantalla)
-announceToScreenReader(`Respuesta: ${datos.descripcion}`);
 
 // Ocultar todos los contenedores primero
 document.getElementById('carouselContainer').classList.add('hidden');
@@ -823,97 +786,71 @@ document.getElementById('mapContainer').classList.remove('hidden');
 announceToScreenReader("Mostrando ubicación en el mapa");
 }
 
-// Asegurarse de que la pantalla de respuesta esté visible
-ensureResponseScreenIsVisible();
+// ✅ TRANSICIÓN CORRECTA: ocultar welcomeScreen y mostrar responseWrapper
+document.getElementById('welcomeScreen').classList.add('hidden');
+document.getElementById('responseWrapper').classList.remove('hidden');
 
-// Leer la respuesta usando el audio en base64
+// ✅ Reproducir audio base64 y luego activar micrófono
 leerAudioBase64YEscucharAutomaticamente(datos.audioContent);
 }
 
-// Garantiza que la pantalla de respuesta esté visible
-function ensureResponseScreenIsVisible() {
-const welcomeScreen = document.getElementById('welcomeScreen');
-const responseWrapper = document.getElementById('responseWrapper');
-if (welcomeScreen.classList.contains('hidden') === false) {
-if (document.startViewTransition) {
-document.startViewTransition(() => {
-welcomeScreen.classList.add('hidden');
-responseWrapper.classList.remove('hidden');
-});
-} else {
-welcomeScreen.classList.add('hidden');
-responseWrapper.classList.remove('hidden');
-}
-}
+// ✅ Sistema base64 intacto
+function leerAudioBase64YEscucharAutomaticamente(audioBase64) {
+if (!audioBase64) {
+// Si no hay audio, activar micrófono inmediatamente
+if (recognition) recognition.start();
+startAutoResetTimer();
+return;
 }
 
-// Nueva función clave: Decodificar base64 y reproducir
-function leerAudioBase64YEscucharAutomaticamente(audioBase64) {
 try {
-// 1. Decodificar el base64 a un array de bytes
 const binaryString = atob(audioBase64);
 const len = binaryString.length;
 const bytes = new Uint8Array(len);
 for (let i = 0; i < len; i++) {
 bytes[i] = binaryString.charCodeAt(i);
 }
-
-// 2. Crear un Blob a partir de los bytes
 const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
-
-// 3. Crear una URL para el blob
 const audioUrl = URL.createObjectURL(audioBlob);
 const audio = new Audio(audioUrl);
 
-// 4. Cuando termine de reproducir, activar el micrófono y el temporizador
 audio.onended = () => {
 URL.revokeObjectURL(audioUrl);
 announceToScreenReader("Escuchando para su próxima consulta...");
-if (recognition) {
-recognition.start();
-}
-// Iniciar el temporizador de inactividad POST-RESPUESTA (7s)
-startAutoResetTimer();
+if (recognition) recognition.start();
+startAutoResetTimer(); // ✅ Iniciar temporizador de 5s post-respuesta
 };
 
-// Manejar errores
 audio.onerror = () => {
 console.error("Error al reproducir el audio decodificado.");
 URL.revokeObjectURL(audioUrl);
-if (recognition) {
-recognition.start();
-}
+if (recognition) recognition.start();
 startAutoResetTimer();
 };
 
-// 5. Reproducir el audio
-audio.play();
+audio.play().catch(e => {
+console.error("Error al reproducir audio:", e);
+URL.revokeObjectURL(audioUrl);
+if (recognition) recognition.start();
+startAutoResetTimer();
+});
 } catch (error) {
 console.error("Error al decodificar el audio base64:", error);
-// Si falla, activar el micrófono de inmediato
-if (recognition) {
-recognition.start();
-}
+if (recognition) recognition.start();
 startAutoResetTimer();
 }
 }
 
-// Nueva función: Iniciar el temporizador de reinicio automático (post-respuesta)
+// ✅ Temporizador de 5 segundos POST-RESPUESTA
 function startAutoResetTimer() {
-// Limpiar cualquier temporizador existente
-if (autoResetTimeout) {
-clearTimeout(autoResetTimeout);
-}
-
-// Iniciar un nuevo temporizador que recargará la página
+if (autoResetTimeout) clearTimeout(autoResetTimeout);
 autoResetTimeout = setTimeout(() => {
-console.log("⏰ 7s sin interacción tras la respuesta. Recargando la página...");
+console.log("⏰ 5s sin interacción tras la respuesta. Recargando la página...");
 location.reload();
-}, AUTO_RESET_TIMEOUT_MS);
-console.log("⏱️ Temporizador de 7s (post-respuesta) iniciado.");
+}, AUTO_RESET_AFTER_MIC_CLOSE_MS);
+console.log("⏱️ Temporizador de 5s (post-respuesta) iniciado.");
 }
 
-// Mostrar imagen única para respuesta-info
 function mostrarInfoImage(imagenUrl, caption) {
 const infoImage = document.getElementById('infoImage');
 const infoImageCaption = document.getElementById('infoImageCaption');
@@ -937,28 +874,23 @@ this.style.objectFit = 'contain';
 };
 }
 
-// Mostrar mapa de OpenStreetMap
 function mostrarMapa() {
 if (map) {
 map.remove();
 map = null;
 marker = null;
 }
-
 map = L.map('villaitueMap').setView(VILLAITUE_COORDS, MAP_ZOOM);
-
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 maxZoom: 19,
 }).addTo(map);
-
 const customIcon = L.divIcon({
 className: 'map-marker',
 iconSize: [28, 28],
 iconAnchor: [14, 14],
 popupAnchor: [0, -14]
 });
-
 marker = L.marker(VILLAITUE_COORDS, { icon: customIcon })
 .addTo(map)
 .bindPopup(`
@@ -983,44 +915,36 @@ style="display: inline-block; margin-top: 5px; padding: 4px 12px; background: #3
 </div>
 `)
 .openPopup();
-
 L.circle(VILLAITUE_COORDS, {
 color: '#ef4444',
 fillColor: '#fca5a5',
 fillOpacity: 0.2,
 radius: 25
 }).addTo(map);
-
 setTimeout(() => {
 map.invalidateSize();
 map.setView(VILLAITUE_COORDS, MAP_ZOOM);
 }, 300);
 }
 
-// Mostrar carrusel
 function mostrarCarrusel(imagenes) {
 const container = document.getElementById('carouselContainer');
 const inner = container.querySelector('.carousel-inner');
 const dotsContainer = container.querySelector('.carousel-dots');
-
 inner.innerHTML = '';
 dotsContainer.innerHTML = '';
-
 if (carouselInterval) {
 clearInterval(carouselInterval);
 carouselInterval = null;
 }
-
 carouselSlides = [];
 carouselDots = [];
 currentCarouselIndex = 0;
-
 imagenes.forEach((img, index) => {
 const slide = document.createElement('div');
 slide.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
 slide.setAttribute('role', 'tabpanel');
 slide.setAttribute('aria-label', `Imagen ${index + 1} de ${imagenes.length}`);
-
 const imgElement = document.createElement('img');
 imgElement.src = img;
 imgElement.alt = `Vista de la cabaña ${index + 1}`;
@@ -1029,11 +953,9 @@ imgElement.onerror = function() {
 this.src = 'https://via.placeholder.com/800x400/3b82f6/ffffff?text=Imagen+no+disponible';
 this.alt = "Imagen no disponible";
 };
-
 slide.appendChild(imgElement);
 inner.appendChild(slide);
 carouselSlides.push(slide);
-
 const dot = document.createElement('button');
 dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
 dot.dataset.index = index;
@@ -1041,11 +963,9 @@ dot.setAttribute('role', 'tab');
 dot.setAttribute('aria-selected', index === 0);
 dot.setAttribute('aria-label', `Ir a la imagen ${index + 1}`);
 dot.addEventListener('click', () => goToSlide(index));
-
 dotsContainer.appendChild(dot);
 carouselDots.push(dot);
 });
-
 if (imagenes.length > 1) {
 const prevBtn = document.createElement('button');
 prevBtn.className = 'carousel-btn carousel-prev';
@@ -1053,17 +973,14 @@ prevBtn.innerHTML = '<i class="fas fa-chevron-left" aria-hidden="true"></i>';
 prevBtn.setAttribute('aria-label', 'Imagen anterior');
 prevBtn.addEventListener('click', prevSlide);
 inner.appendChild(prevBtn);
-
 const nextBtn = document.createElement('button');
 nextBtn.className = 'carousel-btn carousel-next';
 nextBtn.innerHTML = '<i class="fas fa-chevron-right" aria-hidden="true"></i>';
 nextBtn.setAttribute('aria-label', 'Siguiente imagen');
 nextBtn.addEventListener('click', nextSlide);
 inner.appendChild(nextBtn);
-
 carouselInterval = setInterval(nextSlide, 5000);
 }
-
 container.classList.remove('hidden');
 }
 
@@ -1071,23 +988,18 @@ function goToSlide(index) {
 if (carouselSlides.length === 0) return;
 if (index < 0) index = carouselSlides.length - 1;
 if (index >= carouselSlides.length) index = 0;
-
 carouselSlides.forEach(slide => slide.classList.remove('active'));
 carouselSlides[index].classList.add('active');
-
 carouselDots.forEach((dot, i) => {
 const isSelected = i === index;
 dot.classList.toggle('active', isSelected);
 dot.setAttribute('aria-selected', isSelected);
 });
-
 currentCarouselIndex = index;
-
 if (carouselInterval) {
 clearInterval(carouselInterval);
 carouselInterval = setInterval(nextSlide, 5000);
 }
-
 announceToScreenReader(`Mostrando imagen ${index + 1}`);
 }
 
@@ -1095,31 +1007,15 @@ function nextSlide() {
 const nextIndex = (currentCarouselIndex + 1) % carouselSlides.length;
 goToSlide(nextIndex);
 }
-
 function prevSlide() {
 const prevIndex = (currentCarouselIndex - 1 + carouselSlides.length) % carouselSlides.length;
 goToSlide(prevIndex);
 }
 
-// Mostrar error
 function showErrorState(message) {
 document.getElementById('errorMessage').textContent = message;
 document.getElementById('agentResponse').classList.add('hidden');
 document.getElementById('errorState').classList.remove('hidden');
-}
-
-// Transición de inicio a respuesta
-function transitionToResponse() {
-if (document.startViewTransition) {
-document.startViewTransition(() => {
-document.getElementById('welcomeScreen').classList.add('hidden');
-document.getElementById('responseWrapper').classList.remove('hidden');
-});
-} else {
-document.getElementById('welcomeScreen').classList.add('hidden');
-document.getElementById('responseWrapper').classList.remove('hidden');
-}
-announceToScreenReader("Cambiando a la pantalla de respuesta");
 }
 
 // Inicializar
@@ -1128,7 +1024,6 @@ initWelcomeCarousel();
 initProcessingMessages();
 recognition = initVoiceRecognition();
 
-// Botón de inicio
 document.getElementById('startVoiceBtn').addEventListener('click', () => {
 if (recognition) {
 document.getElementById('welcomeScreen').classList.add('hidden');
@@ -1137,7 +1032,6 @@ recognition.start();
 }
 });
 
-// Botón de control de voz
 document.getElementById('voiceControlBtn').addEventListener('click', () => {
 if (!recognition) return;
 if (isListening) {
@@ -1147,21 +1041,18 @@ recognition.start();
 }
 });
 
-// Botón de nueva consulta
 document.getElementById('newQueryBtn').addEventListener('click', () => {
 if (recognition) recognition.start();
 });
 
-// Botón de reintento
 document.getElementById('retryBtn').addEventListener('click', () => {
 document.getElementById('errorState').classList.add('hidden');
 document.getElementById('agentResponse').classList.remove('hidden');
 if (recognition) recognition.start();
 });
 
-// Soporte para teclado (Enter para activar micrófono)
 document.addEventListener('keydown', (e) => {
-if (e.key === 'Enter' && !isListening) {
+if (e.key === 'Enter' && !isListening && document.getElementById('welcomeScreen').classList.contains('hidden') === false) {
 if (recognition) recognition.start();
 }
 });
