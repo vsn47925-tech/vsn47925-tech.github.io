@@ -11,7 +11,7 @@
 integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
 crossorigin=""/>
 <style>
-/* ✅ CORREGIDO: Carrusel de fondo con z-index MUY BAJO para permanecer SIEMPRE en background */
+/* ✅ CORREGIDO: Carrusel de fondo con z-index NEGATIVO para mantenerse SIEMPRE en background */
 .welcome-carousel {
 position: fixed;
 top: 0;
@@ -46,7 +46,7 @@ width: 100%;
 height: 100%;
 background: rgba(0, 0, 0, 0.4);
 }
-/* Contenido de bienvenida */
+/* ✅ Contenido de bienvenida con z-index alto */
 .welcome-content {
 position: fixed;
 top: 0;
@@ -78,7 +78,7 @@ width: 80%;
 height: auto;
 filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
-/* ✅ Contenedor de respuesta con posicionamiento absoluto y z-index alto */
+/* ✅ CONTENEDOR DE RESPUESTA CON POSICIONAMIENTO FIJO Y z-index MUY ALTO */
 #responseWrapper {
 position: fixed;
 top: 0;
@@ -89,11 +89,11 @@ display: none;
 flex-direction: column;
 overflow-y: auto; /* ✅ Permite scroll cuando hay mucho contenido */
 overflow-x: hidden;
-z-index: 20; /* ✅ SIEMPRE por encima del carrusel de fondo */
-background-color: rgba(243, 244, 246, 0.98); /* ✅ Fondo semi-transparente para mejor legibilidad */
+z-index: 50; /* ✅ MUY ALTO para mantenerse SIEMPRE por encima de todo */
+background-color: rgba(243, 244, 246, 0.98); /* ✅ Fondo semi-transparente */
 backdrop-filter: blur(5px);
 }
-.response-content {
+.response-container {
 max-width: 900px;
 width: 100%;
 margin: 0 auto;
@@ -341,7 +341,7 @@ overflow: hidden;
 outline: 2px solid #3b82f6;
 outline-offset: 2px;
 }
-/* ✅ PERMITE SCROLL EN TODO EL BODY */
+/* ✅ PERMITE SCROLL EN TODO EL CONTENIDO */
 html {
 scroll-behavior: smooth;
 }
@@ -404,7 +404,7 @@ aria-label="Iniciar consulta por voz"
 </div>
 <!-- ✅ CONTENEDOR DE RESPUESTA CON POSICIONAMIENTO CORRECTO -->
 <div id="responseWrapper" class="hidden" role="region" aria-label="Respuesta del sistema">
-<div class="response-content w-full">
+<div class="response-container">
 <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
 <!-- Botón de control de voz -->
 <div class="flex justify-end mb-6">
@@ -493,7 +493,6 @@ aria-label="Reintentar la última acción"
 <p>Villaitue - Sistema de Autoconsultas por voz © VHSN 2026</p>
 </footer>
 </div>
-</div>
 <!-- Indicador de procesamiento accesible -->
 <div
 id="processingIndicator"
@@ -534,7 +533,7 @@ let voiceTimeout = null;
 let lastVoiceActivityTime = 0;
 let silenceDetected = false;
 
-// ✅ TEMPORIZADORES AJUSTADOS A TUS REQUERIMIENTOS EXACTOS
+// ✅ TEMPORIZADORES AJUSTADOS
 const VILLAITUE_COORDS = [-39.2852346, -72.2227348];
 const MAP_ZOOM = 17;
 const AUTO_RESET_AFTER_MIC_CLOSE_MS = 5000; // ✅ 5 segundos después de cerrar micrófono
@@ -586,7 +585,7 @@ slide.classList.toggle('active', index === welcomeSlideIndex);
 }, 3000);
 }
 
-// ✅ SISTEMA DE MICRÓFONO INTELIGENTE: permanece abierto mientras haya actividad
+// ✅ SISTEMA DE MICRÓFONO INTELIGENTE
 function initVoiceRecognition() {
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (!SpeechRecognition) {
