@@ -224,8 +224,7 @@ display: flex;
 align-items: center;
 justify-content: center;
 transition: background-color 0.3s;
-z-index: 3;
-}
+z-index: 3}
 .carousel-btn:hover,
 .carousel-btn:focus {
 background-color: rgba(0, 0, 0, 0.7);
@@ -335,9 +334,9 @@ overflow-y: auto; /* Permitir scroll vertical */
 overflow-x: hidden; /* Evitar scroll horizontal */
 }
 
+/* ✅ CORRECCIÓN CRUCIAL: Eliminado display: flex para permitir que la clase "hidden" funcione */
 #responseWrapper {
 min-height: 100vh;
-display: flex;
 flex-direction: column;
 justify-content: flex-start; /* Alinear al inicio, no centrar */
 align-items: center;
@@ -405,7 +404,7 @@ aria-label="Iniciar consulta por voz"
 </p>
 </div>
 <!-- Contenedor de respuesta - OCULTO POR DEFECTO -->
-<div id="responseWrapper" class="hidden" role="region" aria-label="Respuesta del sistema">
+<div id="responseWrapper" class="hidden min-h-screen flex items-center justify-center p-4" role="region" aria-label="Respuesta del sistema">
 <div class="response-container">
 <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
 <!-- Botón de control de voz -->
