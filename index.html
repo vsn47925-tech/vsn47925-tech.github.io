@@ -224,7 +224,8 @@ display: flex;
 align-items: center;
 justify-content: center;
 transition: background-color 0.3s;
-z-index: 3}
+z-index: 3;
+}
 .carousel-btn:hover,
 .carousel-btn:focus {
 background-color: rgba(0, 0, 0, 0.7);
@@ -334,7 +335,7 @@ overflow-y: auto; /* Permitir scroll vertical */
 overflow-x: hidden; /* Evitar scroll horizontal */
 }
 
-/* ✅ CORRECCIÓN CRUCIAL: Eliminado display: flex para permitir que la clase "hidden" funcione */
+/* ✅ CORRECCIÓN: Eliminado display: flex para permitir que la clase "hidden" funcione */
 #responseWrapper {
 min-height: 100vh;
 flex-direction: column;
@@ -658,6 +659,7 @@ startBtn?.classList.remove('listening');
 startBtn?.classList.remove('bg-red-600');
 }
 }
+// ✅ CORRECCIÓN CRUCIAL: Eliminar transición inmediata al presionar micrófono
 // Enviar consulta a n8n
 async function sendToN8N(pregunta) {
 showProcessingIndicator();
@@ -669,6 +671,7 @@ body: JSON.stringify({ pregunta: pregunta })
 });
 const data = await response.json();
 hideProcessingIndicator();
+// ✅ TRANSICIÓN A LA PANTALLA DE RESPUESTA SOLO CUANDO LLEGA LA RESPUESTA
 if (document.startViewTransition) {
 document.startViewTransition(() => {
 mostrarRespuestaAgente(data);
@@ -733,7 +736,7 @@ mostrarMapa();
 document.getElementById('mapContainer').classList.remove('hidden');
 announceToScreenReader("Mostrando ubicación en el mapa");
 }
-// Asegurarse de que la pantalla de respuesta esté visible
+// ✅ TRANSICIÓN A LA PANTALLA DE RESPUESTA (SOLO CUANDO LLEGA LA RESPUESTA)
 ensureResponseScreenIsVisible();
 // Leer la respuesta usando el audio en base64
 leerAudioBase64YEscucharAutomaticamente(datos.audioContent); // <-- Aquí se pasa el base64
@@ -977,29 +980,15 @@ document.getElementById('errorMessage').textContent = message;
 document.getElementById('agentResponse').classList.add('hidden');
 document.getElementById('errorState').classList.remove('hidden');
 }
-// Transición de inicio a respuesta
-function transitionToResponse() {
-if (document.startViewTransition) {
-document.startViewTransition(() => {
-document.getElementById('welcomeScreen').classList.add('hidden');
-document.getElementById('responseWrapper').classList.remove('hidden');
-});
-} else {
-document.getElementById('welcomeScreen').classList.add('hidden');
-document.getElementById('responseWrapper').classList.remove('hidden');
-}
-announceToScreenReader("Cambiando a la pantalla de respuesta");
-}
+// ✅ ELIMINADO: Función transitionToResponse ya no se usa
 // Inicializar
 document.addEventListener('DOMContentLoaded', () => {
 initWelcomeCarousel();
 initProcessingMessages();
 recognition = initVoiceRecognition();
-// Botón de inicio
+// ✅ CORRECCIÓN: Solo iniciar reconocimiento, sin transición inmediata
 document.getElementById('startVoiceBtn').addEventListener('click', () => {
 if (recognition) {
-document.getElementById('welcomeScreen').classList.add('hidden');
-document.getElementById('responseWrapper').classList.remove('hidden');
 recognition.start();
 }
 });
