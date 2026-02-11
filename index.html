@@ -3,24 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robot Ochentero - Autoservicio</title>
+    <title>Villaitue AutoServicio</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Courier New', monospace;
         }
 
         body {
-            font-family: 'Courier New', monospace;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            background: #0a0f1a;
             color: #0f0;
-            min-height: 100vh;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
             position: relative;
         }
 
-        /* Efecto scanlines retro */
         body::before {
             content: '';
             position: absolute;
@@ -28,761 +31,422 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                rgba(18, 16, 16, 0) 50%,
-                rgba(0, 0, 0, 0.25) 50%
-            );
-            background-size: 100% 4px;
-            z-index: 100;
-            pointer-events: none;
-            opacity: 0.3;
+            background: 
+                linear-gradient(rgba(10, 15, 26, 0.9), rgba(10, 15, 26, 0.9)),
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 1px,
+                    rgba(0, 30, 0, 0.1) 1px,
+                    rgba(0, 30, 0, 0.1) 2px
+                );
+            z-index: -1;
         }
 
-        /* Efecto CRT flicker */
-        body::after {
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 2.8em;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px #0f0;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .logo::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(18, 16, 16, 0.03);
-            animation: flicker 0.15s infinite;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        @keyframes flicker {
-            0%, 100% { opacity: 0.03; }
-            50% { opacity: 0.05; }
-            80% { opacity: 0.02; }
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 30px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 3px solid #0f0;
-            border-radius: 10px;
-            box-shadow: 0 0 20px #0f0, inset 0 0 15px #0f0;
-            position: relative;
-            z-index: 10;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
-            letter-spacing: 3px;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 10px #0f0, 0 0 20px #0f0; }
-            to { text-shadow: 0 0 15px #0f0, 0 0 30px #0f0, 0 0 40px #0f0; }
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: #0f0;
+            box-shadow: 0 0 10px #0f0;
         }
 
         .subtitle {
+            color: #5a5;
             font-size: 1.1em;
-            margin-bottom: 30px;
-            color: #aaa;
-            text-shadow: 0 0 5px #0a0;
+            margin-top: 15px;
+            letter-spacing: 2px;
         }
 
-        .status-display {
-            background: rgba(0, 20, 0, 0.9);
-            border: 2px solid #0f0;
-            padding: 15px;
-            border-radius: 5px;
+        .status {
+            background: rgba(0, 20, 0, 0.8);
+            border: 1px solid #0f0;
+            padding: 12px 25px;
+            border-radius: 4px;
             margin: 20px 0;
-            font-family: 'Courier New', monospace;
+            min-height: 28px;
             font-size: 1.2em;
-            min-height: 30px;
-            box-shadow: inset 0 0 10px #0f0;
+            text-align: center;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
         }
 
-        .controls {
-            margin: 30px 0;
-        }
-
-        button {
-            background: linear-gradient(135deg, #111, #222);
-            color: #0f0;
-            border: 2px solid #0f0;
-            padding: 12px 30px;
-            margin: 0 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 1.1em;
+        .mic-btn {
+            background: #000;
+            border: 3px solid #0f0;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
             cursor: pointer;
-            border-radius: 5px;
-            transition: all 0.3s;
-            box-shadow: 0 0 10px #0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            color: #0f0;
+            transition: all 0.2s;
             position: relative;
             overflow: hidden;
+            margin: 30px 0;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
         }
 
-        button:hover {
-            background: linear-gradient(135deg, #222, #333);
-            box-shadow: 0 0 20px #0f0, 0 0 30px #0f0;
+        .mic-btn:hover {
             transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.8);
         }
 
-        button:active {
+        .mic-btn:active {
             transform: scale(0.95);
         }
 
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        button:hover::before {
-            left: 100%;
-        }
-
-        button#btn-listen {
-            background: linear-gradient(135deg, #002200, #003300);
-            border-color: #0f0;
-        }
-
-        button#btn-speak {
-            background: linear-gradient(135deg, #220000, #330000);
+        .mic-btn.recording {
             border-color: #f00;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.8);
+            animation: pulse 1s infinite;
+        }
+
+        .mic-btn.recording::after {
+            content: '●';
+            position: absolute;
+            font-size: 1.8em;
             color: #f00;
-            box-shadow: 0 0 10px #f00;
-        }
-
-        button#btn-speak:hover {
-            box-shadow: 0 0 20px #f00, 0 0 30px #f00;
-        }
-
-        .audio-info {
-            margin-top: 20px;
-            padding: 10px;
-            background: rgba(0, 10, 0, 0.5);
-            border: 1px solid #0a0;
-            border-radius: 5px;
-            font-size: 0.9em;
-            color: #8f8;
-        }
-
-        /* ========================================
-           ROBOT OCHENTERO
-           ======================================== */
-        #retro-robot {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 1000;
-            transition: transform 0.3s ease, filter 0.3s ease;
-            filter: drop-shadow(0 0 10px #0f0);
-        }
-
-        #retro-robot:hover {
-            transform: scale(1.15) rotate(5deg);
-            filter: drop-shadow(0 0 20px #0f0) drop-shadow(0 0 30px #0f0);
-        }
-
-        #retro-robot svg {
-            filter: drop-shadow(0 0 5px #0f0);
-        }
-
-        /* Efecto neón en el robot */
-        #robot-body {
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            animation: dash 5s linear infinite;
-        }
-
-        @keyframes dash {
-            to { stroke-dashoffset: 0; }
-        }
-
-        /* ========================================
-           GLITCH EFFECT
-           ======================================== */
-        .glitch {
-            position: relative;
-            animation: glitch 2s infinite;
-        }
-
-        @keyframes glitch {
-            0%, 100% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-        }
-
-        /* ========================================
-           MATRIX BACKGROUND (opcional)
-           ======================================== */
-        .matrix-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            opacity: 0.05;
-            pointer-events: none;
-        }
-
-        /* ========================================
-           AUDIO VISUALIZER
-           ======================================== */
-        .audio-visualizer {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 3px;
-            margin: 20px 0;
-            height: 40px;
-        }
-
-        .visualizer-bar {
-            width: 6px;
-            height: 100%;
-            background: #0f0;
-            border-radius: 3px;
-            transition: height 0.1s ease;
-            box-shadow: 0 0 5px #0f0;
-        }
-
-        /* ========================================
-           PULSING BORDER
-           ======================================== */
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 10px #0f0, inset 0 0 10px #0f0; }
-            50% { box-shadow: 0 0 20px #0f0, 0 0 30px #0f0, inset 0 0 20px #0f0; }
-        }
-
-        .container {
-            animation: pulse 3s ease-in-out infinite;
-        }
-
-        /* ========================================
-           BLINKING CURSOR
-           ======================================== */
-        .blinking-cursor::after {
-            content: '|';
             animation: blink 1s infinite;
-            color: #0f0;
-            margin-left: 5px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 25px rgba(255, 0, 0, 0.8); }
+            50% { box-shadow: 0 0 35px rgba(255, 0, 0, 1); }
         }
 
         @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+            50% { opacity: 0.3; }
         }
 
-        /* ========================================
-           LOADING DOTS
-           ======================================== */
-        .loading-dots span {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #0f0;
-            border-radius: 50%;
-            margin: 0 3px;
-            animation: bounce 1.4s ease-in-out infinite both;
+        .robot {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 90px;
+            height: 120px;
+            transition: transform 0.3s;
+            filter: drop-shadow(0 0 8px #0f0);
         }
 
-        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
-        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
+        .robot:hover {
+            transform: scale(1.1) rotate(3deg);
         }
 
-        /* ========================================
-           NEON TEXT EFFECT
-           ======================================== */
-        .neon-text {
-            position: relative;
+        .robot .antenna-light {
+            transition: fill 0.3s, r 0.3s;
         }
 
-        .neon-text::before {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            color: #fff;
-            filter: blur(2px);
-            opacity: 0.8;
+        .robot.speaking .antenna-light {
+            fill: #0f0 !important;
+            animation: antenna-pulse 0.3s infinite;
         }
 
-        .neon-text::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            color: #fff;
-            filter: blur(5px);
-            opacity: 0.5;
+        .robot.listening .antenna-light {
+            fill: #0af !important;
+            animation: antenna-pulse 1.5s infinite;
+        }
+
+        .robot.idle .antenna-light {
+            fill: #888 !important;
+            animation: none;
+        }
+
+        .robot .eye {
+            transition: fill 0.2s;
+        }
+
+        .robot.speaking .eye {
+            animation: eye-blink-fast 0.6s infinite;
+        }
+
+        .robot.listening .eye {
+            animation: eye-blink-slow 4s infinite;
+        }
+
+        .robot.idle .eye {
+            fill: #444 !important;
+        }
+
+        .robot .mouth {
+            transition: fill 0.3s;
+        }
+
+        .robot.speaking .mouth {
+            animation: mouth-pulse 0.4s infinite;
+        }
+
+        @keyframes antenna-pulse {
+            50% { r: 7; }
+        }
+
+        @keyframes eye-blink-fast {
+            0%, 45%, 55%, 100% { fill: #0f0; }
+            50% { fill: #000; }
+        }
+
+        @keyframes eye-blink-slow {
+            0%, 48%, 52%, 100% { fill: #0f0; }
+            50% { fill: #000; }
+        }
+
+        @keyframes mouth-pulse {
+            0%, 100% { fill: #0f0; }
+            50% { fill: #0a0; }
+        }
+
+        .instructions {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 25px;
+            text-align: center;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+            .logo { font-size: 2.2em; }
+            .mic-btn { width: 80px; height: 80px; font-size: 2em; }
+            .robot { width: 70px; height: 95px; bottom: 15px; right: 15px; }
         }
     </style>
 </head>
 <body>
-    <!-- Matrix background effect (opcional) -->
-    <canvas class="matrix-bg" id="matrixCanvas"></canvas>
-
-    <div class="container glitch">
-        <h1 class="neon-text" data-text="AUTO-SERVICIO 1984">AUTO-SERVICIO 1984</h1>
-        <p class="subtitle">Sistema de atención con asistente robótico</p>
-
-        <div class="status-display" id="status">
-            <span class="blinking-cursor">Sistema inicializado</span>
-        </div>
-
-        <div class="controls">
-            <button id="btn-listen" onclick="simulateListening()">
-                🎤 ESCUCHAR
-            </button>
-            <button id="btn-speak" onclick="simulateSpeaking()">
-                🗣️ HABLAR
-            </button>
-            <button onclick="simulateIdle()">
-                ⏸️ INACTIVO
-            </button>
-        </div>
-
-        <div class="audio-visualizer" id="visualizer">
-            <!-- Barras generadas por JS -->
-        </div>
-
-        <div class="audio-info" id="audioInfo">
-            Volumen: <span id="volumeDisplay">0%</span> | 
-            Frecuencia dominante: <span id="freqDisplay">-- Hz</span>
-        </div>
+    <div class="header">
+        <div class="logo">VILLAITUE</div>
+        <div class="subtitle">AUTO-SERVICIO • 1984</div>
     </div>
 
-    <!-- ========================================
-         ROBOT OCHENTERO (SVG)
-         ======================================== -->
-    <div id="retro-robot">
-        <svg viewBox="0 0 200 280" width="120" height="168">
-            <!-- Sombra -->
-            <ellipse cx="100" cy="260" rx="60" ry="10" fill="rgba(0,0,0,0.5)" opacity="0.7"/>
-            
-            <!-- Base del robot -->
-            <rect x="40" y="180" width="120" height="20" rx="5" fill="#222" stroke="#fff" stroke-width="3"/>
-            
-            <!-- Piernas -->
-            <rect x="55" y="200" width="20" height="50" rx="5" fill="#333" stroke="#fff" stroke-width="3"/>
-            <rect x="125" y="200" width="20" height="50" rx="5" fill="#333" stroke="#fff" stroke-width="3"/>
-            
-            <!-- Cuerpo principal -->
-            <rect id="robot-body" x="60" y="90" width="80" height="90" rx="10" fill="#111" stroke="#0f0" stroke-width="4"/>
-            
-            <!-- Panel de control (pecho) -->
-            <rect x="80" y="120" width="40" height="30" rx="5" fill="#000" stroke="#0f0" stroke-width="2"/>
-            <circle cx="90" cy="135" r="3" fill="#f00">
-                <animate attributeName="fill" values="#f00;#f88;#f00" dur="1s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="110" cy="135" r="3" fill="#0f0">
-                <animate attributeName="fill" values="#0f0;#8f8;#0f0" dur="1.5s" repeatCount="indefinite"/>
-            </circle>
-            
+    <div class="status" id="status">Presiona el micrófono para comenzar</div>
+
+    <button class="mic-btn" id="micBtn">
+        <div>🎤</div>
+    </button>
+
+    <div class="instructions">
+        El sistema escuchará durante 10 segundos.<br>
+        Responde a las preguntas del asistente.
+    </div>
+
+    <!-- Robot ochentero minimalista -->
+    <div class="robot idle" id="robot">
+        <svg viewBox="0 0 100 140" width="100%" height="100%">
+            <!-- Base -->
+            <ellipse cx="50" cy="130" rx="35" ry="6" fill="#222"/>
+            <!-- Cuerpo -->
+            <rect x="25" y="60" width="50" height="65" rx="6" fill="#111" stroke="#555" stroke-width="2"/>
             <!-- Cuello -->
-            <rect x="85" y="70" width="30" height="20" rx="5" fill="#222" stroke="#fff" stroke-width="3"/>
-            
+            <rect x="38" y="45" width="24" height="15" rx="4" fill="#222" stroke="#555" stroke-width="2"/>
             <!-- Cabeza -->
-            <rect x="65" y="20" width="70" height="50" rx="10" fill="#111" stroke="#fff" stroke-width="3"/>
-            
+            <rect x="28" y="15" width="44" height="30" rx="6" fill="#111" stroke="#fff" stroke-width="2"/>
             <!-- Antena -->
-            <line x1="100" y1="0" x2="100" y2="20" stroke="#fff" stroke-width="3" stroke-linecap="round">
-                <animate attributeName="y1" values="-5;-3;-5" dur="0.5s" repeatCount="indefinite"/>
-            </line>
-            <circle id="antenna-light" cx="100" cy="0" r="6" fill="#0af">
-                <animate attributeName="r" values="6;7;6" dur="1s" repeatCount="indefinite"/>
-            </circle>
-            
-            <!-- Ojos izquierdo -->
-            <rect id="left-eye" x="75" y="35" width="18" height="18" rx="3" fill="#0f0" stroke="#fff" stroke-width="2"/>
-            
-            <!-- Ojo derecho -->
-            <rect id="right-eye" x="107" y="35" width="18" height="18" rx="3" fill="#0f0" stroke="#fff" stroke-width="2"/>
-            
-            <!-- Boca (LED display) -->
-            <rect x="80" y="65" width="40" height="8" rx="2" fill="#666" stroke="#555" stroke-width="1"/>
-            <rect id="mouth-led" x="82" y="67" width="36" height="4" rx="1" fill="#0f0"/>
-            
-            <!-- Decoración cinturón -->
-            <rect x="60" y="165" width="80" height="8" rx="4" fill="#000" stroke="#0f0" stroke-width="2" stroke-dasharray="5,5"/>
-            
-            <!-- Tornillos -->
-            <circle cx="65" cy="100" r="4" fill="#555" stroke="#fff" stroke-width="1"/>
-            <circle cx="135" cy="100" r="4" fill="#555" stroke="#fff" stroke-width="1"/>
-            <circle cx="65" cy="160" r="4" fill="#555" stroke="#fff" stroke-width="1"/>
-            <circle cx="135" cy="160" r="4" fill="#555" stroke="#fff" stroke-width="1"/>
+            <line x1="50" y1="5" x2="50" y2="15" stroke="#fff" stroke-width="2"/>
+            <circle class="antenna-light" cx="50" cy="5" r="5" fill="#888"/>
+            <!-- Ojos -->
+            <rect class="eye" x="35" y="25" width="12" height="12" rx="2" fill="#0f0" stroke="#fff" stroke-width="1.5"/>
+            <rect class="eye" x="53" y="25" width="12" height="12" rx="2" fill="#0f0" stroke="#fff" stroke-width="1.5"/>
+            <!-- Boca LED -->
+            <rect class="mouth" x="40" y="42" width="20" height="4" rx="2" fill="#444"/>
+            <!-- Panel pecho -->
+            <rect x="38" y="85" width="24" height="12" rx="3" fill="#000" stroke="#0f0" stroke-width="1.5"/>
+            <circle cx="44" cy="91" r="2" fill="#f00"/>
+            <circle cx="56" cy="91" r="2" fill="#0f0"/>
         </svg>
     </div>
 
     <script>
-        // ========================================
-        // AUDIO CONTEXT & ANALYZER
-        // ========================================
-        let audioContext;
-        let analyzer;
-        let dataArray;
-        let animationId;
-        let isSpeaking = false;
-        let blinkInterval;
-        let mouthInterval;
-
-        // Inicializar AudioContext al hacer clic (requerido por políticas de navegador)
-        document.addEventListener('click', initAudio, { once: true });
-
-        function initAudio() {
-            try {
-                window.AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioContext = new AudioContext();
-                analyzer = audioContext.createAnalyser();
-                analyzer.fftSize = 256;
-                const bufferLength = analyzer.frequencyBinCount;
-                dataArray = new Uint8Array(bufferLength);
-                
-                // Conectar analyzer al output
-                analyzer.connect(audioContext.destination);
-                
-                // Iniciar animaciones
-                setupVisualizer();
-                animate();
-                
-                updateStatus('✓ Audio inicializado');
-            } catch (e) {
-                console.error('Error inicializando audio:', e);
-                updateStatus('✗ Error de audio: ' + e.message);
-            }
-        }
-
-        // ========================================
-        // VISUALIZADOR DE AUDIO
-        // ========================================
-        function setupVisualizer() {
-            const visualizer = document.getElementById('visualizer');
-            visualizer.innerHTML = '';
-            
-            for (let i = 0; i < 30; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'visualizer-bar';
-                bar.style.height = '5px';
-                visualizer.appendChild(bar);
-            }
-        }
-
-        function animate() {
-            if (!analyzer) {
-                requestAnimationFrame(animate);
+        // DOM Elements
+        const micBtn = document.getElementById('micBtn');
+        const statusEl = document.getElementById('status');
+        const robotEl = document.getElementById('robot');
+        
+        // Speech Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        let isListening = false;
+        let silenceTimeout;
+        
+        // Inicializar SpeechRecognition
+        function initRecognition() {
+            if (!SpeechRecognition) {
+                statusEl.textContent = "⚠️ SpeechRecognition no soportado";
+                micBtn.disabled = true;
                 return;
             }
             
-            analyzer.getByteFrequencyData(dataArray);
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-CL';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
             
-            // Actualizar barras del visualizador
-            const bars = document.querySelectorAll('.visualizer-bar');
-            const barCount = Math.min(bars.length, dataArray.length);
+            recognition.onstart = () => {
+                isListening = true;
+                micBtn.classList.add('recording');
+                robotEl.className = 'robot listening';
+                statusEl.textContent = "Escuchando...";
+                resetSilenceTimeout();
+            };
             
-            let avgVolume = 0;
-            let maxFreq = 0;
-            let maxFreqValue = 0;
-            
-            for (let i = 0; i < barCount; i++) {
-                const value = dataArray[i];
-                avgVolume += value;
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript.trim();
+                statusEl.textContent = `Tú: "${transcript}"`;
+                console.log('Texto reconocido:', transcript);
                 
-                if (value > maxFreqValue) {
-                    maxFreqValue = value;
-                    maxFreq = i * (audioContext.sampleRate / analyzer.fftSize);
-                }
+                // Aquí integrarías con tu n8n/webhook
+                // Ej: sendToN8n(transcript);
                 
-                const bar = bars[i];
-                const height = Math.max(5, value / 2);
-                bar.style.height = height + 'px';
-                
-                // Cambiar color según frecuencia
-                const hue = (i / barCount) * 60;
-                bar.style.background = `hsl(${hue}, 100%, 50%)`;
-                bar.style.boxShadow = `0 0 ${height/3}px hsl(${hue}, 100%, 50%)`;
-            }
-            
-            avgVolume /= barCount;
-            
-            // Actualizar info de audio
-            document.getElementById('volumeDisplay').textContent = Math.round(avgVolume) + '%';
-            document.getElementById('freqDisplay').textContent = Math.round(maxFreq);
-            
-            // Efecto de pulso en el robot según volumen
-            if (isSpeaking) {
-                const pulseIntensity = Math.min(1, avgVolume / 255);
-                document.getElementById('retro-robot').style.filter = `
-                    drop-shadow(0 0 ${10 + pulseIntensity * 30}px #0f0)
-                `;
-            }
-            
-            animationId = requestAnimationFrame(animate);
-        }
-
-        // ========================================
-        // CONTROL DEL ROBOT
-        // ========================================
-        const robot = {
-            listen() {
-                isSpeaking = false;
-                clearInterval(blinkInterval);
-                clearInterval(mouthInterval);
-                
-                // Antena: azul parpadeante lento
-                document.getElementById('antenna-light').style.fill = '#0af';
-                document.getElementById('antenna-light').style.animation = 'none';
+                // Simular respuesta del agente (reemplazar con tu lógica real)
                 setTimeout(() => {
-                    document.getElementById('antenna-light').style.animation = 'pulse 2s ease-in-out infinite';
-                }, 10);
-                
-                // Ojos: verde estable
-                document.getElementById('left-eye').style.fill = '#0f0';
-                document.getElementById('right-eye').style.fill = '#0f0';
-                
-                // Boca: apagada
-                document.getElementById('mouth-led').style.fill = '#333';
-                
-                // Parpadeo lento
-                blinkInterval = setInterval(() => {
-                    this.blinkEyes(200, 1800);
-                }, 3000);
-                
-                updateStatus('🤖 Escuchando...');
-            },
+                    simulateAgentResponse();
+                }, 800);
+            };
             
-            speak() {
-                isSpeaking = true;
-                clearInterval(blinkInterval);
-                clearInterval(mouthInterval);
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('recording');
                 
-                // Antena: verde pulsando rápido
-                document.getElementById('antenna-light').style.fill = '#0f0';
-                document.getElementById('antenna-light').style.animation = 'none';
-                setTimeout(() => {
-                    document.getElementById('antenna-light').style.animation = 'pulse 0.3s ease-in-out infinite';
-                }, 10);
-                
-                // Ojos: parpadeo rápido
-                blinkInterval = setInterval(() => {
-                    this.blinkEyes(50, 250);
-                }, 400);
-                
-                // Boca: LED animado
-                mouthInterval = setInterval(() => {
-                    const mouth = document.getElementById('mouth-led');
-                    mouth.style.fill = '#0f0';
+                if (!silenceTimeout) {
+                    // Silencio detectado (no hubo resultado)
+                    statusEl.textContent = "No se detectó audio...";
+                    robotEl.className = 'robot idle';
+                    
+                    // Reiniciar en 5 segundos (como pides en tus requisitos)
                     setTimeout(() => {
-                        mouth.style.fill = '#0a0';
-                    }, 100);
-                }, 200);
-                
-                updateStatus('🗣️ Hablando...');
-            },
-            
-            idle() {
-                isSpeaking = false;
-                clearInterval(blinkInterval);
-                clearInterval(mouthInterval);
-                
-                // Antena: rojo lento
-                document.getElementById('antenna-light').style.fill = '#f00';
-                document.getElementById('antenna-light').style.animation = 'none';
-                setTimeout(() => {
-                    document.getElementById('antenna-light').style.animation = 'pulse 4s ease-in-out infinite';
-                }, 10);
-                
-                // Ojos: apagados
-                document.getElementById('left-eye').style.fill = '#333';
-                document.getElementById('right-eye').style.fill = '#333';
-                
-                // Boca: apagada
-                document.getElementById('mouth-led').style.fill = '#222';
-                
-                updateStatus('💤 Inactivo');
-            },
-            
-            blinkEyes(downTime = 50, upTime = 200) {
-                const leftEye = document.getElementById('left-eye');
-                const rightEye = document.getElementById('right-eye');
-                
-                const originalLeft = leftEye.style.fill;
-                const originalRight = rightEye.style.fill;
-                
-                leftEye.style.fill = '#000';
-                rightEye.style.fill = '#000';
-                
-                setTimeout(() => {
-                    leftEye.style.fill = originalLeft;
-                    rightEye.style.fill = originalRight;
-                }, downTime);
-            },
-            
-            cleanup() {
-                clearInterval(blinkInterval);
-                clearInterval(mouthInterval);
-                if (animationId) {
-                    cancelAnimationFrame(animationId);
+                        statusEl.textContent = "Presiona el micrófono para comenzar";
+                        window.location.reload();
+                    }, 5000);
                 }
-            }
-        };
-
-        // ========================================
-        // SIMULACIÓN DE AUDIO
-        // ========================================
-        function simulateAudio(duration = 3000) {
-            if (!audioContext || audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
+            };
             
-            // Generar tono de voz sintetizada
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.type = 'triangle';
-            oscillator.frequency.value = 220 + Math.random() * 100;
-            
-            gainNode.gain.value = 0.3;
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration/1000);
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(analyzer);
-            
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + duration/1000);
-            
-            return { oscillator, gainNode };
+            recognition.onerror = (event) => {
+                console.error('Error de reconocimiento:', event.error);
+                statusEl.textContent = `Error: ${event.error}`;
+                micBtn.classList.remove('recording');
+                isListening = false;
+                robotEl.className = 'robot idle';
+            };
         }
-
-        function simulateListening() {
-            robot.listen();
-            
-            // Simular audio de entrada (ruido blanco)
-            const bufferSize = 2048;
-            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-            const data = buffer.getChannelData(0);
-            
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 0.5 - 0.25;
-            }
-            
-            const source = audioContext.createBufferSource();
-            source.buffer = buffer;
-            source.connect(analyzer);
-            source.start();
-            source.stop(audioContext.currentTime + 2);
+        
+        // Reiniciar timeout de silencio
+        function resetSilenceTimeout() {
+            if (silenceTimeout) clearTimeout(silenceTimeout);
+            silenceTimeout = setTimeout(() => {
+                if (isListening) {
+                    recognition.stop();
+                    silenceTimeout = null;
+                }
+            }, 10000); // 10 segundos máximo de escucha
         }
-
-        function simulateSpeaking() {
-            robot.speak();
+        
+        // Simular respuesta del agente (reemplazar con tu integración real)
+        function simulateAgentResponse() {
+            robotEl.className = 'robot speaking';
+            statusEl.textContent = "🤖: Procesando tu solicitud...";
             
-            // Simular voz TTS
-            simulateAudio(4000);
-        }
-
-        function simulateIdle() {
-            robot.idle();
-        }
-
-        // ========================================
-        // MATRIZ DIGITAL BACKGROUND
-        // ========================================
-        function setupMatrixBackground() {
-            const canvas = document.getElementById('matrixCanvas');
-            const ctx = canvas.getContext('2d');
-            
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            const fontSize = 14;
-            const columns = Math.floor(canvas.width / fontSize);
-            
-            const drops = [];
-            for (let i = 0; i < columns; i++) {
-                drops[i] = Math.floor(Math.random() * canvas.height / fontSize) * -1;
-            }
-            
-            const katakana = 'ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
-            
-            function draw() {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Simular tiempo de respuesta (reemplazar con llamada a n8n/Piper)
+            setTimeout(() => {
+                statusEl.textContent = "🤖: ¡Hola! ¿En qué puedo ayudarte hoy?";
                 
-                ctx.fillStyle = '#0f0';
-                ctx.font = fontSize + 'px monospace';
-                
-                for (let i = 0; i < drops.length; i++) {
-                    const text = katakana.charAt(Math.floor(Math.random() * katakana.length));
-                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                    
-                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                        drops[i] = 0;
+                // Después de la respuesta, preparar para escuchar de nuevo
+                setTimeout(() => {
+                    if (!isListening) {
+                        startListening();
                     }
-                    
-                    drops[i]++;
-                }
+                }, 1500);
+            }, 1200);
+        }
+        
+        // Iniciar escucha
+        function startListening() {
+            try {
+                recognition.start();
+            } catch (e) {
+                console.log('Reiniciando recognition...');
+                initRecognition();
+                recognition.start();
             }
-            
-            setInterval(draw, 50);
         }
-
-        // ========================================
-        // FUNCIONES AUXILIARES
-        // ========================================
-        function updateStatus(text) {
-            const statusEl = document.getElementById('status');
-            statusEl.innerHTML = text;
-            
-            // Efecto de fade
-            statusEl.style.opacity = '0';
-            setTimeout(() => {
-                statusEl.style.opacity = '1';
-            }, 50);
-        }
-
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
-
-        // ========================================
-        // INICIALIZACIÓN
-        // ========================================
-        window.addEventListener('load', () => {
-            // Iniciar robot en modo escucha
-            setTimeout(() => {
-                robot.listen();
-                updateStatus('✅ Sistema listo');
-            }, 500);
-            
-            // Setup matrix background
-            setupMatrixBackground();
-            
-            // Responsive canvas
-            window.addEventListener('resize', () => {
-                const canvas = document.getElementById('matrixCanvas');
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            });
+        
+        // Eventos
+        micBtn.addEventListener('click', () => {
+            if (isListening) {
+                recognition.stop();
+                silenceTimeout = null;
+            } else {
+                startListening();
+            }
         });
-
-        // Cleanup al cerrar
-        window.addEventListener('beforeunload', () => {
-            robot.cleanup();
+        
+        // Inicializar al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            initRecognition();
+            
+            // Permitir audio al hacer clic (política de navegadores)
+            document.body.addEventListener('click', () => {
+                if (!audioContext) {
+                    initAudioContext();
+                }
+            }, { once: true });
         });
+        
+        // Audio Context (para futura integración con Piper TTS)
+        let audioContext;
+        function initAudioContext() {
+            try {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext();
+                console.log('AudioContext inicializado');
+            } catch (e) {
+                console.warn('AudioContext no disponible:', e);
+            }
+        }
+        
+        // Para integración futura: reproducir audio de Piper TTS
+        function playAudioFromBase64(base64Audio) {
+            if (!audioContext) initAudioContext();
+            
+            robotEl.className = 'robot speaking';
+            
+            // Decodificar y reproducir (implementar según tu API Express)
+            fetch(`data:audio/wav;base64,${base64Audio}`)
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+                .then(audioBuffer => {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(audioContext.destination);
+                    source.start();
+                    
+                    source.onended = () => {
+                        robotEl.className = 'robot listening';
+                        // Aquí activarías el micrófono automáticamente
+                        // startListening();
+                    };
+                });
+        }
     </script>
 </body>
 </html>
