@@ -141,47 +141,53 @@ height: 100%; border-radius: 0; box-shadow: none; margin: 0;
 /* Sección de Información (Derecha) */
 .info-section {
 position: relative;
-padding: 2rem;
+/* REDUCIDO: Padding más compacto para juntar visualmente las secciones */
+padding: 1.5rem; 
 display: flex;
 flex-direction: column;
 justify-content: center;
-/* Degradado de fondo */
 background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
 color: white;
 overflow-y: auto;
 }
 
 @media (min-width: 768px) {
-.info-section { padding: 3rem 4rem; }
+.info-section { 
+    /* AUMENTADO LIGERAMENTE para desktop pero manteniendo compacidad */
+    padding: 2rem; 
+    /* Alineamos el contenido un poco más a la izquierda para acercarlo a la imagen */
+    align-items: flex-start; 
+    }
 }
 
 /* Tipografía */
 .modern-title {
-font-size: 2.25rem;
+font-size: 2rem; /* Ligeramente más pequeño para el diseño compacto */
 font-weight: 300;
 letter-spacing: -0.025em;
-margin-bottom: 1.5rem;
+margin-bottom: 1rem; /* Reducido de 1.5rem */
 color: #fff;
 line-height: 1.2;
 }
 
 .modern-output {
-font-size: 1.125rem;
-line-height: 1.75;
+font-size: 1.1rem;
+line-height: 1.6; /* Ligeramente reducido */
 color: #cbd5e1;
-margin-bottom: 2rem;
+/* Ajuste para que no se vaya muy a la derecha en desktop */
+max-width: 100%;
 }
 
 .price-tag {
 display: inline-block;
-margin-top: 1.5rem;
-padding: 0.5rem 1.5rem;
+margin-top: 1rem;
+padding: 0.4rem 1.2rem;
 background: rgba(59, 130, 246, 0.15);
 border: 1px solid rgba(59, 130, 246, 0.3);
 border-radius: 9999px;
 color: #60a5fa;
 font-weight: 600;
-font-size: 1rem;
+font-size: 0.9rem;
 }
 
 /* Botones Flotantes (FAB) */
@@ -282,10 +288,10 @@ z-index: 3;
 position: absolute;
 bottom: 0; left: 0;
 width: 100%;
-padding: 1.5rem;
+padding: 1rem; /* Reducido */
 text-align: center;
 color: #475569;
-font-size: 0.75rem;
+font-size: 0.7rem; /* Reducido */
 pointer-events: none;
 }
 
@@ -406,15 +412,16 @@ Villaitue - Sistema de Autoconsultas © VHSN 2026
 <div id="villaitueMap"></div>
 </div>
 
-<!-- Visual por defecto: LOGO CON FONDO DEGRADADO (Mismo que la sección de texto) -->
+<!-- Visual por defecto: LOGO CON FONDO DEGRADADO -->
 <div id="defaultVisual" class="w-full h-full flex items-center justify-center" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
     <img src="https://vsn47925-tech.github.io/img/logo_blanco.png" alt="Cabañas Villaitue" class="w-3/4 max-w-md opacity-80 object-contain">
 </div>
 </div>
 
-<!-- COLUMNA 2: INFORMACIÓN -->
+<!-- COLUMNA 2: INFORMACIÓN (Layout compacto) -->
 <div class="info-section">
-<div class="max-w-lg mx-auto w-full">
+<!-- Eliminamos max-w-lg y mx-auto para que use todo el ancho disponible y se acerque a la imagen -->
+<div class="w-full">
 <h2 id="descripcionTitle" class="modern-title"></h2>
 <div id="outputText" class="modern-output">
 <p id="outputContent" role="status" aria-live="polite"></p>
@@ -642,7 +649,6 @@ document.getElementById('infoImageContainer').style.display = 'block';
 mostrarMapa();
 document.getElementById('mapContainer').style.display = 'block';
 } else {
-// Si no hay imágenes, mostramos el logo con fondo degradado
 document.getElementById('defaultVisual').style.display = 'flex';
 }
 
