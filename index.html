@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cabañas Villaitue Villarrica - Autoservicio Accesible</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+crossorigin=""/>
+<style>
+/* Estilos base */
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow-x: hidden;
+    background-color: #000;
+}
+
+/* --- CARRUSEL DE BIENVENIDA --- */
+.welcome-carousel {
+position: fixed;
+top: 0; left: 0;
+width: 100vw; height: 100vh;
+overflow: hidden;
+z-index: 0;
+}
+.welcome-slide {
+position: absolute;
+top: 0; left: 0;
+width: 100%; height: 100%;
+opacity: 0;
+transition: opacity 3s ease-in-out;
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+}
+.welcome-slide.active { opacity: 1; }
+.welcome-slide::before {
+content: '';
+position: absolute;
+top: 0; left: 0; width: 100%; height: 100%;
+background: rgba(0, 0, 0, 0.4);
+}
+
+/* --- CONTENIDO DE BIENVENIDA --- */
+.welcome-content {
+position: fixed;
+top: 0; left: 0;
+width: 100vw; height: 100vh;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+z-index: 1;
+text-align: center;
+padding: 20px;
+color: white;
+}
+.welcome-logo-container {
+position: absolute;
+top: 20px; left: 0; right: 0;
+display: flex;
+justify-content: center;
+z-index: 2;
+}
+.welcome-logo {
+max-width: 392px;
+width: 80%;
+height: auto;
+filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+.welcome-footer {
+position: absolute;
+bottom: 0; left: 0;
+width: 100%;
+padding: 1.5rem;
+text-align: center;
+color: rgba(255, 255, 255, 0.6);
+font-size: 0.75rem;
+z-index: 2;
+pointer-events: none;
+text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* --- DISEÑO TIPO "STORY" (INMERSIVO) --- */
+
+/* Contenedor principal */
+#responseWrapper {
+position: fixed;
+top: 0; left: 0;
+width: 100vw; height: 100vh;
+background-color: #000;
+z-index: 50;
+overflow: hidden;
+}
+
+/* Capa 1: Fondo Visual (Imagen/Mapa/Logo) */
+.story-background {
+position: absolute;
+top: 0; left: 0;
+width: 100%; height: 100%;
+z-index: 1;
+}
+
+/* Ajustes para que los elementos llenen la pantalla */
+#carouselContainer, #mapContainer, #infoImageContainer, #defaultVisual {
+width: 100%; height: 100%;
+margin: 0; border-radius: 0; box-shadow: none;
+display: none;
+}
+
+.carousel-container, .map-container, .info-image-container {
+height: 100%; border-radius: 0; box-shadow: none; margin: 0;
+}
+
+/* Capa 2: Overlay de Gradiente (Bottom) */
+.story-overlay {
+position: absolute;
+bottom: 0; left: 0; right: 0;
+width: 100%;
+/* Degradado clave para que el texto se lea */
+background: linear-gradient(to top, 
+    rgba(0, 0, 0, 0.95) 0%, 
+    rgba(0, 0, 0, 0.8) 40%, 
+    rgba(0, 0, 0, 0.4) 70%, 
+    transparent 100%);
+z-index: 10;
+padding: 6rem 2rem 2rem 2rem; /* Padding superior grande para el degradado */
+color: white;
+display: flex;
+flex-direction: column;
+gap: 0.5rem;
+}
+
+/* Estilos de texto para Story */
+.story-title {
+font-size: 1.75rem;
+font-weight: 600;
+color: #fff;
+text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+margin-bottom: 0.5rem;
+}
+
+.story-text {
+font-size: 1.1rem;
+line-height: 1.5;
+color: rgba(255, 255, 255, 0.9);
+text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+max-width: 800px; /* Para que no se extienda demasiado en pantallas grandes */
+}
+
+.price-tag {
+display: inline-block;
+margin-top: 0.75rem;
+padding: 0.4rem 1rem;
+background: rgba(59, 130, 246, 0.9);
+border-radius: 9999px;
+color: white;
+font-weight: 600;
+font-size: 0.9rem;
+width: fit-content;
+box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+}
+
+/* Footer dentro del Story */
+.story-footer {
+margin-top: 1rem;
+font-size: 0.7rem;
+color: rgba(255,255,255,0.4);
+border-top: 1px solid rgba(255,255,255,0.1);
+padding-top: 0.75rem;
+width: 100%;
+text-align: center;
+}
+
+/* Botones Flotantes (FAB) - Movidos a la derecha */
+.floating-actions {
+position: fixed;
+top: 2rem; /* Arriba en Story mode para no tapar texto abajo */
+right: 2rem;
+display: flex;
+flex-direction: column;
+gap: 1rem;
+z-index: 100;
+}
+
+.fab-btn {
+width: 50px; height: 50px;
+border-radius: 50%;
+background: rgba(0, 0, 0, 0.4);
+backdrop-filter: blur(10px);
+border: 1px solid rgba(255, 255, 255, 0.2);
+color: white;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.1rem;
+cursor: pointer;
+transition: all 0.3s;
+box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.fab-btn:hover {
+background: white;
+color: #000;
+transform: scale(1.1);
+}
+
+.fab-btn.primary {
+background: #3b82f6;
+border-color: transparent;
+}
+.fab-btn.primary:hover {
+background: #60a5fa;
+transform: scale(1.1);
+}
+
+.fab-btn.listening {
+background-color: #dc2626;
+animation: pulse 1.5s infinite;
+}
+
+/* Carousel Dots - Para Story */
+.carousel-dots {
+display: flex;
+justify-content: center;
+gap: 8px;
+position: absolute;
+bottom: auto; /* Ajuste position */
+top: 1.5rem; /* Arriba como stories reales */
+left: 0; right: 0;
+z-index: 10;
+}
+.carousel-dot {
+width: 100%; /* Barra completa estilo story */
+height: 3px;
+border-radius: 0;
+background-color: rgba(255,255,255,0.3);
+cursor: pointer;
+transition: all 0.3s;
+position: relative;
+overflow: hidden;
+flex: 1; /* Que ocupen todo el ancho */
+max-width: 100px; /* Límite para muchos dots */
+margin: 0 2px;
+}
+.carousel-dot.active {
+background-color: white;
+}
+/* Animación de progreso para story (opcional) */
+.carousel-dot.active::after {
+content: '';
+position: absolute;
+top: 0; left: 0; height: 100%; width: 0;
+background: #3b82f6;
+animation: progress 5s linear forwards;
+}
+@keyframes progress { from { width: 0; } to { width: 100%; } }
+
+.carousel-btn {
+position: absolute;
+top: 50%;
+transform: translateY(-50%);
+background-color: rgba(0, 0, 0, 0.2);
+color: white;
+border: none;
+width: 40px; height: 40px;
+border-radius: 50%;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 3;
+opacity: 0.6;
+}
+.carousel-btn:hover { opacity: 1; background-color: rgba(0,0,0,0.5); }
+.carousel-prev { left: 15px; }
+.carousel-next { right: 15px; }
+
+/* Estilos para el logo cuando no hay imagen (Fondo degradado elegante) */
+#defaultVisual {
+background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+display: flex;
+align-items: center;
+justify-content: center;
+}
+#defaultVisual img {
+width: 60%;
+max-width: 300px;
+opacity: 0.7;
+filter: grayscale(20%);
+}
+
+/* Otros */
+#processingIndicator { z-index: 2000; }
+.processing-spinner { width: 50px; height: 50px; border-width: 4px; }
+#sr-only-region { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+*:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+#villaitueMap { width: 100%; height: 100%; z-index: 10; }
+.info-image { width: 100%; height: 100%; object-fit: cover; }
+.info-image-caption { display: none; } /* Ocultamos caption antiguo, usamos overlay */
+
+#errorState {
+position: absolute;
+inset: 0;
+background: rgba(0,0,0,0.9);
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+text-align: center;
+padding: 2rem;
+color: white;
+z-index: 60;
+}
+
+/* Animaciones */
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
+
+</style>
+</head>
+<body class="min-h-screen bg-black">
+
+<div id="sr-only-region" aria-live="polite" aria-atomic="true"></div>
+
+<!-- Carrusel de fondo fullscreen (Bienvenida) -->
+<div class="welcome-carousel" role="presentation" aria-hidden="true">
+<div class="welcome-slide active" style="background-image: url('https://vsn47925-tech.github.io/img/cab-amanecervilla.jpg')"></div>
+<div class="welcome-slide" style="background-image: url('https://vsn47925-tech.github.io/img/volcan-entre-arboles.jpg')"></div>
+<div class="welcome-slide" style="background-image: url('https://vsn47925-tech.github.io/img/jardin-manzano-mesa.jpg')"></div>
+<div class="welcome-slide" style="background-image: url('https://vsn47925-tech.github.io/img/cab-volcan.jpg')"></div>
+</div>
+
+<!-- Pantalla de Bienvenida -->
+<div id="welcomeScreen" class="welcome-content" role="main">
+<div class="welcome-logo-container">
+<img src="https://vsn47925-tech.github.io/img/logo_blanco.png" alt="Logo de Cabañas Villaitue" class="welcome-logo" loading="eager" />
+</div>
+
+<button id="startVoiceBtn" class="voice-btn bg-blue-600 hover:bg-blue-700 text-white p-5 rounded-full shadow-2xl text-3xl" aria-label="Iniciar consulta por voz">
+<i class="fas fa-microphone" aria-hidden="true"></i>
+</button>
+<p class="mt-6 text-lg text-white/90">Haz clic en el micrófono y realiza tu pregunta</p>
+
+<div class="welcome-footer">Villaitue - Sistema de Autoconsultas © VHSN 2026</div>
+</div>
+
+<!-- Contenedor de respuesta - ESTILO STORY -->
+<div id="responseWrapper" class="hidden" role="region" aria-label="Respuesta del sistema">
+
+<!-- Capa Fondo: Imagen, Mapa o Logo -->
+<div class="story-background">
+<!-- Carrusel -->
+<div id="carouselContainer" role="region" aria-label="Galería de imágenes">
+<div class="carousel-inner w-full h-full" role="group"></div>
+<div class="carousel-dots"></div>
+</div>
+
+<!-- Imagen Info -->
+<div id="infoImageContainer" role="region">
+<img id="infoImage" class="info-image" src="" alt="" />
+</div>
+
+<!-- Mapa -->
+<div id="mapContainer" role="region">
+<div id="villaitueMap"></div>
+</div>
+
+<!-- Logo por defecto -->
+<div id="defaultVisual" class="w-full h-full bg-slate-900 flex items-center justify-center">
+    <img src="https://vsn47925-tech.github.io/img/logo_blanco.png" alt="Cabañas Villaitue" class="w-3/4 max-w-md opacity-80 object-contain">
+</div>
+</div>
+
+<!-- Capa Overlay: Texto flotante abajo -->
+<div class="story-overlay">
+    <h2 id="descripcionTitle" class="story-title"></h2>
+    <div class="story-text">
+        <p id="outputContent" role="status" aria-live="polite"></p>
+    </div>
+    
+    <div class="story-footer">
+        Villaitue - Sistema de Autoconsultas © VHSN 2026
+    </div>
+</div>
+
+<!-- Botones Flotantes (FAB) - Posición Superior Derecha -->
+<div class="floating-actions">
+<button id="voiceControlBtn" class="fab-btn primary" aria-label="Activar micrófono">
+<i id="voiceIcon" class="fas fa-microphone" aria-hidden="true"></i>
+</button>
+<button id="newQueryBtn" class="fab-btn" aria-label="Nueva consulta" title="Nueva consulta">
+<i class="fas fa-redo" aria-hidden="true"></i>
+</button>
+</div>
+
+<!-- Estado de error -->
+<div id="errorState" class="hidden" role="alert">
+<div class="text-red-400 mb-6">
+<i class="fas fa-exclamation-triangle text-5xl"></i>
+</div>
+<h3 class="text-xl font-semibold mb-2">Error en el sistema</h3>
+<p id="errorMessage" class="text-slate-400 mb-6"></p>
+<button id="retryBtn" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-full font-medium text-white">
+<i class="fas fa-redo mr-2"></i>Reintentar
+</button>
+</div>
+</div>
+
+<!-- Indicador de procesamiento -->
+<div id="processingIndicator" role="status" aria-live="polite" style="display: none;">
+<div class="processing-spinner" aria-hidden="true"></div>
+<div class="processing-text" id="processingMessage">
+<div class="processing-message" data-message="Estoy trabajando para ti...">Estoy trabajando para ti...</div>
+<div class="processing-message" data-message="Buscando...">Buscando...</div>
+</div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+// Variables globales
+let recognition = null;
+let isListening = false;
+let hasReceivedInput = false;
+let welcomeInterval = null;
+let welcomeSlideIndex = 0;
+let currentCarouselIndex = 0;
+let carouselInterval = null;
+let carouselSlides = [];
+let carouselDots = [];
+let map = null;
+let marker = null;
+let processingMessages = [];
+let currentMessageIndex = 0;
+let messageInterval = null;
+let autoResetTimeout = null;
+
+const VILLAITUE_COORDS = [-39.2852346, -72.2227348];
+const MAP_ZOOM = 17;
+const AUTO_RESET_TIMEOUT_MS = 7000;
+const NO_INPUT_TIMEOUT_MS = 2000;
+
+function announceToScreenReader(message) {
+const srRegion = document.getElementById('sr-only-region');
+srRegion.textContent = message;
+setTimeout(() => srRegion.textContent = '', 1000);
+}
+
+function initProcessingMessages() {
+const messageElements = document.querySelectorAll('.processing-message');
+processingMessages = Array.from(messageElements).map(el => el.dataset.message);
+if (messageElements.length > 0) messageElements[0].style.display = 'block';
+if (processingMessages.length > 1) {
+messageInterval = setInterval(() => {
+    messageElements.forEach(el => el.style.display = 'none');
+    currentMessageIndex = (currentMessageIndex + 1) % processingMessages.length;
+    messageElements[currentMessageIndex].style.display = 'block';
+    announceToScreenReader(processingMessages[currentMessageIndex]);
+}, 3000);
+}
+}
+
+function showProcessingIndicator() {
+document.getElementById('processingIndicator').style.display = 'flex';
+announceToScreenReader("Procesando su solicitud.");
+}
+function hideProcessingIndicator() {
+document.getElementById('processingIndicator').style.display = 'none';
+}
+
+function initWelcomeCarousel() {
+const slides = document.querySelectorAll('.welcome-slide');
+if (slides.length === 0) return;
+welcomeInterval = setInterval(() => {
+welcomeSlideIndex = (welcomeSlideIndex + 1) % slides.length;
+slides.forEach((slide, index) => slide.classList.toggle('active', index === welcomeSlideIndex));
+}, 3000);
+}
+
+function initVoiceRecognition() {
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SpeechRecognition) {
+announceToScreenReader("Su navegador no soporta reconocimiento de voz.");
+return null;
+}
+recognition = new SpeechRecognition();
+recognition.lang = 'es-CL';
+recognition.continuous = false;
+recognition.interimResults = false;
+
+recognition.onstart = () => {
+isListening = true;
+hasReceivedInput = false;
+updateVoiceButton(true);
+announceToScreenReader("Escuchando.");
+if (autoResetTimeout) clearTimeout(autoResetTimeout);
+};
+
+recognition.onresult = (event) => {
+const transcript = event.results[0][0].transcript;
+hasReceivedInput = true;
+if (autoResetTimeout) clearTimeout(autoResetTimeout);
+announceToScreenReader(`Ha dicho: ${transcript}.`);
+sendToN8N(transcript);
+};
+
+recognition.onerror = (event) => {
+isListening = false;
+updateVoiceButton(false);
+showErrorState("Error en el reconocimiento de voz");
+if (event.error === 'no-speech') handleNoInputDetected();
+};
+
+recognition.onend = () => {
+isListening = false;
+updateVoiceButton(false);
+if (!hasReceivedInput) handleNoInputDetected();
+};
+return recognition;
+}
+
+function handleNoInputDetected() {
+autoResetTimeout = setTimeout(() => location.reload(), NO_INPUT_TIMEOUT_MS);
+}
+
+function updateVoiceButton(listening) {
+const voiceBtn = document.getElementById('voiceControlBtn');
+const startBtn = document.getElementById('startVoiceBtn');
+if (listening) {
+voiceBtn.classList.add('listening');
+startBtn?.classList.add('listening');
+} else {
+voiceBtn.classList.remove('listening');
+startBtn?.classList.remove('listening');
+}
+}
+
+async function sendToN8N(pregunta) {
+showProcessingIndicator();
+try {
+const response = await fetch("https://apps.villaitue.cl/webhook/autoservicio", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pregunta: pregunta })
+});
+const data = await response.json();
+hideProcessingIndicator();
+mostrarRespuestaAgente(data);
+} catch (error) {
+hideProcessingIndicator();
+showErrorState("Error de conexión con el servidor");
+}
+}
+
+function processResponse(data) {
+if (Array.isArray(data) && data.length > 0) {
+const item = data[0];
+return {
+    output: item.output || item.msg || "Respuesta recibida",
+    descripcion: item.descripcion || item.description || "Resultado",
+    imagenes: item.imagenes || item.images || [],
+    tipo_plantilla: item.tipo_plantilla || "texto",
+    precio: item.precio || null,
+    caption: item.caption || item.descripcion_imagen || "",
+    audioContent: item.audioContent || ""
+};
+}
+return { output: "No se encontraron resultados", descripcion: "Sin resultados", imagenes: [], tipo_plantilla: "texto", precio: null, caption: "", audioContent: "" };
+}
+
+function mostrarRespuestaAgente(rawData) {
+const datos = processResponse(rawData);
+document.getElementById('descripcionTitle').textContent = datos.descripcion;
+
+// Formatear salida
+let htmlContent = `<span>${datos.output}</span>`;
+if (datos.precio) {
+htmlContent += `<br><span class="price-tag">Precio: ${datos.precio}</span>`;
+}
+document.getElementById('outputContent').innerHTML = htmlContent;
+
+announceToScreenReader(`Respuesta: ${datos.descripcion}`);
+
+// Resetear visibilidad
+document.getElementById('carouselContainer').style.display = 'none';
+document.getElementById('infoImageContainer').style.display = 'none';
+document.getElementById('mapContainer').style.display = 'none';
+document.getElementById('defaultVisual').style.display = 'none';
+document.getElementById('errorState').classList.add('hidden');
+
+if (datos.tipo_plantilla === 'carrusel' && datos.imagenes.length > 0) {
+mostrarCarrusel(datos.imagenes);
+document.getElementById('carouselContainer').style.display = 'block';
+} else if (datos.tipo_plantilla === 'respuesta-info' && datos.imagenes.length > 0) {
+mostrarInfoImage(datos.imagenes[0], datos.caption);
+document.getElementById('infoImageContainer').style.display = 'block';
+} else if (datos.tipo_plantilla === 'mapa-villaitue') {
+mostrarMapa();
+document.getElementById('mapContainer').style.display = 'block';
+} else {
+document.getElementById('defaultVisual').style.display = 'flex';
+}
+
+ensureResponseScreenIsVisible();
+
+if (datos.audioContent) {
+leerAudioBase64YEscucharAutomaticamente(datos.audioContent);
+} else {
+if(recognition) recognition.start();
+startAutoResetTimer();
+}
+}
+
+function ensureResponseScreenIsVisible() {
+const welcomeScreen = document.getElementById('welcomeScreen');
+const responseWrapper = document.getElementById('responseWrapper');
+if (!welcomeScreen.classList.contains('hidden')) {
+welcomeScreen.classList.add('hidden');
+responseWrapper.classList.remove('hidden');
+}
+if (map) setTimeout(() => map.invalidateSize(), 100);
+}
+
+function leerAudioBase64YEscucharAutomaticamente(audioBase64) {
+try {
+const binaryString = atob(audioBase64);
+const len = binaryString.length;
+const bytes = new Uint8Array(len);
+for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
+const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
+const audioUrl = URL.createObjectURL(audioBlob);
+const audio = new Audio(audioUrl);
+
+audio.onended = () => {
+    URL.revokeObjectURL(audioUrl);
+    if (recognition) recognition.start();
+    startAutoResetTimer();
+};
+audio.onerror = () => {
+    if (recognition) recognition.start();
+    startAutoResetTimer();
+};
+audio.play();
+} catch (error) {
+console.error("Error audio:", error);
+if (recognition) recognition.start();
+startAutoResetTimer();
+}
+}
+
+function startAutoResetTimer() {
+if (autoResetTimeout) clearTimeout(autoResetTimeout);
+autoResetTimeout = setTimeout(() => location.reload(), AUTO_RESET_TIMEOUT_MS);
+}
+
+function mostrarInfoImage(imagenUrl, caption) {
+const infoImage = document.getElementById('infoImage');
+const infoImageCaption = document.getElementById('infoImageCaption'); // Oculto en CSS
+infoImage.src = imagenUrl;
+infoImage.alt = caption || "Infografía";
+// En modo Story, el caption va en el overlay general, no en una barra separada
+}
+
+function mostrarMapa() {
+if (map) { map.remove(); map = null; marker = null; }
+map = L.map('villaitueMap').setView(VILLAITUE_COORDS, MAP_ZOOM);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+attribution: '&copy; OpenStreetMap',
+maxZoom: 19,
+}).addTo(map);
+
+const customIcon = L.divIcon({
+className: 'map-marker',
+html: '<div style="background:#ef4444; width:20px; height:20px; border-radius:50%; border:2px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>',
+iconSize: [20, 20],
+iconAnchor: [10, 10]
+});
+
+marker = L.marker(VILLAITUE_COORDS, { icon: customIcon })
+.addTo(map)
+.bindPopup(`<b>Cabañas Villaitue</b><br>Villarrica, Chile`)
+.openPopup();
+
+setTimeout(() => map.invalidateSize(), 300);
+}
+
+function mostrarCarrusel(imagenes) {
+const container = document.getElementById('carouselContainer');
+const inner = container.querySelector('.carousel-inner');
+const dotsContainer = container.querySelector('.carousel-dots');
+inner.innerHTML = '';
+dotsContainer.innerHTML = '';
+
+if (carouselInterval) clearInterval(carouselInterval);
+carouselSlides = [];
+carouselDots = [];
+currentCarouselIndex = 0;
+
+imagenes.forEach((img, index) => {
+const slide = document.createElement('div');
+slide.className = `carousel-slide absolute inset-0 opacity-0 transition-opacity duration-1000 ${index === 0 ? 'opacity-100' : ''}`;
+const imgElement = document.createElement('img');
+imgElement.src = img;
+imgElement.className = 'w-full h-full object-cover';
+imgElement.alt = `Vista ${index + 1}`;
+slide.appendChild(imgElement);
+inner.appendChild(slide);
+carouselSlides.push(slide);
+
+// Dots tipo Story (barras)
+const dot = document.createElement('div'); // Cambiado a div para barras
+dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
+dotsContainer.appendChild(dot);
+carouselDots.push(dot);
+});
+
+if (imagenes.length > 1) {
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'carousel-btn carousel-prev';
+    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+    prevBtn.onclick = prevSlide;
+    inner.appendChild(prevBtn);
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'carousel-btn carousel-next';
+    nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    nextBtn.onclick = nextSlide;
+    inner.appendChild(nextBtn);
+
+    carouselInterval = setInterval(nextSlide, 5000);
+}
+}
+
+function goToSlide(index) {
+if (carouselSlides.length === 0) return;
+const newIndex = (index + carouselSlides.length) % carouselSlides.length;
+
+carouselSlides.forEach((s, i) => s.classList.toggle('opacity-100', i === newIndex));
+carouselDots.forEach((d, i) => d.classList.toggle('active', i === newIndex));
+currentCarouselIndex = newIndex;
+}
+
+function nextSlide() { goToSlide(currentCarouselIndex + 1); }
+function prevSlide() { goToSlide(currentCarouselIndex - 1); }
+
+function showErrorState(message) {
+document.getElementById('errorMessage').textContent = message;
+document.getElementById('errorState').classList.remove('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+initWelcomeCarousel();
+initProcessingMessages();
+recognition = initVoiceRecognition();
+
+document.getElementById('startVoiceBtn').addEventListener('click', () => {
+if (recognition) recognition.start();
+});
+
+document.getElementById('voiceControlBtn').addEventListener('click', () => {
+if (!recognition) return;
+if (isListening) recognition.stop(); else recognition.start();
+});
+
+document.getElementById('newQueryBtn').addEventListener('click', () => {
+location.reload();
+});
+
+document.getElementById('retryBtn').addEventListener('click', () => {
+document.getElementById('errorState').classList.add('hidden');
+if (recognition) recognition.start();
+});
+
+document.addEventListener('keydown', (e) => {
+if (e.key === 'Enter' && !isListening) if (recognition) recognition.start();
+});
+});
+</script>
+</body>
+</html>
