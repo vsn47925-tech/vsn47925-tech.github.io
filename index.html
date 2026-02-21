@@ -89,7 +89,6 @@ text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 
 /* --- DISEÑO TIPO "STORY" (INMERSIVO) --- */
 
-/* Contenedor principal */
 #responseWrapper {
 position: fixed;
 top: 0; left: 0;
@@ -99,7 +98,6 @@ z-index: 50;
 overflow: hidden;
 }
 
-/* Capa 1: Fondo Visual */
 .story-background {
 position: absolute;
 top: 0; left: 0;
@@ -107,7 +105,6 @@ width: 100%; height: 100%;
 z-index: 1;
 }
 
-/* Ajustes para que los elementos llenen la pantalla */
 #carouselContainer, #mapContainer, #infoImageContainer, #defaultVisual {
 width: 100%; height: 100%;
 margin: 0; border-radius: 0; box-shadow: none;
@@ -118,15 +115,32 @@ display: none;
 height: 100%; border-radius: 0; box-shadow: none; margin: 0;
 }
 
-/* Capa 2: Overlay de Gradiente */
+/* --- CORRECCIÓN DE IMAGEN: VER FOTO COMPLETA --- */
+/* Cambiamos 'cover' (recorta) por 'contain' (muestra todo) */
+.carousel-slide img {
+width: 100%;
+height: 100%;
+object-fit: contain; /* MUESTRA LA IMAGEN COMPLETA SIN RECORTAR */
+background-color: #000; /* Fondo negro si la imagen no cubre todo */
+}
+
+.info-image {
+width: 100%;
+height: 100%;
+object-fit: contain; /* MUESTRA LA IMAGEN COMPLETA SIN RECORTAR */
+background-color: #000;
+}
+
+/* Overlay de Gradiente */
 .story-overlay {
 position: absolute;
 bottom: 0; left: 0; right: 0;
 width: 100%;
+/* Degradado suave para no ocultar la foto si está centrada */
 background: linear-gradient(to top, 
-    rgba(0, 0, 0, 0.95) 0%, 
-    rgba(0, 0, 0, 0.8) 40%, 
-    rgba(0, 0, 0, 0.4) 70%, 
+    rgba(0, 0, 0, 1) 0%,      /* Base sólida para el texto */
+    rgba(0, 0, 0, 0.85) 30%, 
+    rgba(0, 0, 0, 0.5) 60%, 
     transparent 100%);
 z-index: 10;
 padding: 6rem 2rem 2rem 2rem;
@@ -176,7 +190,7 @@ width: 100%;
 text-align: center;
 }
 
-/* Botones Flotantes (FAB) - Arriba Derecha */
+/* Botones Flotantes (FAB) */
 .floating-actions {
 position: fixed;
 top: 2rem; 
@@ -215,7 +229,6 @@ border-color: transparent;
 }
 .fab-btn.primary:hover {
 background: #60a5fa;
-transform: scale(1.1);
 }
 
 .fab-btn.listening {
@@ -223,7 +236,7 @@ background-color: #dc2626;
 animation: pulse 1.5s infinite;
 }
 
-/* Carousel Dots - Estilo Story */
+/* Carousel Dots */
 .carousel-dots {
 display: flex;
 justify-content: center;
@@ -263,7 +276,7 @@ animation: progress 5s linear forwards;
 position: absolute;
 top: 50%;
 transform: translateY(-50%);
-background-color: rgba(0, 0, 0, 0.2);
+background-color: rgba(0, 0, 0, 0.4);
 color: white;
 border: none;
 width: 40px; height: 40px;
@@ -275,14 +288,14 @@ justify-content: center;
 z-index: 3;
 opacity: 0.6;
 }
-.carousel-btn:hover { opacity: 1; background-color: rgba(0,0,0,0.5); }
+.carousel-btn:hover { opacity: 1; background-color: rgba(0,0,0,0.6); }
 .carousel-prev { left: 15px; }
 .carousel-next { right: 15px; }
 
-/* Estilos para el logo por defecto */
+/* Logo por defecto */
 #defaultVisual {
 background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-display: none; /* JS lo controla */
+display: none;
 align-items: center;
 justify-content: center;
 }
@@ -293,8 +306,6 @@ opacity: 0.7;
 filter: grayscale(20%);
 }
 
-/* --- CORRECCIÓN ERROR STATE --- */
-/* Eliminamos display:flex de aquí para no conflictuar con .hidden */
 #errorState {
 position: absolute;
 inset: 0;
@@ -306,7 +317,7 @@ z-index: 60;
 }
 
 #processingIndicator { 
-    display: none; /* Controlado por JS inline style */
+    display: none;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.85);
@@ -323,10 +334,8 @@ z-index: 60;
 #sr-only-region { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 *:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
 #villaitueMap { width: 100%; height: 100%; z-index: 10; }
-.info-image { width: 100%; height: 100%; object-fit: cover; }
 .info-image-caption { display: none; }
 
-/* Animaciones */
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
 
@@ -407,7 +416,7 @@ z-index: 60;
 </button>
 </div>
 
-<!-- Estado de error: Agregamos flex flex-col... aquí y removido del CSS ID -->
+<!-- Estado de error -->
 <div id="errorState" class="hidden flex flex-col justify-center items-center" role="alert">
 <div class="text-red-400 mb-6">
 <i class="fas fa-exclamation-triangle text-5xl"></i>
@@ -712,8 +721,8 @@ const slide = document.createElement('div');
 slide.className = `carousel-slide absolute inset-0 opacity-0 transition-opacity duration-1000 ${index === 0 ? 'opacity-100' : ''}`;
 const imgElement = document.createElement('img');
 imgElement.src = img;
-imgElement.className = 'w-full h-full object-cover';
-imgElement.alt = `Vista ${index + 1}`;
+// CAMBIO IMPORTANTE: Usamos clase personalizada del CSS en lugar de object-cover
+imgElement.className = 'w-full h-full'; 
 slide.appendChild(imgElement);
 inner.appendChild(slide);
 carouselSlides.push(slide);
